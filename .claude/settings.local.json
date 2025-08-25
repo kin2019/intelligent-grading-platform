@@ -30,14 +30,18 @@
       "Bash(git push:*)",
       "Bash(git commit:*)",
       "Bash(git fetch:*)",
-      "Bash(git config:*)"
+      "Bash(git config:*)",
+      "Bash(ping:*)",
+      "Bash(sed:*)",
+      "Bash(echo $BACKEND_CORS_ORIGINS)"
     ],
     "deny": [],
     "ask": [],
     "additionalDirectories": [
       "D:\\",
       "D:\\d D:\\work\\project",
-      "D:\\d\\work\\project\\zyjc"
+      "D:\\d\\work\\project\\zyjc",
+      "D:\\d D:\\work\\project\\zyjc"
     ]
   }
 }
