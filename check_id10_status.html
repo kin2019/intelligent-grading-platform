@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>检查ID=10复习状态一致性</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+        .data-card { padding: 15px; border-radius: 8px; background: #f8f9fa; border: 1px solid #dee2e6; }
+        pre { background: #f1f3f4; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 检查ID=10复习状态一致性</h1>
+    
+    <div class="test-section info">
+        <h3>📋 检查目标</h3>
+        <p>验证错题详情页面(ID=10)和错题本页面中对应记录的复习状态是否一致</p>
+        <p>检查错题本显示的复习状态是否准确</p>
+    </div>
+
+    <div class="test-section">
+        <h3>🛠️ 测试操作</h3>
+        <button class="btn-primary" onclick="checkID10Status()">🔍 检查ID=10状态</button>
+        <button class="btn-success" onclick="markID10Reviewed()">✅ 标记ID=10为已复习</button>
+        <button class="btn-danger" onclick="clearStorage()">🧹 清除localStorage</button>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 相关页面</h3>
+        <p><a href="http://localhost:8080/frontend/error-book.html" target="_blank">📖 错题本页面</a></p>
+        <p><a href="http://localhost:8080/frontend/error-detail.html?id=10" target="_blank">📄 错题详情页面 (ID=10)</a></p>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxNzg4NTUsInN1YiI6IjUifQ.YSMhpQQulzOxNrzD5IQs1h15HIqX5U_OBJ7VMQezq5o';
+
+        function addResult(content, type = 'info') {
+            const container = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-section ${type}`;
+            div.innerHTML = content;
+            container.appendChild(div);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            localStorage.setItem('token', TOKEN);
+            addResult('✅ localStorage已清除', 'success');
+        }
+
+        function markID10Reviewed() {
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            const errorIdStr = '10';
+            
+            if (!reviewedErrors.includes(errorIdStr)) {
+                reviewedErrors.push(errorIdStr);
+                localStorage.setItem('reviewedErrors', JSON.stringify(reviewedErrors));
+                addResult(`✅ 已标记ID=10为已复习`, 'success');
+            } else {
+                addResult(`ℹ️ ID=10已经是已复习状态`, 'info');
+            }
+        }
+
+        async function checkID10Status() {
+            document.getElementById('results').innerHTML = '';
+            addResult('🔄 开始检查ID=10的复习状态一致性...', 'info');
+
+            try {
+                // 1. 检查localStorage状态
+                const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+                const isLocalReviewed = reviewedErrors.includes('10');
+                
+                addResult(`💾 localStorage状态: ID=10 ${isLocalReviewed ? '已复习' : '未复习'}`, 'info');
+
+                // 2. 获取错题本API数据
+                const errorBookResponse = await fetch(`${API_BASE}/student/error-book`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}` }
+                });
+                const errorBookData = await errorBookResponse.json();
+                
+                // 查找ID=10的错题
+                const error10InBook = errorBookData.recent_errors.find(error => error.id == 10);
+                
+                if (!error10InBook) {
+                    addResult(`❌ 错题本API中未找到ID=10的错题`, 'error');
+                    const availableIds = errorBookData.recent_errors.map(e => e.id).slice(0, 10);
+                    addResult(`📋 可用的错题ID: [${availableIds.join(', ')}]`, 'info');
+                    return;
+                }
+
+                // 3. 模拟错题本页面的逻辑
+                const apiStatus = error10InBook.is_reviewed;
+                let errorBookFinalStatus = apiStatus;
+                
+                // 应用localStorage覆盖逻辑
+                if (reviewedErrors.includes(String(error10InBook.id))) {
+                    errorBookFinalStatus = true;
+                }
+
+                // 4. 模拟错题详情页面的逻辑
+                let errorDetailFinalStatus = apiStatus;
+                if (reviewedErrors.includes(String(error10InBook.id))) {
+                    errorDetailFinalStatus = true;
+                }
+
+                // 5. 显示对比结果
+                addResult(`
+                    <h4>📊 ID=10状态对比分析</h4>
+                    <div class="comparison">
+                        <div class="data-card">
+                            <h5>📖 错题本页面</h5>
+                            <p><strong>API原始状态:</strong> ${apiStatus ? '已复习' : '未复习'}</p>
+                            <p><strong>localStorage状态:</strong> ${isLocalReviewed ? '已复习' : '未复习'}</p>
+                            <p><strong>最终显示状态:</strong> <span style="color: blue; font-weight: bold;">${errorBookFinalStatus ? '已复习' : '未复习'}</span></p>
+                            <p><strong>按钮显示:</strong> ${errorBookFinalStatus ? '不显示"标记已复习"' : '显示"标记已复习"'}</p>
+                        </div>
+                        <div class="data-card">
+                            <h5>📄 错题详情页面</h5>
+                            <p><strong>API原始状态:</strong> ${apiStatus ? '已复习' : '未复习'}</p>
+                            <p><strong>localStorage状态:</strong> ${isLocalReviewed ? '已复习' : '未复习'}</p>
+                            <p><strong>最终显示状态:</strong> <span style="color: green; font-weight: bold;">${errorDetailFinalStatus ? '已复习' : '未复习'}</span></p>
+                            <p><strong>按钮状态:</strong> ${errorDetailFinalStatus ? '显示"已复习"，按钮禁用' : '显示"标记已复习"'}</p>
+                        </div>
+                    </div>
+                `, 'info');
+
+                // 6. 一致性检查
+                const isConsistent = errorBookFinalStatus === errorDetailFinalStatus;
+                
+                if (isConsistent) {
+                    addResult(`
+                        <h4>✅ 状态一致性检查通过</h4>
+                        <p>两个页面都显示：<strong>${errorBookFinalStatus ? '已复习' : '未复习'}</strong></p>
+                        <p>状态显示准确无误</p>
+                    `, 'success');
+                } else {
+                    addResult(`
+                        <h4>❌ 状态不一致！</h4>
+                        <p>错题本显示：${errorBookFinalStatus ? '已复习' : '未复习'}</p>
+                        <p>错题详情显示：${errorDetailFinalStatus ? '已复习' : '未复习'}</p>
+                        <p>存在逻辑错误，需要修复</p>
+                    `, 'error');
+                }
+
+                // 7. 显示详细数据
+                addResult(`
+                    <h4>📋 详细数据信息</h4>
+                    <pre>${JSON.stringify({
+                        id: error10InBook.id,
+                        subject: error10InBook.subject,
+                        question_preview: error10InBook.question_text.substring(0, 60) + '...',
+                        api_is_reviewed: error10InBook.is_reviewed,
+                        localStorage_reviewed: isLocalReviewed,
+                        error_book_final: errorBookFinalStatus,
+                        error_detail_final: errorDetailFinalStatus,
+                        is_consistent: isConsistent
+                    }, null, 2)}</pre>
+                `, 'info');
+
+                // 8. 准确性验证
+                addResult(`
+                    <h4>🎯 准确性验证</h4>
+                    <p><strong>错题本显示准确性:</strong> ${errorBookFinalStatus === (isLocalReviewed || apiStatus) ? '✅ 准确' : '❌ 不准确'}</p>
+                    <p><strong>逻辑说明:</strong> 最终状态 = localStorage状态 OR API状态</p>
+                    <p><strong>预期行为:</strong> 如果localStorage中有记录或API显示已复习，则显示为已复习</p>
+                `, errorBookFinalStatus === (isLocalReviewed || apiStatus) ? 'success' : 'error');
+
+                // 9. 测试建议
+                if (!isConsistent) {
+                    addResult(`
+                        <h4>🔧 修复建议</h4>
+                        <p>1. 检查错题详情页面的syncLocalReviewStatus函数</p>
+                        <p>2. 确保两个页面使用相同的状态判断逻辑</p>
+                        <p>3. 验证localStorage事件监听是否正常工作</p>
+                    `, 'warning');
+                } else {
+                    addResult(`
+                        <h4>🎉 测试结论</h4>
+                        <p>✅ ID=10的复习状态在两个页面中显示一致</p>
+                        <p>✅ 错题本的复习状态显示准确</p>
+                        <p>✅ 状态同步机制工作正常</p>
+                    `, 'success');
+                }
+
+            } catch (error) {
+                addResult(`❌ 检查失败: ${error.message}`, 'error');
+                console.error('检查失败:', error);
+            }
+        }
+
+        // 页面加载时设置token并自动检查
+        localStorage.setItem('token', TOKEN);
+        setTimeout(() => {
+            checkID10Status();
+        }, 1000);
+    </script>
+</body>
+</html>

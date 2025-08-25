@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>错题数据对比调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .comparison { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .page-simulation { border: 2px solid #ccc; padding: 15px; }
+        .error-item { border: 1px solid #ddd; margin: 10px 0; padding: 10px; }
+        .highlight-diff { background: yellow; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <h1>错题本页面数据对比</h1>
+    <p>模拟两个页面的实际显示，找出不一致的地方</p>
+    
+    <div class="comparison">
+        <div class="page-simulation">
+            <h2>错题列表页面显示</h2>
+            <div id="list-display"></div>
+        </div>
+        
+        <div class="page-simulation">
+            <h2>错题详情页面显示</h2>
+            <div id="detail-display"></div>
+        </div>
+    </div>
+    
+    <button onclick="loadAndCompare()" style="margin: 20px 0; padding: 10px 20px;">重新对比</button>
+    
+    <script>
+        // 模拟错题列表页面的渲染逻辑（从error-book.html复制）
+        function renderAsListPage(errors) {
+            let html = '';
+            errors.forEach(error => {
+                html += `
+                    <div class="error-item">
+                        <h4>错题 ID: ${error.id}</h4>
+                        <p><strong>题目:</strong> ${error.question_text || error.question || '无题目'}</p>
+                        <p><strong>你的答案:</strong> <span class="highlight-diff">${error.user_answer || error.userAnswer || '无答案'}</span></p>
+                        <p><strong>正确答案:</strong> <span class="highlight-diff">${error.correct_answer || error.correctAnswer || '无正确答案'}</span></p>
+                        <p><strong>学科:</strong> ${error.subject || '无学科'}</p>
+                        <p><strong>错误类型:</strong> ${error.error_type || error.errorType || '无错误类型'}</p>
+                        <p><strong>复习状态:</strong> ${error.is_reviewed ? '已复习' : '未复习'}</p>
+                    </div>
+                `;
+            });
+            return html;
+        }
+        
+        // 模拟错题详情页面的渲染逻辑（从error-detail.html复制）
+        function renderAsDetailPage(errorData) {
+            return `
+                <div class="error-item">
+                    <h4>错题 ID: ${errorData.id}</h4>
+                    <p><strong>题目:</strong> ${errorData.question_text || errorData.question || '题目内容未知'}</p>
+                    <p><strong>你的答案:</strong> <span class="highlight-diff">${errorData.user_answer || errorData.userAnswer || '无答案'}</span></p>
+                    <p><strong>正确答案:</strong> <span class="highlight-diff">${errorData.correct_answer || errorData.correctAnswer || '无正确答案'}</span></p>
+                    <p><strong>学科:</strong> ${errorData.subject || errorData.subjectName || '未知学科'}</p>
+                    <p><strong>错误类型:</strong> ${errorData.error_type || errorData.errorType || '未知错误类型'}</p>
+                    <p><strong>复习状态:</strong> ${(errorData.is_reviewed !== undefined ? errorData.is_reviewed : (errorData.isReviewed !== undefined ? errorData.isReviewed : false)) ? '已复习' : '未复习'}</p>
+                </div>
+            `;
+        }
+        
+        // 生成测试数据
+        function generateTestData() {
+            // 这里使用最可能的实际数据格式
+            return {
+                listApiResponse: {
+                    recent_errors: [
+                        {
+                            id: 1,
+                            subject: "数学",
+                            question_text: "计算：125 × 8 = ?",
+                            user_answer: "1024", 
+                            correct_answer: "1000",
+                            error_type: "计算错误",
+                            is_reviewed: false
+                        },
+                        {
+                            id: 2,
+                            subject: "语文", 
+                            question_text: "下列词语中，没有错别字的一组是（）",
+                            user_answer: "A",
+                            correct_answer: "C", 
+                            error_type: "字词错误",
+                            is_reviewed: true
+                        }
+                    ]
+                },
+                detailApiResponse: {
+                    id: 1,
+                    subject: "math",
+                    subjectName: "数学",
+                    question_text: "计算：125 × 8 = ?",
+                    user_answer: "1024",
+                    correct_answer: "1000", 
+                    error_type: "计算错误",
+                    is_reviewed: false
+                }
+            };
+        }
+        
+        function loadAndCompare() {
+            const testData = generateTestData();
+            
+            // 渲染列表页面显示
+            const listHtml = renderAsListPage(testData.listApiResponse.recent_errors);
+            document.getElementById('list-display').innerHTML = listHtml;
+            
+            // 渲染详情页面显示  
+            const detailHtml = renderAsDetailPage(testData.detailApiResponse);
+            document.getElementById('detail-display').innerHTML = detailHtml;
+            
+            // 进行数据对比分析
+            console.log('列表页数据:', testData.listApiResponse.recent_errors[0]);
+            console.log('详情页数据:', testData.detailApiResponse);
+            
+            // 检查关键字段
+            const listItem = testData.listApiResponse.recent_errors[0];
+            const detailItem = testData.detailApiResponse;
+            
+            console.log('题目对比:', listItem.question_text, '===', detailItem.question_text, listItem.question_text === detailItem.question_text);
+            console.log('学生答案对比:', listItem.user_answer, '===', detailItem.user_answer, listItem.user_answer === detailItem.user_answer);
+            console.log('正确答案对比:', listItem.correct_answer, '===', detailItem.correct_answer, listItem.correct_answer === detailItem.correct_answer);
+        }
+        
+        // 页面加载时自动执行
+        window.onload = loadAndCompare;
+    </script>
+</body>
+</html>

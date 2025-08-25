@@ -1,0 +1,29 @@
+<svg width="800" height="600" viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="800" height="600" fill="#ffffff"/>
+  
+  <!-- 标题 -->
+  <text x="400" y="50" text-anchor="middle" font-family="SimSun" font-size="24" font-weight="bold" fill="#333">语文作业 - 古诗词默写</text>
+  
+  <!-- 题目1 -->
+  <text x="50" y="120" font-family="SimSun" font-size="18" fill="#333">1. 请默写《静夜思》：</text>
+  <text x="80" y="150" font-family="SimSun" font-size="16" fill="#333">床前明月光，________________</text>
+  <text x="80" y="180" font-family="SimSun" font-size="16" fill="#333">________________，________________</text>
+  
+  <!-- 题目2 -->
+  <text x="50" y="240" font-family="SimSun" font-size="18" fill="#333">2. 补充诗句：</text>
+  <text x="80" y="270" font-family="SimSun" font-size="16" fill="#333">春眠不觉晓，________________</text>
+  
+  <!-- 题目3 -->
+  <text x="50" y="330" font-family="SimSun" font-size="18" fill="#333">3. 默写：</text>
+  <text x="80" y="360" font-family="SimSun" font-size="16" fill="#333">白日依山尽，________________</text>
+  
+  <!-- 学生答案 -->
+  <text x="280" y="150" font-family="KaiTi" font-size="16" fill="#0066cc">疑是地上霜</text>
+  <text x="80" y="200" font-family="KaiTi" font-size="16" fill="#0066cc">举头望明月，低头思故乡</text>
+  <text x="280" y="270" font-family="KaiTi" font-size="16" fill="#0066cc">处处闻啼鸟</text>
+  <text x="280" y="360" font-family="KaiTi" font-size="16" fill="#0066cc">黄河入海流</text>
+  
+  <!-- 页面底部信息 -->
+  <text x="50" y="500" font-family="SimSun" font-size="12" fill="#666">姓名：李小华　　班级：二年级1班　　日期：2024-08-24</text>
+</svg>

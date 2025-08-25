@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>调试英语第一个错题复习状态</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background-color: #d4edda; border-color: #c3e6cb; color: #155724; }
+        .error { background-color: #f8d7da; border-color: #f5c6cb; color: #721c24; }
+        .info { background-color: #d1ecf1; border-color: #bee5eb; color: #0c5460; }
+        .warning { background-color: #fff3cd; border-color: #ffeaa7; color: #856404; }
+        button { padding: 10px 20px; margin: 5px; border: none; border-radius: 3px; cursor: pointer; }
+        .btn-primary { background-color: #007bff; color: white; }
+        .btn-success { background-color: #28a745; color: white; }
+        .btn-danger { background-color: #dc3545; color: white; }
+        .btn-warning { background-color: #ffc107; color: black; }
+        .monitor { position: fixed; top: 10px; right: 10px; width: 300px; background: white; border: 1px solid #ddd; padding: 10px; border-radius: 5px; max-height: 400px; overflow-y: auto; }
+        pre { background: #f1f3f4; padding: 10px; border-radius: 4px; overflow-x: auto; font-size: 11px; }
+        .step { margin: 10px 0; padding: 10px; border-left: 4px solid #007bff; background: #f8f9fa; }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试英语第一个错题复习状态问题</h1>
+    
+    <div class="monitor" id="monitor">
+        <h4>📊 实时监控</h4>
+        <div id="monitorContent">初始化中...</div>
+    </div>
+    
+    <div class="test-section info">
+        <h3>🎯 问题描述</h3>
+        <p>在错题详情页面标记为已复习，但错题本页面仍显示"标记为已复习"按钮</p>
+        <p><strong>目标错题：</strong>英语第一个错题 (ID=11)</p>
+    </div>
+
+    <div class="test-section">
+        <h3>🛠️ 调试操作</h3>
+        <button class="btn-primary" onclick="checkEnglishFirst()">🔍 检查英语第一个错题</button>
+        <button class="btn-success" onclick="simulateMarkReviewed()">✅ 模拟标记已复习</button>
+        <button class="btn-warning" onclick="testSyncMechanism()">🔄 测试同步机制</button>
+        <button class="btn-danger" onclick="clearStorage()">🧹 清除localStorage</button>
+    </div>
+
+    <div class="step">
+        <h3>🧪 测试步骤</h3>
+        <p><strong>1.</strong> 点击"检查英语第一个错题"了解当前状态</p>
+        <p><strong>2.</strong> 点击"模拟标记已复习"模拟在详情页面的操作</p>
+        <p><strong>3.</strong> 观察右侧监控面板的状态变化</p>
+        <p><strong>4.</strong> 打开错题本页面验证按钮是否消失</p>
+    </div>
+
+    <div class="test-section">
+        <h3>🔗 测试页面</h3>
+        <p><a href="http://localhost:8080/frontend/error-book.html" target="_blank">📖 错题本页面</a></p>
+        <p><a href="http://localhost:8080/frontend/error-detail.html?id=11" target="_blank">📄 错题详情页面 (ID=11)</a></p>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxNzg4NTUsInN1YiI6IjUifQ.YSMhpQQulzOxNrzD5IQs1h15HIqX5U_OBJ7VMQezq5o';
+        
+        let englishFirstError = null;
+
+        function addResult(content, type = 'info') {
+            const container = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `test-section ${type}`;
+            div.innerHTML = content;
+            container.appendChild(div);
+        }
+
+        function updateMonitor() {
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            const monitor = document.getElementById('monitorContent');
+            
+            monitor.innerHTML = `
+                <p><strong>时间:</strong> ${new Date().toLocaleTimeString()}</p>
+                <p><strong>localStorage:</strong> [${reviewedErrors.join(', ')}]</p>
+                <p><strong>ID=11状态:</strong> ${reviewedErrors.includes('11') ? '✅已复习' : '❌未复习'}</p>
+                ${englishFirstError ? `
+                <p><strong>API状态:</strong> ${englishFirstError.is_reviewed ? '已复习' : '未复习'}</p>
+                <p><strong>最终状态:</strong> ${(reviewedErrors.includes('11') || englishFirstError.is_reviewed) ? '已复习' : '未复习'}</p>
+                <p><strong>按钮显示:</strong> ${(reviewedErrors.includes('11') || englishFirstError.is_reviewed) ? '不显示' : '显示"标记已复习"'}</p>
+                ` : ''}
+            `;
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            localStorage.setItem('token', TOKEN);
+            addResult('✅ localStorage已清除', 'success');
+            updateMonitor();
+        }
+
+        async function checkEnglishFirst() {
+            document.getElementById('results').innerHTML = '';
+            addResult('🔄 检查英语第一个错题状态...', 'info');
+
+            try {
+                // 获取错题本数据
+                const response = await fetch(`${API_BASE}/student/error-book`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}` }
+                });
+                const data = await response.json();
+                
+                // 找到第一个英语错题
+                const firstEnglishError = data.recent_errors.find(error => error.subject === '英语');
+                
+                if (!firstEnglishError) {
+                    addResult('❌ 未找到英语错题', 'error');
+                    return;
+                }
+
+                englishFirstError = firstEnglishError;
+                
+                // 检查localStorage状态
+                const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+                const isLocalReviewed = reviewedErrors.includes(String(firstEnglishError.id));
+                
+                addResult(`
+                    <h4>📋 英语第一个错题信息 (ID=${firstEnglishError.id})</h4>
+                    <p><strong>题目:</strong> ${firstEnglishError.question_text}</p>
+                    <p><strong>API状态:</strong> ${firstEnglishError.is_reviewed ? '已复习' : '未复习'}</p>
+                    <p><strong>localStorage状态:</strong> ${isLocalReviewed ? '已复习' : '未复习'}</p>
+                `, 'info');
+
+                // 计算最终状态（错题本页面逻辑）
+                const finalStatus = isLocalReviewed || firstEnglishError.is_reviewed;
+                
+                addResult(`
+                    <h4>🎯 错题本页面应该显示的状态</h4>
+                    <p><strong>最终状态:</strong> ${finalStatus ? '已复习' : '未复习'}</p>
+                    <p><strong>按钮显示:</strong> ${finalStatus ? '不显示"标记已复习"按钮' : '显示"标记已复习"按钮'}</p>
+                    <p><strong>HTML模板条件:</strong> ${finalStatus ? '!error.is_reviewed = false (不显示按钮)' : '!error.is_reviewed = true (显示按钮)'}</p>
+                `, finalStatus ? 'success' : 'warning');
+
+                updateMonitor();
+
+            } catch (error) {
+                addResult(`❌ 检查失败: ${error.message}`, 'error');
+            }
+        }
+
+        function simulateMarkReviewed() {
+            if (!englishFirstError) {
+                addResult('⚠️ 请先检查英语第一个错题', 'warning');
+                return;
+            }
+
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            const errorIdStr = String(englishFirstError.id);
+            
+            if (!reviewedErrors.includes(errorIdStr)) {
+                reviewedErrors.push(errorIdStr);
+                localStorage.setItem('reviewedErrors', JSON.stringify(reviewedErrors));
+                
+                addResult(`✅ 已模拟标记ID=${englishFirstError.id}为已复习`, 'success');
+                
+                // 手动触发storage事件
+                try {
+                    window.dispatchEvent(new StorageEvent('storage', {
+                        key: 'reviewedErrors',
+                        newValue: JSON.stringify(reviewedErrors),
+                        oldValue: JSON.stringify(reviewedErrors.slice(0, -1)),
+                        storageArea: localStorage
+                    }));
+                    addResult('📢 已触发storage事件', 'info');
+                } catch (e) {
+                    addResult(`⚠️ 触发storage事件失败: ${e.message}`, 'warning');
+                }
+                
+                // 模拟错题本页面的同步逻辑
+                englishFirstError.is_reviewed = true; // localStorage覆盖API状态
+                
+                addResult(`
+                    <h4>🔄 状态更新结果</h4>
+                    <p><strong>localStorage已更新:</strong> [${reviewedErrors.join(', ')}]</p>
+                    <p><strong>错题本页面应该:</strong> 不再显示"标记已复习"按钮</p>
+                    <p><strong>请在1秒内打开错题本页面验证</strong></p>
+                `, 'success');
+                
+            } else {
+                addResult(`ℹ️ ID=${englishFirstError.id}已经标记为已复习`, 'info');
+            }
+            
+            updateMonitor();
+        }
+
+        async function testSyncMechanism() {
+            addResult('🔄 测试同步机制工作原理...', 'info');
+            
+            // 模拟错题本页面的同步逻辑
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            
+            if (!englishFirstError) {
+                await checkEnglishFirst();
+            }
+            
+            if (englishFirstError) {
+                // 同步前状态
+                const beforeSync = englishFirstError.is_reviewed;
+                
+                // 执行同步逻辑（模拟错题本页面的syncLocalReviewStatus）
+                if (reviewedErrors.includes(String(englishFirstError.id))) {
+                    englishFirstError.is_reviewed = true;
+                }
+                
+                // 同步后状态
+                const afterSync = englishFirstError.is_reviewed;
+                
+                addResult(`
+                    <h4>🔧 同步机制测试结果</h4>
+                    <p><strong>同步前状态:</strong> ${beforeSync ? '已复习' : '未复习'}</p>
+                    <p><strong>同步后状态:</strong> ${afterSync ? '已复习' : '未复习'}</p>
+                    <p><strong>状态是否改变:</strong> ${beforeSync !== afterSync ? '是' : '否'}</p>
+                    <p><strong>localStorage记录:</strong> ${reviewedErrors.includes(String(englishFirstError.id)) ? '有' : '无'}</p>
+                `, afterSync ? 'success' : 'warning');
+                
+                // 检查HTML模板逻辑
+                const shouldShowButton = !afterSync;
+                addResult(`
+                    <h4>📝 HTML模板逻辑分析</h4>
+                    <p><strong>条件:</strong> \${!error.is_reviewed ? \`按钮HTML\` : ''}</p>
+                    <p><strong>!${afterSync} = ${!afterSync}</strong></p>
+                    <p><strong>结果:</strong> ${shouldShowButton ? '显示按钮' : '不显示按钮'}</p>
+                `, shouldShowButton ? 'warning' : 'success');
+            }
+            
+            updateMonitor();
+        }
+
+        // 监听storage事件
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'reviewedErrors') {
+                addResult(`📢 检测到storage事件: ${e.newValue}`, 'info');
+                updateMonitor();
+            }
+        });
+
+        // 定期更新监控
+        setInterval(updateMonitor, 2000);
+
+        // 页面加载时初始化
+        localStorage.setItem('token', TOKEN);
+        updateMonitor();
+        
+        // 自动检查
+        setTimeout(() => {
+            checkEnglishFirst();
+        }, 1000);
+    </script>
+</body>
+</html>

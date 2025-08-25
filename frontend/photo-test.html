@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>照片显示测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        
+        .test-area { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-btn { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            background: #007AFF; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+        }
+        
+        #result { 
+            margin-top: 20px; 
+            padding: 16px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+        }
+        
+        .photo-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); 
+            gap: 10px; 
+            margin-top: 12px; 
+        }
+        
+        .photo-item { 
+            position: relative; 
+            aspect-ratio: 1; 
+        }
+        
+        .photo-item img { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+            border-radius: 6px; 
+        }
+        
+        .photo-index { 
+            position: absolute; 
+            top: 4px; 
+            left: 4px; 
+            background: rgba(0,0,0,0.7); 
+            color: white; 
+            width: 20px; 
+            height: 20px; 
+            border-radius: 50%; 
+            display: flex; 
+            align-items: center; 
+            justify-content: center; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+<body>
+    <div class="test-area">
+        <h2>📷 照片显示测试</h2>
+        <p>选择多张图片测试显示功能：</p>
+        
+        <button class="test-btn" onclick="selectPhotos()">📸 选择照片</button>
+        <button class="test-btn" onclick="clearPhotos()">🗑️ 清空照片</button>
+        
+        <input type="file" id="photoInput" accept="image/*" multiple style="display: none;" onchange="handlePhotos(event)">
+        
+        <div id="result">
+            <p>未选择照片</p>
+        </div>
+    </div>
+    
+    <div class="test-area">
+        <h3>🔗 返回主页面</h3>
+        <a href="homework-submit.html" class="test-btn" style="text-decoration: none;">返回拍照批改页面</a>
+    </div>
+
+    <script>
+        let selectedPhotos = [];
+        
+        function selectPhotos() {
+            document.getElementById('photoInput').click();
+        }
+        
+        function handlePhotos(event) {
+            const files = event.target.files;
+            const result = document.getElementById('result');
+            
+            if (files && files.length > 0) {
+                selectedPhotos = Array.from(files);
+                
+                result.innerHTML = `
+                    <h4>已选择 ${selectedPhotos.length} 张照片：</h4>
+                    <div class="photo-grid" id="photoGrid"></div>
+                `;
+                
+                const photoGrid = document.getElementById('photoGrid');
+                selectedPhotos.forEach((file, index) => {
+                    const reader = new FileReader();
+                    reader.onload = function(e) {
+                        const photoItem = document.createElement('div');
+                        photoItem.className = 'photo-item';
+                        photoItem.innerHTML = `
+                            <img src="${e.target.result}" alt="照片 ${index + 1}">
+                            <div class="photo-index">${index + 1}</div>
+                        `;
+                        photoGrid.appendChild(photoItem);
+                    };
+                    reader.readAsDataURL(file);
+                });
+                
+                console.log('选择的照片:', selectedPhotos.map(f => f.name));
+            }
+        }
+        
+        function clearPhotos() {
+            selectedPhotos = [];
+            document.getElementById('result').innerHTML = '<p>未选择照片</p>';
+            document.getElementById('photoInput').value = '';
+        }
+    </script>
+</body>
+</html>

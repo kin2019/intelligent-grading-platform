@@ -1,0 +1,156 @@
+{
+  "name": "中小学智能批改",
+  "appid": "zyjc-platform-2024",
+  "description": "中小学全学科智能批改平台",
+  "versionName": "1.0.0",
+  "versionCode": "100",
+  "transformPx": false,
+  "app-plus": {
+    "usingComponents": true,
+    "nvueStyleCompiler": "uni-app",
+    "compilerVersion": 3,
+    "splashscreen": {
+      "alwaysShowBeforeRender": true,
+      "waiting": true,
+      "autoclose": true,
+      "delay": 0
+    },
+    "modules": {
+      "Camera": {},
+      "Payment": {},
+      "Share": {},
+      "VideoPlayer": {}
+    },
+    "distribute": {
+      "android": {
+        "permissions": [
+          "<uses-permission android:name=\"android.permission.CHANGE_NETWORK_STATE\" />",
+          "<uses-permission android:name=\"android.permission.MOUNT_UNMOUNT_FILESYSTEMS\" />",
+          "<uses-permission android:name=\"android.permission.VIBRATE\" />",
+          "<uses-permission android:name=\"android.permission.READ_LOGS\" />",
+          "<uses-permission android:name=\"android.permission.ACCESS_WIFI_STATE\" />",
+          "<uses-feature android:name=\"android.hardware.camera.autofocus\" />",
+          "<uses-permission android:name=\"android.permission.ACCESS_NETWORK_STATE\" />",
+          "<uses-permission android:name=\"android.permission.CAMERA\" />",
+          "<uses-permission android:name=\"android.permission.GET_ACCOUNTS\" />",
+          "<uses-permission android:name=\"android.permission.READ_PHONE_STATE\" />",
+          "<uses-permission android:name=\"android.permission.CHANGE_WIFI_STATE\" />",
+          "<uses-permission android:name=\"android.permission.WAKE_LOCK\" />",
+          "<uses-permission android:name=\"android.permission.FLASHLIGHT\" />",
+          "<uses-permission android:name=\"android.permission.WRITE_SETTINGS\" />"
+        ]
+      },
+      "ios": {
+        "capabilities": {
+          "entitlements": {
+            "com.apple.developer.associated-domains": ["applinks:zyjc-platform.com"]
+          }
+        }
+      },
+      "sdkConfigs": {
+        "payment": {
+          "weixin": {
+            "appid": "your-weixin-appid"
+          },
+          "alipay": {
+            "appid": "your-alipay-appid"
+          }
+        },
+        "share": {
+          "weixin": {
+            "appid": "your-weixin-appid",
+            "UniversalLinks": "https://zyjc-platform.com/app/"
+          }
+        }
+      }
+    }
+  },
+  "quickapp": {},
+  "mp-weixin": {
+    "appid": "your-miniprogram-appid",
+    "setting": {
+      "urlCheck": false,
+      "es6": true,
+      "enhance": true,
+      "postcss": true,
+      "preloadBackgroundData": false,
+      "minified": true,
+      "newFeature": true,
+      "coverView": true,
+      "nodeModules": false,
+      "autoAudits": false,
+      "showShadowRootLocation": true,
+      "scopeDataCheck": false,
+      "uglifyFileName": false,
+      "checkInvalidKey": true,
+      "checkSiteMap": true,
+      "uploadWithSourceMap": true,
+      "compileHotReLoad": false,
+      "lazyloadPlaceholderEnable": false,
+      "useMultiFrameRuntime": true,
+      "useApiHook": true,
+      "useApiHostProcess": true,
+      "babelSetting": {
+        "ignore": [],
+        "disablePlugins": [],
+        "outputPath": ""
+      },
+      "enableEngineNative": false,
+      "useIsolateContext": true,
+      "userConfirmedBundleSwitch": false,
+      "packNpmManually": false,
+      "packNpmRelationList": [],
+      "minifyWXSS": true,
+      "disableUseStrict": false,
+      "minifyWXML": true,
+      "showES6CompileOption": false,
+      "useCompilerPlugins": false
+    },
+    "usingComponents": true,
+    "permission": {
+      "scope.userLocation": {
+        "desc": "获取位置信息用于推荐附近的教育资源"
+      },
+      "scope.camera": {
+        "desc": "拍照功能用于作业批改"
+      },
+      "scope.album": {
+        "desc": "选择相册图片用于作业批改"
+      }
+    },
+    "requiredPrivateInfos": ["chooseLocation", "getFuzzyLocation"],
+    "lazyCodeLoading": "requiredComponents"
+  },
+  "mp-alipay": {
+    "usingComponents": true,
+    "component2": true
+  },
+  "mp-baidu": {
+    "usingComponents": true
+  },
+  "mp-toutiao": {
+    "usingComponents": true
+  },
+  "h5": {
+    "title": "中小学智能批改",
+    "template": "index.html",
+    "router": {
+      "mode": "hash",
+      "base": "/"
+    },
+    "optimization": {
+      "treeShaking": {
+        "enable": true
+      }
+    },
+    "publicPath": "/",
+    "devServer": {
+      "https": false,
+      "port": 8080,
+      "disableHostCheck": true
+    }
+  },
+  "vueVersion": "3",
+  "locale": "zh-Hans",
+  "fallbackLocale": "zh-Hans"
+}

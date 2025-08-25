@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 学科计划详情</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 学科概览 */
+        .subject-overview {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .subject-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .subject-name {
+            font-size: 24px;
+            font-weight: bold;
+            color: #333;
+        }
+        
+        .subject-progress {
+            font-size: 14px;
+            color: #4CAF50;
+            font-weight: 600;
+        }
+        
+        .progress-section {
+            margin-bottom: 20px;
+        }
+        
+        .progress-bar-container {
+            height: 12px;
+            background: #f0f0f0;
+            border-radius: 6px;
+            overflow: hidden;
+            margin-bottom: 16px;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #388E3C 100%);
+            border-radius: 6px;
+            transition: width 0.3s ease;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 任务列表 */
+        .tasks-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .task-item:hover {
+            background: #e9ecef;
+        }
+        
+        .task-item.completed {
+            border-left-color: #4CAF50;
+            background: #f1f8e9;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .task-checkbox.checked {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .task-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 知识点分析 */
+        .knowledge-points {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 80px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .knowledge-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .knowledge-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .knowledge-name {
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .mastery-level {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .mastery-bar {
+            width: 60px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .mastery-fill {
+            height: 100%;
+            background: #4CAF50;
+            border-radius: 3px;
+        }
+        
+        .mastery-text {
+            font-size: 12px;
+            color: #666;
+            min-width: 30px;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #4CAF50;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div class="navbar-title" id="navbarTitle">学科计划详情</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 学科概览 -->
+            <div class="subject-overview">
+                <div class="subject-header">
+                    <div class="subject-name" id="subjectName">数学</div>
+                    <div class="subject-progress" id="subjectProgress">75% 完成</div>
+                </div>
+                
+                <div class="progress-section">
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" id="progressBar" style="width: 75%"></div>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalTasks">12</div>
+                        <div class="stat-label">总任务</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="completedTasks">9</div>
+                        <div class="stat-label">已完成</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="remainingTasks">3</div>
+                        <div class="stat-label">剩余</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 任务列表 -->
+            <div class="tasks-section">
+                <div class="section-title">
+                    📋 学习任务
+                </div>
+                <div class="task-list" id="taskList">
+                    <!-- 任务列表将在这里动态生成 -->
+                </div>
+            </div>
+            
+            <!-- 知识点分析 -->
+            <div class="knowledge-points">
+                <div class="section-title">
+                    🎯 知识点掌握情况
+                </div>
+                <div class="knowledge-list" id="knowledgeList">
+                    <!-- 知识点列表将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item" onclick="goToErrorBook()">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">错题本</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">📋</div>
+                <div class="nav-text">学习计划</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let subjectName = '';
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                console.log('未找到登录token，设置测试token');
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', token);
+            }
+            
+            // 获取学科参数
+            const urlParams = new URLSearchParams(window.location.search);
+            subjectName = urlParams.get('subject') || '数学';
+            
+            // 更新页面标题
+            document.getElementById('navbarTitle').textContent = `${subjectName}计划详情`;
+            document.getElementById('subjectName').textContent = subjectName;
+            
+            // 加载学科详情数据
+            loadSubjectDetail();
+        }
+
+        async function loadSubjectDetail() {
+            try {
+                const response = await fetch(`${API_BASE}/student/subject-detail/${encodeURIComponent(subjectName)}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    displaySubjectDetail(data);
+                } else {
+                    throw new Error('获取学科详情失败');
+                }
+            } catch (error) {
+                console.error('加载学科详情失败:', error);
+                // 显示错误信息
+                showLoadError();
+            }
+        }
+        
+        function showLoadError() {
+            document.getElementById('taskList').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">😞</div>
+                    <div style="font-size: 16px; margin-bottom: 8px;">加载学科详情失败</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">请检查网络连接或稍后重试</div>
+                    <button style="padding: 8px 16px; background: #007AFF; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="loadSubjectDetail()">
+                        重试
+                    </button>
+                </div>
+            `;
+        }
+
+        function getKnowledgePoints(subject) {
+            const knowledgePointsMap = {
+                '数学': [
+                    { name: '加减法运算', mastery: 0.9 },
+                    { name: '乘除法运算', mastery: 0.7 },
+                    { name: '分数计算', mastery: 0.6 },
+                    { name: '几何图形', mastery: 0.8 },
+                    { name: '应用题', mastery: 0.5 }
+                ],
+                '语文': [
+                    { name: '字词理解', mastery: 0.8 },
+                    { name: '阅读理解', mastery: 0.7 },
+                    { name: '作文写作', mastery: 0.6 },
+                    { name: '古诗词', mastery: 0.9 },
+                    { name: '语法知识', mastery: 0.8 }
+                ],
+                '英语': [
+                    { name: '单词拼写', mastery: 0.8 },
+                    { name: '语法规则', mastery: 0.6 },
+                    { name: '阅读理解', mastery: 0.7 },
+                    { name: '听力理解', mastery: 0.5 },
+                    { name: '口语表达', mastery: 0.4 }
+                ]
+            };
+            
+            return knowledgePointsMap[subject] || knowledgePointsMap['数学'];
+        }
+
+        function displaySubjectDetail(data) {
+            // 更新进度信息
+            const progressPercent = Math.round(data.progress * 100);
+            document.getElementById('subjectProgress').textContent = `${progressPercent}% 完成`;
+            document.getElementById('progressBar').style.width = `${progressPercent}%`;
+            
+            // 更新统计数据
+            document.getElementById('totalTasks').textContent = data.totalTasks;
+            document.getElementById('completedTasks').textContent = data.completedTasks;
+            document.getElementById('remainingTasks').textContent = Math.max(0, data.totalTasks - data.completedTasks);
+            
+            // 更新任务列表
+            const taskList = document.getElementById('taskList');
+            if (data.tasks.length === 0) {
+                taskList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 16px;">📚</div>
+                        <div style="font-size: 16px; margin-bottom: 8px;">暂无${data.subject}任务</div>
+                        <div style="font-size: 14px;">请先创建学习计划</div>
+                    </div>
+                `;
+            } else {
+                taskList.innerHTML = data.tasks.map(task => `
+                    <div class="task-item ${task.completed ? 'completed' : ''}" onclick="toggleTask(${task.id})">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask(${task.id})">
+                            ${task.completed ? '✓' : ''}
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">${task.description} · 预计${task.estimatedTime}分钟</div>
+                        </div>
+                    </div>
+                `).join('');
+            }
+            
+            // 更新知识点列表
+            const knowledgeList = document.getElementById('knowledgeList');
+            if (data.knowledgePoints && data.knowledgePoints.length > 0) {
+                knowledgeList.innerHTML = data.knowledgePoints.map(point => `
+                    <div class="knowledge-item">
+                        <div class="knowledge-name">${point.name}</div>
+                        <div class="mastery-level">
+                            <div class="mastery-bar">
+                                <div class="mastery-fill" style="width: ${point.mastery * 100}%"></div>
+                            </div>
+                            <div class="mastery-text">${Math.round(point.mastery * 100)}%</div>
+                        </div>
+                    </div>
+                `).join('');
+            } else {
+                knowledgeList.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #666;">
+                        <div>暂无知识点数据</div>
+                    </div>
+                `;
+            }
+        }
+
+        async function toggleTask(taskId) {
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan/task/${taskId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showToast(result.completed ? '✅ 任务已完成！' : '↩️ 任务已取消完成');
+                    
+                    // 重新加载学科详情数据以获取最新状态
+                    loadSubjectDetail();
+                } else {
+                    throw new Error('更新任务状态失败');
+                }
+            } catch (error) {
+                console.error('更新任务失败:', error);
+                showToast('更新失败，请稍后重试');
+            }
+        }
+
+        function goBack() {
+            // 学科详情应该返回到学习计划
+            window.location.href = 'study-plan.html';
+        }
+
+        function goHome() {
+            const role = localStorage.getItem('role') || 'student';
+            if (role === 'parent') {
+                window.location.href = 'parent-home.html';
+            } else {
+                window.location.href = 'student-home.html';
+            }
+        }
+
+        function goToErrorBook() {
+            window.location.href = 'error-book.html';
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, duration);
+        }
+    </script>
+</body>
+</html>

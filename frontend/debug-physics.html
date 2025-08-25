@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>物理学科调试页面</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .panel { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; background: #f8fff8; }
+        .warning { border-left: 4px solid #ff9800; background: #fff8e1; }
+        .error { border-left: 4px solid #f44336; background: #ffebee; }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .subject-card {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .physics-subject { border-color: #9C27B0; background: #f3e5f5; }
+        .math-subject { border-color: #2196F3; background: #e3f2fd; }
+        .chinese-subject { border-color: #4CAF50; background: #e8f5e8; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px; overflow-x: auto; }
+        .status { padding: 10px; margin: 10px 0; border-radius: 5px; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+        th { background-color: #f2f2f2; }
+        .refresh-btn { background: #ff9800; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔬 物理学科调试工具</h1>
+        <p>帮助调试物理学科显示问题</p>
+        
+        <div class="panel">
+            <h2>🎯 快速测试</h2>
+            <button onclick="getCurrentState()">获取当前状态</button>
+            <button onclick="createPhysicsPlan()">创建物理学习计划</button>
+            <button onclick="refreshAndCheck()" class="refresh-btn">强制刷新检查</button>
+            <button onclick="clearCache()">清除缓存</button>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 当前学科状态</h2>
+            <div id="currentState">点击"获取当前状态"查看</div>
+        </div>
+        
+        <div class="panel">
+            <h2>🔍 详细分析</h2>
+            <div id="analysis">等待分析...</div>
+        </div>
+        
+        <div class="panel">
+            <h2>📋 原始API数据</h2>
+            <div id="rawData">等待数据...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+        
+        let lastStateData = null;
+
+        async function getCurrentState() {
+            const statusDiv = document.getElementById('currentState');
+            const analysisDiv = document.getElementById('analysis');
+            const rawDiv = document.getElementById('rawData');
+            
+            statusDiv.innerHTML = '<div style="color: blue;">获取中...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+                
+                const data = await response.json();
+                lastStateData = data;
+                
+                // Display current state
+                const subjects = data.subjects || [];
+                let subjectsHtml = '';
+                
+                for (const subject of subjects) {
+                    const subjectName = subject.subject;
+                    const cssClass = subjectName === '物理' ? 'physics-subject' : 
+                                    subjectName === '数学' ? 'math-subject' : 
+                                    subjectName === '语文' ? 'chinese-subject' : '';
+                    
+                    subjectsHtml += `
+                    <div class="subject-card ${cssClass}">
+                        <strong>${subjectName}</strong><br>
+                        任务数：${subject.completed}/${subject.total}<br>
+                        进度：${(subject.progress * 100).toFixed(1)}%<br>
+                        预计时间：${subject.estimated_time}分钟
+                    </div>
+                    `;
+                }
+                
+                statusDiv.innerHTML = `
+                    <div class="success">
+                        <p><strong>总任务数：</strong>${data.total_tasks}</p>
+                        <p><strong>学科数量：</strong>${subjects.length}</p>
+                        ${subjectsHtml}
+                    </div>
+                `;
+                
+                // Analysis
+                const physicsSubject = subjects.find(s => s.subject === '物理');
+                const analysisHtml = physicsSubject ? 
+                    `<div class="success">✅ 物理学科已找到！有${physicsSubject.total}个任务</div>` : 
+                    `<div class="error">❌ 物理学科未找到</div>`;
+                
+                analysisDiv.innerHTML = analysisHtml;
+                
+                // Raw data
+                rawDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ 获取失败: ${error.message}</div>`;
+            }
+        }
+
+        async function createPhysicsPlan() {
+            const statusDiv = document.getElementById('currentState');
+            statusDiv.innerHTML = '<div style="color: blue;">正在创建物理学习计划...</div>';
+            
+            const planData = {
+                title: `物理调试计划 ${new Date().toLocaleTimeString()}`,
+                description: "调试物理学科显示问题的测试计划",
+                subjects: ["physics"],
+                priority: "medium",
+                duration_days: 7,
+                daily_time: 40,
+                tasks: [
+                    { title: "物理力学基础", subject: "physics", estimatedTime: 20 },
+                    { title: "物理电磁学", subject: "physics", estimatedTime: 20 }
+                ],
+                estimated_time: 40
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan-create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 物理学习计划创建成功</h3>
+                            <p><strong>计划ID:</strong> ${result.plan_id}</p>
+                            <p><strong>标题:</strong> ${result.title}</p>
+                            <table>
+                                <tr><th>任务名称</th><th>学科</th></tr>
+                                ${result.tasks.map(t => `<tr><td>${t.title}</td><td>${t.subject}</td></tr>`).join('')}
+                            </table>
+                        </div>
+                    `;
+                    
+                    // Auto refresh after 2 seconds
+                    setTimeout(() => {
+                        getCurrentState();
+                    }, 2000);
+                } else {
+                    throw new Error(await response.text());
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ 创建失败: ${error.message}</div>`;
+            }
+        }
+
+        async function refreshAndCheck() {
+            // Clear any cached data
+            lastStateData = null;
+            
+            // Force refresh
+            location.reload();
+        }
+
+        function clearCache() {
+            // Clear browser cache
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            if ('caches' in window) {
+                caches.keys().then(names => {
+                    names.forEach(name => {
+                        caches.delete(name);
+                    });
+                });
+            }
+            
+            alert('缓存已清除，页面将刷新');
+            location.reload();
+        }
+
+        // Auto load current state on page load
+        window.onload = () => {
+            getCurrentState();
+        };
+    </script>
+</body>
+</html>

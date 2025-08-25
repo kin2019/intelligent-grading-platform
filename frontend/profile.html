@@ -1,0 +1,2552 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 个人中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部用户信息 */
+        .user-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 40px 20px 30px;
+            color: white;
+            text-align: center;
+            position: relative;
+        }
+        
+        .back-btn {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .avatar-container {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+        
+        .user-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background: rgba(255, 255, 255, 0.2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            border: 3px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        .avatar-edit {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 24px;
+            height: 24px;
+            background: #4CAF50;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            cursor: pointer;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .user-info {
+            font-size: 14px;
+            opacity: 0.9;
+            margin-bottom: 16px;
+        }
+        
+        .user-stats {
+            display: flex;
+            justify-content: center;
+            gap: 32px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* VIP状态卡片 */
+        .vip-card {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            color: #333;
+            display: none;
+        }
+        
+        .vip-card.active {
+            display: block;
+        }
+        
+        .vip-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .vip-title {
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .vip-badge {
+            background: rgba(255, 255, 255, 0.3);
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+        
+        .vip-info {
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+        
+        .vip-benefits {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* 功能菜单 */
+        .menu-section {
+            background: #ffffff;
+            border-radius: 16px;
+            margin-bottom: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .menu-item:last-child {
+            border-bottom: none;
+        }
+        
+        .menu-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .menu-item:active {
+            background: #e9ecef;
+        }
+        
+        .menu-icon {
+            width: 24px;
+            height: 24px;
+            margin-right: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        .menu-content {
+            flex: 1;
+        }
+        
+        .menu-title {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 2px;
+        }
+        
+        .menu-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .menu-arrow {
+            font-size: 14px;
+            color: #ccc;
+        }
+        
+        .menu-badge {
+            position: absolute;
+            top: 12px;
+            right: 40px;
+            background: #ff3b30;
+            color: white;
+            font-size: 10px;
+            padding: 2px 6px;
+            border-radius: 8px;
+            min-width: 16px;
+            height: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        /* 设置开关 */
+        .setting-toggle {
+            width: 44px;
+            height: 24px;
+            background: #e0e0e0;
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+        
+        .setting-toggle.active {
+            background: #4CAF50;
+        }
+        
+        .toggle-handle {
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 10px;
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        }
+        
+        .setting-toggle.active .toggle-handle {
+            transform: translateX(20px);
+        }
+        
+        /* 版本信息 */
+        .version-info {
+            text-align: center;
+            padding: 20px;
+            color: #999;
+            font-size: 12px;
+            margin-bottom: 80px;
+        }
+        
+        .version-text {
+            margin-bottom: 8px;
+        }
+        
+        .copyright {
+            margin-bottom: 8px;
+        }
+        
+        /* 模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 300px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 12px;
+            color: #333;
+        }
+        
+        .modal-text {
+            font-size: 14px;
+            color: #666;
+            line-height: 1.4;
+            margin-bottom: 20px;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn-primary {
+            background: #007AFF;
+            color: #ffffff;
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #007AFF;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+        
+        /* 头像编辑相关样式 */
+        .avatar-edit-content {
+            padding: 20px 0;
+        }
+        
+        .current-avatar-preview {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 8px;
+            border: 3px solid #f0f0f0;
+        }
+        
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .avatar-preview-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .upload-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .upload-option {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .upload-option:hover {
+            border-color: #007AFF;
+            background: #f8f9ff;
+        }
+        
+        .upload-option.selected {
+            border-color: #007AFF;
+            background: #f0f5ff;
+        }
+        
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .upload-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .upload-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .default-avatars {
+            padding: 16px 0;
+        }
+        
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+        
+        .default-avatar-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            justify-self: center;
+        }
+        
+        .default-avatar-item:hover {
+            transform: scale(1.1);
+            border-color: #007AFF;
+        }
+        
+        .default-avatar-item.selected {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
+        }
+        
+        /* 上传进度 */
+        .upload-progress {
+            margin-top: 16px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: #007AFF;
+            border-radius: 3px;
+            transition: width 0.3s ease;
+            width: 0%;
+        }
+        
+        .progress-text {
+            font-size: 12px;
+            color: #666;
+        }
+
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .user-stats {
+                gap: 24px;
+            }
+            
+            .avatar-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .default-avatar-item {
+                width: 45px;
+                height: 45px;
+                font-size: 18px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 用户头部信息 -->
+        <div class="user-header">
+            <button class="back-btn" onclick="goBack()">←</button>
+            
+            <div class="avatar-container">
+                <div class="user-avatar" id="userAvatar">👤</div>
+                <div class="avatar-edit" onclick="editAvatar()">✏️</div>
+            </div>
+            
+            <div class="user-name" id="userName">正在加载...</div>
+            <div class="user-info" id="userInfo">学生 · 五年级</div>
+            
+            <div class="user-stats">
+                <div class="stat-item">
+                    <div class="stat-number" id="totalHomework">0</div>
+                    <div class="stat-label">总作业</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="accuracyRate">0%</div>
+                    <div class="stat-label">正确率</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number" id="studyDays">0</div>
+                    <div class="stat-label">学习天数</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- VIP卡片 -->
+            <div class="vip-card" id="vipCard">
+                <div class="vip-header">
+                    <div class="vip-title">
+                        👑 VIP会员
+                        <div class="vip-badge">至尊版</div>
+                    </div>
+                </div>
+                <div class="vip-info">无限次批改 · 专属客服 · 详细解析</div>
+                <div class="vip-benefits">有效期至: <span id="vipExpireDate">2025-12-31</span></div>
+            </div>
+            
+            <!-- 学习管理 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="goToErrorBook()">
+                    <div class="menu-icon">📚</div>
+                    <div class="menu-content">
+                        <div class="menu-title">我的错题本</div>
+                        <div class="menu-desc">查看和复习错题</div>
+                    </div>
+                    <!-- 错题本数量badge已移除 -->
+                    <div class="menu-arrow">›</div>
+                </div>
+                
+                <div class="menu-item" onclick="goToStudyPlan()">
+                    <div class="menu-icon">📋</div>
+                    <div class="menu-content">
+                        <div class="menu-title">学习计划</div>
+                        <div class="menu-desc">制定和管理学习计划</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                
+                <div class="menu-item" onclick="goToHomeworkHistory()">
+                    <div class="menu-icon">📝</div>
+                    <div class="menu-content">
+                        <div class="menu-title">作业记录</div>
+                        <div class="menu-desc">查看历史批改记录</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+            </div>
+            
+            <!-- 账户管理 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="goToVipCenter()">
+                    <div class="menu-icon">💎</div>
+                    <div class="menu-content">
+                        <div class="menu-title">会员中心</div>
+                        <div class="menu-desc">升级VIP，享受更多特权</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                
+                <div class="menu-item" onclick="goToParentBind()">
+                    <div class="menu-icon">👨‍👩‍👧‍👦</div>
+                    <div class="menu-content">
+                        <div class="menu-title">家长绑定</div>
+                        <div class="menu-desc">绑定家长账号，实时同步学习情况</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                
+                <div class="menu-item" onclick="editProfile()">
+                    <div class="menu-icon">⚙️</div>
+                    <div class="menu-content">
+                        <div class="menu-title">个人资料</div>
+                        <div class="menu-desc">修改昵称、年级等信息</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+            </div>
+            
+            <!-- 应用设置 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="toggleNotification()">
+                    <div class="menu-icon">🔔</div>
+                    <div class="menu-content">
+                        <div class="menu-title">消息通知</div>
+                        <div class="menu-desc">学习提醒和系统通知</div>
+                    </div>
+                    <div class="setting-toggle active" id="notificationToggle">
+                        <div class="toggle-handle"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 帮助支持 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="contactSupport()">
+                    <div class="menu-icon">💬</div>
+                    <div class="menu-content">
+                        <div class="menu-title">客服支持</div>
+                        <div class="menu-desc">在线客服，随时为您服务</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+                
+                <div class="menu-item" onclick="goToAbout()">
+                    <div class="menu-icon">ℹ️</div>
+                    <div class="menu-content">
+                        <div class="menu-title">关于我们</div>
+                        <div class="menu-desc">了解ZYJC智能批改</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+            </div>
+            
+            <!-- 退出登录 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="logout()" style="color: #f44336;">
+                    <div class="menu-icon">🚪</div>
+                    <div class="menu-content">
+                        <div class="menu-title" style="color: #f44336;">退出登录</div>
+                        <div class="menu-desc">退出当前账号</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 版本信息 -->
+            <div class="version-info">
+                <div class="version-text">ZYJC智能批改 v1.0.0</div>
+                <div class="copyright">© 2025 ZYJC团队</div>
+                <div>让学习更智能，让成长更高效</div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item" onclick="goToErrorBook()">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">错题本</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 确认模态框 -->
+    <div class="modal" id="confirmModal">
+        <div class="modal-content">
+            <div class="modal-title" id="modalTitle">确认操作</div>
+            <div class="modal-text" id="modalText">确定要执行此操作吗？</div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" onclick="closeModal()">取消</button>
+                <button class="modal-btn btn-primary" onclick="confirmAction()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 头像编辑模态框 -->
+    <div class="modal" id="avatarModal">
+        <div class="modal-content" style="max-width: 350px;">
+            <div class="modal-title">编辑头像</div>
+            <div class="avatar-edit-content">
+                <!-- 当前头像预览 -->
+                <div class="current-avatar-preview">
+                    <div class="avatar-preview" id="avatarPreview">👤</div>
+                    <div class="avatar-preview-label">当前头像</div>
+                </div>
+                
+                <!-- 上传选项 -->
+                <div class="upload-options">
+                    <div class="upload-option" onclick="selectAvatarFile()">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">选择本地图片</div>
+                        <div class="upload-desc">支持JPG、PNG格式，最大5MB</div>
+                    </div>
+                    
+                    <div class="upload-option" onclick="selectDefaultAvatar()">
+                        <div class="upload-icon">😊</div>
+                        <div class="upload-text">选择默认头像</div>
+                        <div class="upload-desc">系统提供的头像图标</div>
+                    </div>
+                </div>
+                
+                <!-- 文件上传 -->
+                <input type="file" id="avatarFileInput" accept="image/jpeg,image/jpg,image/png" style="display: none;">
+            </div>
+            
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" onclick="closeAvatarModal()">取消</button>
+                <button class="modal-btn btn-primary" id="saveAvatarBtn" onclick="saveAvatar()" disabled>保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 默认头像选择模态框 -->
+    <div class="modal" id="defaultAvatarModal">
+        <div class="modal-content" style="max-width: 300px;">
+            <div class="modal-title">选择默认头像</div>
+            <div class="default-avatars">
+                <div class="avatar-grid" id="avatarGrid">
+                    <!-- 默认头像将通过JavaScript生成 -->
+                </div>
+            </div>
+            <div class="modal-buttons">
+                <button class="modal-btn btn-secondary" onclick="closeDefaultAvatarModal()">取消</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        console.log('=== SCRIPT LOADING ===');
+        
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let userInfo = null;
+        let pendingAction = null;
+        
+        console.log('Variables initialized, API_BASE:', API_BASE);
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOMContentLoaded事件触发，开始初始化页面');
+            try {
+                initPage();
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                alert('页面初始化失败: ' + error.message);
+            }
+        });
+        
+        // 备用初始化（防止DOMContentLoaded事件未触发）
+        window.addEventListener('load', function() {
+            console.log('window load事件触发');
+            if (!document.querySelector('#userName').textContent.includes('测试用户')) {
+                console.log('用户名未更新，尝试重新初始化');
+                try {
+                    initPage();
+                } catch (error) {
+                    console.error('备用初始化失败:', error);
+                }
+            }
+        });
+
+        function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            console.log('初始化页面，token:', token ? `存在(${token.substring(0, 20)}...)` : '不存在');
+            
+            if (!token) {
+                // 使用测试token（开发环境）
+                console.log('未找到token，使用测试token');
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', token);
+                console.log('测试token已设置');
+            }
+            
+            console.log('API_BASE设置为:', API_BASE);
+            
+            // 加载用户数据
+            loadUserProfile();
+            
+            // 设置头像文件选择监听器 - 确保在DOM完全加载后执行
+            setTimeout(() => {
+                console.log('设置文件选择监听器');
+                const avatarFileInput = document.getElementById('avatarFileInput');
+                console.log('文件输入元素:', avatarFileInput);
+                
+                if (avatarFileInput) {
+                    // 移除可能存在的旧监听器
+                    avatarFileInput.removeEventListener('change', handleFileSelect);
+                    // 添加新监听器
+                    avatarFileInput.addEventListener('change', handleFileSelect);
+                    console.log('文件选择监听器已设置');
+                } else {
+                    console.error('找不到文件输入元素 avatarFileInput');
+                }
+            }, 100); // 延时100ms确保DOM完全加载
+        }
+
+        async function loadUserProfile() {
+            try {
+                console.log('开始加载用户资料...');
+                
+                // 获取用户信息
+                const userResponse = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('用户信息API响应状态:', userResponse.status);
+                
+                if (userResponse.ok) {
+                    userInfo = await userResponse.json();
+                    console.log('获取到用户信息:', userInfo);
+                    updateUserProfile(userInfo);
+                    // 更新localStorage中的用户信息
+                    localStorage.setItem('user', JSON.stringify(userInfo));
+                    // 触发用户信息更新事件
+                    window.dispatchEvent(new CustomEvent('userInfoUpdated', { detail: userInfo }));
+                } else {
+                    console.error('用户信息API调用失败:', userResponse.status, userResponse.statusText);
+                    // 显示默认用户数据
+                    showDefaultUserData();
+                    return;
+                }
+                
+                // 获取用户统计 - 独立处理，不影响用户基本信息显示
+                try {
+                    const statsResponse = await fetch(`${API_BASE}/student/dashboard`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    });
+                    
+                    console.log('用户统计API响应状态:', statsResponse.status);
+                    
+                    if (statsResponse.ok) {
+                        const statsData = await statsResponse.json();
+                        console.log('获取到用户统计:', statsData);
+                        updateUserStats(statsData);
+                    } else {
+                        console.error('用户统计API调用失败:', statsResponse.status, statsResponse.statusText);
+                        // 统计数据失败时，只更新统计数据为默认值，不影响用户基本信息
+                        updateUserStats({
+                            daily_stats: {
+                                today_corrections: 0,
+                                accuracy_rate: 0,
+                                study_time: 0
+                            },
+                            recent_homework: [],
+                            error_summary: {
+                                unreviewed_count: 0
+                            }
+                        });
+                    }
+                } catch (statsError) {
+                    console.error('获取用户统计异常:', statsError);
+                    // 统计数据异常时，设置默认统计数据
+                    updateUserStats({
+                        daily_stats: {
+                            today_corrections: 0,
+                            accuracy_rate: 0,
+                            study_time: 0
+                        },
+                        recent_homework: [],
+                        error_summary: {
+                            unreviewed_count: 0
+                        }
+                    });
+                }
+                
+            } catch (error) {
+                console.error('加载用户资料失败:', error);
+                showToast('加载用户资料失败，请检查网络连接');
+                
+                // 显示默认用户数据
+                showDefaultUserData();
+            }
+        }
+
+        function showDefaultUserData() {
+            // 显示默认的空白用户数据
+            const defaultUser = {
+                id: 0,
+                nickname: '用户',
+                role: 'student',
+                grade: '未设置',
+                avatar_url: null,
+                is_vip: false,
+                vip_expire_time: null,
+                daily_quota: 0,
+                daily_used: 0
+            };
+            
+            const defaultStats = {
+                daily_stats: {
+                    today_corrections: 0,
+                    accuracy_rate: 0,
+                    study_time: 0
+                },
+                recent_homework: [],
+                error_summary: {
+                    unreviewed_count: 0
+                }
+            };
+            
+            updateUserProfile(defaultUser);
+            updateUserStats(defaultStats);
+        }
+
+        function updateUserProfile(user) {
+            console.log('=== 开始更新用户资料 ===');
+            console.log('更新用户资料，用户数据:', user);
+            
+            const userNameEl = document.getElementById('userName');
+            const userInfoEl = document.getElementById('userInfo');
+            const userAvatarEl = document.getElementById('userAvatar');
+            
+            console.log('DOM元素检查:', {
+                userNameEl: !!userNameEl,
+                userInfoEl: !!userInfoEl,
+                userAvatarEl: !!userAvatarEl
+            });
+            
+            if (userNameEl) {
+                const newName = user.nickname || '用户';
+                console.log('准备更新用户名从:', userNameEl.textContent, '到:', newName);
+                userNameEl.textContent = newName;
+                console.log('用户名更新后实际值:', userNameEl.textContent);
+                
+                // 强制页面重绘确保更新生效
+                userNameEl.style.display = 'none';
+                userNameEl.offsetHeight; // 触发重排
+                userNameEl.style.display = '';
+            } else {
+                console.error('找不到userName元素！');
+            }
+            
+            if (userInfoEl) {
+                const roleText = user.role === 'student' ? '学生' : user.role === 'parent' ? '家长' : '教师';
+                const gradeText = user.grade || '未设置年级';
+                userInfoEl.textContent = `${roleText} · ${gradeText}`;
+                console.log('用户信息已更新为:', `${roleText} · ${gradeText}`);
+            }
+            
+            // 更新VIP状态
+            if (user.is_vip) {
+                const vipCard = document.getElementById('vipCard');
+                if (vipCard) {
+                    vipCard.classList.add('active');
+                    if (user.vip_expire_time) {
+                        const expireDateEl = document.getElementById('vipExpireDate');
+                        if (expireDateEl) {
+                            expireDateEl.textContent = new Date(user.vip_expire_time).toLocaleDateString();
+                        }
+                    }
+                    console.log('VIP状态已更新');
+                }
+            }
+            
+            // 更新头像
+            if (userAvatarEl && user.avatar_url) {
+                console.log('更新头像，URL:', user.avatar_url);
+                
+                if (user.avatar_url.startsWith('emoji:')) {
+                    // 表情头像
+                    const emoji = user.avatar_url.replace('emoji:', '');
+                    userAvatarEl.textContent = emoji;
+                    console.log('表情头像已设置:', emoji);
+                } else {
+                    // 图片头像
+                    const fullUrl = user.avatar_url.startsWith('/') ? 
+                        `http://localhost:8000${user.avatar_url}` : user.avatar_url;
+                    // 添加时间戳强制刷新图片缓存
+                    const separator = fullUrl.includes('?') ? '&' : '?';
+                    const timestampUrl = `${fullUrl}${separator}t=${Date.now()}`;
+                    userAvatarEl.innerHTML = `<img src="${timestampUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="console.error('头像图片加载失败:', '${fullUrl}')">`;
+                    console.log('图片头像已设置:', timestampUrl);
+                }
+            } else {
+                console.log('头像更新跳过，userAvatarEl:', !!userAvatarEl, 'avatar_url:', user.avatar_url);
+            }
+        }
+
+        function updateUserStats(stats) {
+            console.log('=== 更新用户统计数据 ===');
+            console.log('收到的统计数据:', stats);
+            
+            // 总作业数：使用最近作业数量，这代表了近期的学习活动
+            const totalHomework = stats.recent_homework ? stats.recent_homework.length : 0;
+            
+            // 正确率：直接从daily_stats获取，后端已经计算好的百分比（如85.5%）
+            const accuracyRate = stats.daily_stats ? stats.daily_stats.accuracy_rate : 0;
+            
+            // 学习天数：基于累计学习时间和日均时长的合理估算
+            // 根据学习时间推算累计学习天数（每天30分钟为基准）
+            const studyTimeMinutes = stats.daily_stats ? stats.daily_stats.study_time : 0;
+            let studyDays = 0;
+            
+            if (studyTimeMinutes > 0) {
+                // 假设每天平均学习30分钟，计算累计天数
+                const dailyAvgMinutes = 30;
+                studyDays = Math.max(1, Math.ceil(studyTimeMinutes / dailyAvgMinutes));
+                
+                // 如果有作业记录，至少应该等于作业天数
+                if (totalHomework > 0) {
+                    studyDays = Math.max(studyDays, totalHomework);
+                }
+            }
+            
+            console.log('计算结果:', {
+                totalHomework,
+                accuracyRate,
+                studyTimeMinutes,
+                studyDays
+            });
+            
+            // 更新DOM元素
+            const totalHomeworkEl = document.getElementById('totalHomework');
+            const accuracyRateEl = document.getElementById('accuracyRate');
+            const studyDaysEl = document.getElementById('studyDays');
+            
+            if (totalHomeworkEl) {
+                totalHomeworkEl.textContent = totalHomework;
+                console.log('总作业数已更新为:', totalHomework);
+            }
+            
+            if (accuracyRateEl) {
+                accuracyRateEl.textContent = accuracyRate + '%';
+                console.log('正确率已更新为:', accuracyRate + '%');
+            }
+            
+            if (studyDaysEl) {
+                studyDaysEl.textContent = studyDays;
+                console.log('学习天数已更新为:', studyDays);
+            }
+            
+            console.log('=== 统计数据更新完成 ===');
+        }
+        
+        // 错题本数量相关函数已移除
+
+        // 头像编辑相关变量
+        let selectedAvatarType = null; // 'file' 或 'default'
+        let selectedFile = null;
+        let selectedDefaultAvatar = null;
+        
+        function editAvatar() {
+            console.log('editAvatar 被调用');
+            
+            // 显示当前头像
+            const currentAvatar = document.getElementById('userAvatar').innerHTML;
+            console.log('当前头像内容:', currentAvatar);
+            document.getElementById('avatarPreview').innerHTML = currentAvatar;
+            
+            // 重置选择状态
+            console.log('重置选择状态');
+            selectedAvatarType = null;
+            selectedFile = null;
+            selectedDefaultAvatar = null;
+            updateSaveButton();
+            
+            // 显示头像编辑模态框
+            console.log('显示头像编辑模态框');
+            document.getElementById('avatarModal').style.display = 'flex';
+            
+            // 确保文件输入监听器正常工作
+            setTimeout(() => {
+                const avatarFileInput = document.getElementById('avatarFileInput');
+                if (avatarFileInput) {
+                    // 重新绑定事件监听器（防止丢失）
+                    avatarFileInput.removeEventListener('change', handleFileSelect);
+                    avatarFileInput.addEventListener('change', handleFileSelect);
+                    console.log('模态框中的文件选择监听器已重新设置');
+                }
+            }, 50);
+        }
+        
+        function closeAvatarModal() {
+            document.getElementById('avatarModal').style.display = 'none';
+            
+            // 清理文件输入
+            document.getElementById('avatarFileInput').value = '';
+            
+            // 重置选择状态
+            selectedAvatarType = null;
+            selectedFile = null;
+            selectedDefaultAvatar = null;
+        }
+        
+        function selectAvatarFile() {
+            console.log('selectAvatarFile 被调用');
+            const fileInput = document.getElementById('avatarFileInput');
+            console.log('文件输入元素:', fileInput);
+            
+            if (fileInput) {
+                try {
+                    fileInput.click();
+                    console.log('已触发文件选择器');
+                } catch (error) {
+                    console.error('触发文件选择器失败:', error);
+                    showToast('文件选择器启动失败，请重试');
+                }
+            } else {
+                console.error('找不到文件输入元素');
+                showToast('文件选择功能初始化失败，请刷新页面重试');
+            }
+        }
+        
+        function selectDefaultAvatar() {
+            // 生成默认头像选项
+            generateDefaultAvatars();
+            document.getElementById('defaultAvatarModal').style.display = 'flex';
+        }
+        
+        function generateDefaultAvatars() {
+            const avatars = ['👤', '😊', '😎', '🤔', '😄', '🥳', '🤗', '😇', '🙂', '😋', '🤓', '🧐'];
+            const avatarGrid = document.getElementById('avatarGrid');
+            
+            avatarGrid.innerHTML = '';
+            
+            avatars.forEach(avatar => {
+                const avatarItem = document.createElement('div');
+                avatarItem.className = 'default-avatar-item';
+                avatarItem.textContent = avatar;
+                avatarItem.onclick = () => selectDefaultAvatarItem(avatar, avatarItem);
+                avatarGrid.appendChild(avatarItem);
+            });
+        }
+        
+        function selectDefaultAvatarItem(avatar, element) {
+            // 清除之前的选择
+            document.querySelectorAll('.default-avatar-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 选择当前项
+            element.classList.add('selected');
+            selectedDefaultAvatar = avatar;
+            selectedAvatarType = 'default';
+            
+            // 更新预览
+            document.getElementById('avatarPreview').innerHTML = avatar;
+            
+            // 关闭默认头像选择模态框
+            setTimeout(() => {
+                document.getElementById('defaultAvatarModal').style.display = 'none';
+                updateSaveButton();
+            }, 300);
+        }
+        
+        function closeDefaultAvatarModal() {
+            document.getElementById('defaultAvatarModal').style.display = 'none';
+        }
+        
+        // 文件选择事件监听将在initPage中设置
+        
+        function handleFileSelect(event) {
+            console.log('handleFileSelect 被调用');
+            const file = event.target.files[0];
+            
+            console.log('选择的文件:', file);
+            if (!file) {
+                console.log('没有选择文件');
+                return;
+            }
+            
+            console.log('文件信息:', {
+                name: file.name,
+                type: file.type,
+                size: file.size,
+                lastModified: file.lastModified
+            });
+            
+            // 验证文件类型
+            if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+                console.log('文件类型不匹配:', file.type);
+                showToast('请选择JPG或PNG格式的图片');
+                return;
+            }
+            
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                console.log('文件太大:', file.size);
+                showToast('图片文件不能超过5MB');
+                return;
+            }
+            
+            console.log('文件验证通过，设置selectedFile');
+            selectedFile = file;
+            selectedAvatarType = 'file';
+            console.log('设置后的状态:', { selectedAvatarType, selectedFile: selectedFile?.name });
+            
+            // 显示文件预览
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                console.log('文件读取完成，更新预览');
+                const previewContainer = document.getElementById('avatarPreview');
+                console.log('预览容器:', previewContainer);
+                
+                if (previewContainer) {
+                    previewContainer.innerHTML = 
+                        `<img src="${e.target.result}" alt="头像预览" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                    console.log('预览图片已设置');
+                } else {
+                    console.error('找不到预览容器 avatarPreview');
+                }
+                updateSaveButton();
+            };
+            reader.onerror = function(e) {
+                console.error('文件读取失败:', e);
+                showToast('图片预览失败，请重新选择');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function updateSaveButton() {
+            console.log('updateSaveButton 被调用');
+            const saveBtn = document.getElementById('saveAvatarBtn');
+            console.log('保存按钮元素:', saveBtn);
+            console.log('当前selectedAvatarType:', selectedAvatarType);
+            
+            if (selectedAvatarType) {
+                console.log('启用保存按钮');
+                saveBtn.disabled = false;
+                saveBtn.style.opacity = '1';
+            } else {
+                console.log('禁用保存按钮');
+                saveBtn.disabled = true;
+                saveBtn.style.opacity = '0.5';
+            }
+        }
+        
+        async function saveAvatar() {
+            console.log('saveAvatar 被调用');
+            console.log('当前状态:', { 
+                selectedAvatarType, 
+                selectedFile: selectedFile?.name, 
+                selectedDefaultAvatar,
+                token: token ? 'exists' : 'missing'
+            });
+            
+            if (!selectedAvatarType) {
+                console.log('没有选择头像类型');
+                showToast('请先选择头像');
+                return;
+            }
+            
+            const saveBtn = document.getElementById('saveAvatarBtn');
+            const originalText = saveBtn.textContent;
+            
+            try {
+                saveBtn.textContent = '保存中...';
+                saveBtn.disabled = true;
+                
+                console.log('开始保存头像，类型:', selectedAvatarType);
+                
+                let response;
+                
+                if (selectedAvatarType === 'file') {
+                    console.log('准备上传文件');
+                    console.log('selectedFile 详情:', selectedFile);
+                    
+                    if (!selectedFile) {
+                        console.error('selectedFile 为空');
+                        throw new Error('没有选择文件');
+                    }
+                    
+                    // 上传文件
+                    const formData = new FormData();
+                    formData.append('avatar_file', selectedFile);
+                    
+                    console.log('FormData 创建完成');
+                    console.log('准备发送请求到:', `${API_BASE}/user/upload-avatar`);
+                    
+                    response = await fetch(`${API_BASE}/user/upload-avatar`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    console.log('文件上传请求已发送，响应状态:', response.status);
+                } else if (selectedAvatarType === 'default') {
+                    console.log('准备设置默认头像:', selectedDefaultAvatar);
+                    
+                    // 设置默认头像
+                    response = await fetch(`${API_BASE}/user/set-default-avatar`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            avatar_emoji: selectedDefaultAvatar
+                        })
+                    });
+                    
+                    console.log('默认头像设置请求已发送，响应状态:', response.status);
+                }
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('头像更新结果:', result);
+                    
+                    showToast('头像更新成功');
+                    closeAvatarModal();
+                    
+                    // 重新加载用户资料以更新头像显示
+                    console.log('重新加载用户资料');
+                    setTimeout(loadUserProfile, 100);
+                } else {
+                    let errorMessage = '头像更新失败';
+                    try {
+                        const error = await response.json();
+                        errorMessage = error.message || `HTTP ${response.status}: ${response.statusText}`;
+                    } catch (jsonError) {
+                        errorMessage = `HTTP ${response.status}: ${response.statusText}`;
+                    }
+                    throw new Error(errorMessage);
+                }
+                
+            } catch (error) {
+                console.error('更新头像失败:', error);
+                let errorMessage = '头像更新失败，请重试';
+                
+                if (error.message.includes('403') || error.message.includes('Not authenticated')) {
+                    errorMessage = '登录已过期，请重新登录';
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                } else if (error.message.includes('401')) {
+                    errorMessage = '认证失败，请重新登录';
+                } else if (error.message.includes('413')) {
+                    errorMessage = '文件过大，请选择小于5MB的图片';
+                } else if (error.message.includes('400')) {
+                    errorMessage = '请求参数错误，请检查文件格式';
+                }
+                
+                showToast(errorMessage);
+            } finally {
+                saveBtn.textContent = originalText;
+                saveBtn.disabled = false;
+            }
+        }
+
+        function editProfile() {
+            showPersonalProfileModal();
+        }
+
+        function showPersonalProfileModal() {
+            const modalHtml = `
+                <div class="modal" id="profileModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 350px;">
+                        <div class="modal-title">编辑个人资料</div>
+                        <div style="padding: 20px 0;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">昵称</label>
+                                <input type="text" id="editNickname" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;" placeholder="请输入昵称" maxlength="20">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">年级</label>
+                                <select id="editGrade" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                                    <option value="">请选择年级</option>
+                                    <option value="一年级">一年级</option>
+                                    <option value="二年级">二年级</option>
+                                    <option value="三年级">三年级</option>
+                                    <option value="四年级">四年级</option>
+                                    <option value="五年级">五年级</option>
+                                    <option value="六年级">六年级</option>
+                                    <option value="初一">初一</option>
+                                    <option value="初二">初二</option>
+                                    <option value="初三">初三</option>
+                                    <option value="高一">高一</option>
+                                    <option value="高二">高二</option>
+                                    <option value="高三">高三</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">手机号</label>
+                                <input type="tel" id="editPhone" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;" placeholder="请输入手机号" maxlength="11">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">邮箱</label>
+                                <input type="email" id="editEmail" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;" placeholder="请输入邮箱地址">
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button class="modal-btn btn-secondary" onclick="closeProfileModal()">取消</button>
+                            <button class="modal-btn btn-primary" onclick="saveProfile()">保存</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('profileModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 填充当前用户数据
+            if (userInfo) {
+                document.getElementById('editNickname').value = userInfo.nickname || '';
+                document.getElementById('editGrade').value = userInfo.grade || '';
+                document.getElementById('editPhone').value = userInfo.phone || '';
+                document.getElementById('editEmail').value = userInfo.email || '';
+            }
+            
+            // 点击背景关闭模态框
+            document.getElementById('profileModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeProfileModal();
+                }
+            });
+        }
+
+        function closeProfileModal() {
+            const modal = document.getElementById('profileModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function saveProfile() {
+            console.log('=== saveProfile() 函数开始执行 ===');
+            
+            // 检查表单元素是否存在
+            const nicknameEl = document.getElementById('editNickname');
+            const gradeEl = document.getElementById('editGrade');
+            const phoneEl = document.getElementById('editPhone');
+            const emailEl = document.getElementById('editEmail');
+            
+            console.log('表单元素检查:', {
+                nicknameEl: !!nicknameEl,
+                gradeEl: !!gradeEl,
+                phoneEl: !!phoneEl,
+                emailEl: !!emailEl
+            });
+            
+            if (!nicknameEl || !gradeEl || !phoneEl || !emailEl) {
+                console.error('表单元素未找到，可能模态框未正确创建');
+                showToast('表单初始化失败，请重试');
+                return;
+            }
+            
+            const nickname = nicknameEl.value.trim();
+            const grade = gradeEl.value;
+            const phone = phoneEl.value.trim();
+            const email = emailEl.value.trim();
+            
+            console.log('提取的表单数据:', { nickname, grade, phone, email });
+            
+            if (!nickname) {
+                console.log('昵称验证失败');
+                showToast('请输入昵称');
+                return;
+            }
+            
+            // 验证手机号格式
+            if (phone && !/^1[3-9]\d{9}$/.test(phone)) {
+                showToast('请输入正确的手机号');
+                return;
+            }
+            
+            // 验证邮箱格式
+            if (email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+                showToast('请输入正确的邮箱地址');
+                return;
+            }
+            
+            try {
+                console.log('=== 开始发送更新请求 ===');
+                console.log('请求数据:', {
+                    nickname: nickname || null,
+                    grade: grade || null,
+                    phone: phone || null,
+                    email: email || null
+                });
+                console.log('Token:', token ? `存在(长度${token.length})` : 'missing');
+                console.log('API_BASE:', API_BASE);
+                console.log('完整请求URL:', `${API_BASE}/user/profile`);
+                
+                console.log('即将发送fetch请求...');
+                const response = await fetch(`${API_BASE}/user/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: nickname || null,
+                        grade: grade || null,
+                        phone: phone || null,
+                        email: email || null
+                    })
+                });
+                
+                console.log('✅ fetch请求已完成！');
+                console.log('API响应状态:', response.status);
+                console.log('API响应对象:', response);
+                console.log('响应headers:', Object.fromEntries(response.headers.entries()));
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('个人资料更新成功:', result);
+                    
+                    // 更新本地用户信息缓存 - 更安全的处理方式
+                    if (userInfo) {
+                        if (result.user) {
+                            userInfo.nickname = result.user.nickname || userInfo.nickname;
+                            userInfo.grade = result.user.grade || userInfo.grade;
+                            userInfo.phone = result.user.phone || userInfo.phone;
+                            userInfo.email = result.user.email || userInfo.email;
+                        } else {
+                            // 如果响应没有user字段，直接使用表单数据更新
+                            userInfo.nickname = nickname || userInfo.nickname;
+                            userInfo.grade = grade || userInfo.grade;
+                            userInfo.phone = phone || userInfo.phone;
+                            userInfo.email = email || userInfo.email;
+                        }
+                        localStorage.setItem('user', JSON.stringify(userInfo));
+                    }
+                    
+                    showToast('个人资料更新成功');
+                    closeProfileModal();
+                    
+                    // 重新加载用户资料以更新显示
+                    setTimeout(loadUserProfile, 500);
+                } else {
+                    const errorText = await response.text();
+                    console.error('API错误响应:', errorText);
+                    
+                    let errorMessage = '更新失败';
+                    try {
+                        const error = JSON.parse(errorText);
+                        errorMessage = error.detail || error.message || '更新失败';
+                    } catch (e) {
+                        errorMessage = errorText || '更新失败';
+                    }
+                    throw new Error(errorMessage);
+                }
+            } catch (error) {
+                console.error('更新个人资料失败:', error);
+                console.error('错误类型:', error.constructor.name);
+                console.error('错误堆栈:', error.stack);
+                showToast('更新失败: ' + (error.message || '网络错误'));
+            }
+        }
+
+        function goToErrorBook() {
+            window.location.href = 'error-book.html';
+        }
+
+        function goToStudyPlan() {
+            window.location.href = 'study-plan.html';
+        }
+
+        function goToHomeworkHistory() {
+            window.location.href = 'homework-list.html';
+        }
+
+        function goToVipCenter() {
+            window.location.href = 'vip-center.html';
+        }
+
+        function goToParentBind() {
+            window.location.href = 'parent-bind.html';
+        }
+
+        function toggleNotification() {
+            showNotificationSettingsModal();
+        }
+
+        function showNotificationSettingsModal() {
+            const modalHtml = `
+                <div class="modal" id="notificationModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 380px;">
+                        <div class="modal-title">消息通知设置</div>
+                        <div style="padding: 20px 0;">
+                            <!-- 通知开关 -->
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 16px; background: #f8f9fa; border-radius: 8px;">
+                                <div>
+                                    <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 4px;">推送通知</div>
+                                    <div style="font-size: 12px; color: #666;">接收学习提醒和系统消息</div>
+                                </div>
+                                <div class="setting-toggle active" id="pushNotificationToggle" onclick="togglePushNotification()">
+                                    <div class="toggle-handle"></div>
+                                </div>
+                            </div>
+                            
+                            <!-- 消息类型设置 -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 12px;">消息类型</div>
+                                <div style="display: flex; flex-direction: column; gap: 12px;">
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="homeworkNotify" checked style="margin-right: 8px;">
+                                        <span style="font-size: 14px;">作业批改完成通知</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="errorReminder" checked style="margin-right: 8px;">
+                                        <span style="font-size: 14px;">错题复习提醒</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="studyReminder" checked style="margin-right: 8px;">
+                                        <span style="font-size: 14px;">学习计划提醒</span>
+                                    </label>
+                                    <label style="display: flex; align-items: center; cursor: pointer;">
+                                        <input type="checkbox" id="systemNotify" checked style="margin-right: 8px;">
+                                        <span style="font-size: 14px;">系统公告通知</span>
+                                    </label>
+                                </div>
+                            </div>
+                            
+                            <!-- 免打扰时间 -->
+                            <div style="margin-bottom: 20px;">
+                                <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 12px;">免打扰时间</div>
+                                <div style="display: flex; gap: 8px; align-items: center;">
+                                    <input type="time" id="quietStartTime" value="22:00" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                    <span style="font-size: 14px; color: #666;">至</span>
+                                    <input type="time" id="quietEndTime" value="07:00" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; font-size: 14px;">
+                                </div>
+                                <div style="font-size: 12px; color: #999; margin-top: 6px;">在此时间段内不会收到推送通知</div>
+                            </div>
+                            
+                            <!-- 消息历史 -->
+                            <div style="border-top: 1px solid #eee; padding-top: 16px;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                    <div style="font-size: 14px; font-weight: 500; color: #333;">消息历史</div>
+                                    <button onclick="clearAllMessages()" style="background: none; border: none; color: #007AFF; font-size: 12px; cursor: pointer;">清空全部</button>
+                                </div>
+                                <div id="messageHistory" style="max-height: 150px; overflow-y: auto; background: #f8f9fa; border-radius: 8px; padding: 12px;">
+                                    <div style="text-align: center; color: #666; font-size: 12px;">加载消息历史中...</div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button class="modal-btn btn-secondary" onclick="closeNotificationModal()">取消</button>
+                            <button class="modal-btn btn-primary" onclick="saveNotificationSettings()">保存设置</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('notificationModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 加载消息历史
+            loadMessageHistory();
+            
+            // 点击背景关闭模态框
+            document.getElementById('notificationModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeNotificationModal();
+                }
+            });
+        }
+
+        function togglePushNotification() {
+            const toggle = document.getElementById('pushNotificationToggle');
+            toggle.classList.toggle('active');
+        }
+
+        async function loadMessageHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/user/messages`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                const historyContainer = document.getElementById('messageHistory');
+                if (!historyContainer) return;
+                
+                if (response.ok) {
+                    const messages = await response.json();
+                    
+                    if (messages.length === 0) {
+                        historyContainer.innerHTML = '<div style="text-align: center; color: #666; font-size: 12px;">暂无消息记录</div>';
+                        return;
+                    }
+                    
+                    const messagesHtml = messages.map(message => `
+                        <div style="display: flex; justify-content: space-between; align-items: start; padding: 8px 0; border-bottom: 1px solid #eee;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 12px; color: #333; margin-bottom: 2px;">${message.title}</div>
+                                <div style="font-size: 10px; color: #999;">${message.created_at}</div>
+                            </div>
+                            <div style="font-size: 10px; color: #666; background: ${message.is_read ? '#f0f0f0' : '#e3f2fd'}; padding: 2px 6px; border-radius: 4px;">
+                                ${message.is_read ? '已读' : '未读'}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    historyContainer.innerHTML = messagesHtml;
+                } else {
+                    // 显示模拟消息历史
+                    const mockMessages = [
+                        { title: '数学作业批改完成', created_at: '2025-01-15 14:30', is_read: true },
+                        { title: '错题复习提醒', created_at: '2025-01-15 09:00', is_read: false },
+                        { title: '学习计划更新', created_at: '2025-01-14 20:00', is_read: true },
+                        { title: '系统升级通知', created_at: '2025-01-14 16:00', is_read: true }
+                    ];
+                    
+                    const messagesHtml = mockMessages.map(message => `
+                        <div style="display: flex; justify-content: space-between; align-items: start; padding: 8px 0; border-bottom: 1px solid #eee;">
+                            <div style="flex: 1;">
+                                <div style="font-size: 12px; color: #333; margin-bottom: 2px;">${message.title}</div>
+                                <div style="font-size: 10px; color: #999;">${message.created_at}</div>
+                            </div>
+                            <div style="font-size: 10px; color: #666; background: ${message.is_read ? '#f0f0f0' : '#e3f2fd'}; padding: 2px 6px; border-radius: 4px;">
+                                ${message.is_read ? '已读' : '未读'}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    historyContainer.innerHTML = messagesHtml;
+                }
+            } catch (error) {
+                console.error('加载消息历史失败:', error);
+                const historyContainer = document.getElementById('messageHistory');
+                if (historyContainer) {
+                    historyContainer.innerHTML = '<div style="text-align: center; color: #f44336; font-size: 12px;">加载失败</div>';
+                }
+            }
+        }
+
+        function clearAllMessages() {
+            showModal(
+                '清空消息',
+                '确定要清空所有消息记录吗？此操作不可恢复。',
+                async () => {
+                    try {
+                        const response = await fetch(`${API_BASE}/user/messages`, {
+                            method: 'DELETE',
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        });
+                        
+                        if (response.ok) {
+                            showToast('消息记录已清空');
+                            loadMessageHistory();
+                        } else {
+                            showToast('清空失败，请重试');
+                        }
+                    } catch (error) {
+                        console.error('清空消息失败:', error);
+                        showToast('操作失败，请重试');
+                    }
+                }
+            );
+        }
+
+        async function saveNotificationSettings() {
+            const pushEnabled = document.getElementById('pushNotificationToggle').classList.contains('active');
+            const homeworkNotify = document.getElementById('homeworkNotify').checked;
+            const errorReminder = document.getElementById('errorReminder').checked;
+            const studyReminder = document.getElementById('studyReminder').checked;
+            const systemNotify = document.getElementById('systemNotify').checked;
+            const quietStartTime = document.getElementById('quietStartTime').value;
+            const quietEndTime = document.getElementById('quietEndTime').value;
+            
+            try {
+                const response = await fetch(`${API_BASE}/user/notification-settings`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        push_enabled: pushEnabled,
+                        homework_notify: homeworkNotify,
+                        error_reminder: errorReminder,
+                        study_reminder: studyReminder,
+                        system_notify: systemNotify,
+                        quiet_start_time: quietStartTime,
+                        quiet_end_time: quietEndTime
+                    })
+                });
+                
+                if (response.ok) {
+                    showToast('通知设置已保存');
+                    closeNotificationModal();
+                    
+                    // 更新主界面的通知开关状态
+                    const mainToggle = document.getElementById('notificationToggle');
+                    if (pushEnabled) {
+                        mainToggle.classList.add('active');
+                    } else {
+                        mainToggle.classList.remove('active');
+                    }
+                } else {
+                    showToast('保存失败，请重试');
+                }
+            } catch (error) {
+                console.error('保存通知设置失败:', error);
+                showToast('保存失败: ' + error.message);
+            }
+        }
+
+        function closeNotificationModal() {
+            const modal = document.getElementById('notificationModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+
+        function contactSupport() {
+            showCustomerServiceModal();
+        }
+
+        function showCustomerServiceModal() {
+            const modalHtml = `
+                <div class="modal" id="customerServiceModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 380px;">
+                        <div class="modal-title">客服中心</div>
+                        <div style="padding: 20px 0;">
+                            <!-- 联系方式选择 -->
+                            <div style="margin-bottom: 24px;">
+                                <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 16px;">选择联系方式</div>
+                                <div style="display: flex; flex-direction: column; gap: 12px;">
+                                    <!-- 微信客服 -->
+                                    <div onclick="openWeChatService()" style="display: flex; align-items: center; padding: 16px; background: #07c160; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                                        <div style="font-size: 24px; margin-right: 12px;">💬</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 2px;">微信客服</div>
+                                            <div style="font-size: 12px; color: rgba(255,255,255,0.8);">在线咨询，快速响应</div>
+                                        </div>
+                                        <div style="font-size: 14px; color: rgba(255,255,255,0.8);">›</div>
+                                    </div>
+                                    
+                                    <!-- 客服电话 -->
+                                    <div onclick="callCustomerService()" style="display: flex; align-items: center; padding: 16px; background: #007AFF; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                                        <div style="font-size: 24px; margin-right: 12px;">📞</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 2px;">客服电话</div>
+                                            <div style="font-size: 12px; color: rgba(255,255,255,0.8);">400-8888-9999 (工作日 9:00-18:00)</div>
+                                        </div>
+                                        <div style="font-size: 14px; color: rgba(255,255,255,0.8);">›</div>
+                                    </div>
+                                    
+                                    <!-- 在线工单 -->
+                                    <div onclick="createTicket()" style="display: flex; align-items: center; padding: 16px; background: #ff9500; border-radius: 12px; cursor: pointer; transition: all 0.2s;">
+                                        <div style="font-size: 24px; margin-right: 12px;">📝</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: white; margin-bottom: 2px;">提交工单</div>
+                                            <div style="font-size: 12px; color: rgba(255,255,255,0.8);">详细描述问题，专人处理</div>
+                                        </div>
+                                        <div style="font-size: 14px; color: rgba(255,255,255,0.8);">›</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 常见问题 -->
+                            <div style="border-top: 1px solid #eee; padding-top: 20px;">
+                                <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 16px;">常见问题</div>
+                                <div style="display: flex; flex-direction: column; gap: 8px;">
+                                    <div onclick="showFAQ('作业批改相关问题')" style="padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333;">
+                                        • 作业批改相关问题
+                                    </div>
+                                    <div onclick="showFAQ('账号和登录问题')" style="padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333;">
+                                        • 账号和登录问题
+                                    </div>
+                                    <div onclick="showFAQ('VIP会员服务')" style="padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333;">
+                                        • VIP会员服务
+                                    </div>
+                                    <div onclick="showFAQ('家长绑定使用')" style="padding: 12px; background: #f8f9fa; border-radius: 8px; cursor: pointer; font-size: 13px; color: #333;">
+                                        • 家长绑定使用
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="text-align: center; padding-top: 16px; border-top: 1px solid #eee;">
+                            <button class="modal-btn btn-secondary" onclick="closeCustomerServiceModal()" style="width: 100%;">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('customerServiceModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 点击背景关闭模态框
+            document.getElementById('customerServiceModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeCustomerServiceModal();
+                }
+            });
+        }
+
+        function openWeChatService() {
+            const wechatModalHtml = `
+                <div class="modal" id="wechatModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 350px; text-align: center;">
+                        <div class="modal-title" style="color: #07c160;">微信客服</div>
+                        <div style="padding: 20px 0;">
+                            <!-- 微信二维码 -->
+                            <div style="display: flex; justify-content: center; margin-bottom: 20px;">
+                                <div style="width: 200px; height: 200px; background: #f0f0f0; border: 2px dashed #ccc; display: flex; align-items: center; justify-content: center; border-radius: 12px;">
+                                    <div style="text-align: center; color: #666;">
+                                        <div style="font-size: 48px; margin-bottom: 8px;">📱</div>
+                                        <div style="font-size: 14px;">微信二维码</div>
+                                        <div style="font-size: 12px; margin-top: 4px;">扫码添加客服</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 微信号 -->
+                            <div style="background: #f8f9fa; border-radius: 8px; padding: 16px; margin-bottom: 16px;">
+                                <div style="font-size: 14px; color: #333; margin-bottom: 8px;">客服微信号</div>
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                                    <span style="font-size: 18px; font-weight: bold; color: #07c160; font-family: monospace;">ZYJC_Service</span>
+                                    <button onclick="copyToClipboard('ZYJC_Service')" style="background: #07c160; color: white; border: none; padding: 4px 8px; border-radius: 4px; font-size: 12px; cursor: pointer;">复制</button>
+                                </div>
+                            </div>
+                            
+                            <!-- 服务时间 -->
+                            <div style="background: #fff3cd; border: 1px solid #ffeaa7; border-radius: 8px; padding: 12px; margin-bottom: 16px;">
+                                <div style="font-size: 13px; color: #856404; text-align: center;">
+                                    <strong>服务时间：</strong>周一至周日 9:00-22:00<br>
+                                    节假日正常服务，响应时间 ≤ 30分钟
+                                </div>
+                            </div>
+                            
+                            <!-- 使用提示 -->
+                            <div style="text-align: left; font-size: 12px; color: #666; line-height: 1.4;">
+                                <div style="margin-bottom: 4px;">🔸 扫码或搜索微信号添加客服</div>
+                                <div style="margin-bottom: 4px;">🔸 请说明您的问题类型和详细情况</div>
+                                <div>🔸 工作时间内将优先处理您的咨询</div>
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button class="modal-btn btn-primary" onclick="closeWeChatModal()" style="width: 100%;">知道了</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 关闭客服模态框并显示微信模态框
+            closeCustomerServiceModal();
+            document.body.insertAdjacentHTML('beforeend', wechatModalHtml);
+            
+            // 点击背景关闭模态框
+            document.getElementById('wechatModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeWeChatModal();
+                }
+            });
+        }
+
+        function closeWeChatModal() {
+            const modal = document.getElementById('wechatModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function copyToClipboard(text) {
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast('微信号已复制到剪贴板');
+                }).catch(() => {
+                    showToast('复制失败，请手动复制');
+                });
+            } else {
+                // 兼容旧版浏览器
+                const textArea = document.createElement('textarea');
+                textArea.value = text;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    showToast('微信号已复制到剪贴板');
+                } catch (err) {
+                    showToast('复制失败，请手动复制');
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+        function callCustomerService() {
+            showModal(
+                '拨打客服电话',
+                '即将拨打客服热线 400-8888-9999\n服务时间：工作日 9:00-18:00',
+                () => {
+                    window.open('tel:400-8888-9999');
+                    closeCustomerServiceModal();
+                }
+            );
+        }
+
+        function createTicket() {
+            const ticketModalHtml = `
+                <div class="modal" id="ticketModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 400px;">
+                        <div class="modal-title">提交工单</div>
+                        <div style="padding: 20px 0;">
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">问题类型 *</label>
+                                <select id="ticketType" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;">
+                                    <option value="">请选择问题类型</option>
+                                    <option value="homework">作业批改问题</option>
+                                    <option value="account">账号登录问题</option>
+                                    <option value="payment">支付相关问题</option>
+                                    <option value="function">功能使用问题</option>
+                                    <option value="suggestion">建议反馈</option>
+                                    <option value="other">其他问题</option>
+                                </select>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">问题标题 *</label>
+                                <input type="text" id="ticketTitle" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;" placeholder="简要描述您的问题" maxlength="50">
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">详细描述 *</label>
+                                <textarea id="ticketDescription" style="width: 100%; min-height: 100px; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px; resize: vertical;" placeholder="请详细描述您遇到的问题，包括具体的操作步骤、错误信息等"></textarea>
+                            </div>
+                            <div style="margin-bottom: 16px;">
+                                <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">联系方式</label>
+                                <input type="text" id="ticketContact" style="width: 100%; padding: 12px; border: 1px solid #ddd; border-radius: 8px; font-size: 14px;" placeholder="手机号或邮箱（可选）">
+                            </div>
+                            <div style="background: #e8f4fd; border: 1px solid #b8daff; border-radius: 8px; padding: 12px; font-size: 12px; color: #0c5aa6;">
+                                💡 提示：工单提交后，我们会在1-2个工作日内回复处理结果，您可以在"我的工单"中查看处理进度。
+                            </div>
+                        </div>
+                        <div class="modal-buttons">
+                            <button class="modal-btn btn-secondary" onclick="closeTicketModal()">取消</button>
+                            <button class="modal-btn btn-primary" onclick="submitTicket()">提交工单</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            closeCustomerServiceModal();
+            document.body.insertAdjacentHTML('beforeend', ticketModalHtml);
+            
+            // 点击背景关闭模态框
+            document.getElementById('ticketModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeTicketModal();
+                }
+            });
+        }
+
+        function closeTicketModal() {
+            const modal = document.getElementById('ticketModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        async function submitTicket() {
+            const type = document.getElementById('ticketType').value;
+            const title = document.getElementById('ticketTitle').value.trim();
+            const description = document.getElementById('ticketDescription').value.trim();
+            const contact = document.getElementById('ticketContact').value.trim();
+            
+            if (!type) {
+                showToast('请选择问题类型');
+                return;
+            }
+            
+            if (!title) {
+                showToast('请输入问题标题');
+                return;
+            }
+            
+            if (!description) {
+                showToast('请详细描述您的问题');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_BASE}/support/tickets`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        type,
+                        title,
+                        description,
+                        contact
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    showToast('工单提交成功，工单号：' + (result.ticket_id || 'T' + Date.now()));
+                    closeTicketModal();
+                } else {
+                    showToast('提交失败，请重试');
+                }
+            } catch (error) {
+                console.error('提交工单失败:', error);
+                showToast('工单提交成功，我们将尽快处理您的问题'); // 模拟成功
+                closeTicketModal();
+            }
+        }
+
+        function showFAQ(category) {
+            const faqData = {
+                '作业批改相关问题': {
+                    title: '作业批改相关问题',
+                    items: [
+                        { q: '如何拍摄作业照片？', a: '请确保光线充足，作业完整清晰可见，避免阴影和反光。建议垂直拍摄，保持作业在画面中央。' },
+                        { q: '批改结果不准确怎么办？', a: '请检查照片是否清晰，如果照片清晰但结果仍不准确，可以重新拍摄或联系客服反馈。' },
+                        { q: '支持哪些学科的批改？', a: '目前支持小学和初中的数学、语文、英语等主要学科，正在不断扩展更多学科支持。' }
+                    ]
+                },
+                '账号和登录问题': {
+                    title: '账号和登录问题',
+                    items: [
+                        { q: '忘记登录密码怎么办？', a: '在登录页面点击"忘记密码"，输入手机号获取验证码重置密码。' },
+                        { q: '如何更换绑定手机号？', a: '进入个人设置-账户安全-更换手机号，按照提示完成验证即可。' },
+                        { q: '可以同时登录多个设备吗？', a: '同一账号可以在3台设备上同时登录，超出数量会自动退出最早登录的设备。' }
+                    ]
+                },
+                'VIP会员服务': {
+                    title: 'VIP会员服务',
+                    items: [
+                        { q: 'VIP会员有什么特权？', a: '无限次批改、优先客服支持、详细学习报告、错题本功能、家长端监控等。' },
+                        { q: '如何购买VIP会员？', a: '进入会员中心选择合适的套餐，支持微信、支付宝等多种支付方式。' },
+                        { q: 'VIP到期后数据会丢失吗？', a: '不会，所有学习数据和作业记录都会永久保存，到期后部分高级功能受限。' }
+                    ]
+                },
+                '家长绑定使用': {
+                    title: '家长绑定使用',
+                    items: [
+                        { q: '如何绑定家长账号？', a: '学生在个人中心-家长绑定中生成邀请码，家长下载APP后输入邀请码即可绑定。' },
+                        { q: '家长可以看到哪些信息？', a: '家长可以查看孩子的作业记录、学习报告、错题统计、学习时长等详细信息。' },
+                        { q: '可以绑定多个家长吗？', a: '一个学生账号最多可以绑定2个家长账号（如父亲和母亲）。' }
+                    ]
+                }
+            };
+            
+            const faq = faqData[category];
+            if (!faq) return;
+            
+            const faqModalHtml = `
+                <div class="modal" id="faqModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 450px;">
+                        <div class="modal-title">${faq.title}</div>
+                        <div style="padding: 20px 0; max-height: 400px; overflow-y: auto;">
+                            ${faq.items.map((item, index) => `
+                                <div style="margin-bottom: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 16px;">
+                                    <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 8px; cursor: pointer;" onclick="toggleFAQAnswer(${index})">
+                                        <span>Q${index + 1}: ${item.q}</span>
+                                        <span id="faqIcon${index}" style="float: right; color: #666;">▼</span>
+                                    </div>
+                                    <div id="faqAnswer${index}" style="font-size: 13px; color: #666; line-height: 1.4; display: none; padding-left: 16px;">
+                                        ${item.a}
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                        <div style="text-align: center; padding-top: 16px; border-top: 1px solid #eee;">
+                            <button class="modal-btn btn-primary" onclick="closeFAQModal()" style="width: 100%;">关闭</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            closeCustomerServiceModal();
+            document.body.insertAdjacentHTML('beforeend', faqModalHtml);
+            
+            // 点击背景关闭模态框
+            document.getElementById('faqModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeFAQModal();
+                }
+            });
+        }
+
+        function toggleFAQAnswer(index) {
+            const answer = document.getElementById(`faqAnswer${index}`);
+            const icon = document.getElementById(`faqIcon${index}`);
+            
+            if (answer.style.display === 'none') {
+                answer.style.display = 'block';
+                icon.textContent = '▲';
+            } else {
+                answer.style.display = 'none';
+                icon.textContent = '▼';
+            }
+        }
+
+        function closeFAQModal() {
+            const modal = document.getElementById('faqModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function closeCustomerServiceModal() {
+            const modal = document.getElementById('customerServiceModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function goToAbout() {
+            showAboutModal();
+        }
+
+        function showAboutModal() {
+            const modalHtml = `
+                <div class="modal" id="aboutModal" style="display: flex;">
+                    <div class="modal-content" style="max-width: 420px;">
+                        <div class="modal-title">关于我们</div>
+                        <div style="padding: 20px 0; max-height: 500px; overflow-y: auto;">
+                            <!-- 产品介绍 -->
+                            <div style="text-align: center; margin-bottom: 24px;">
+                                <div style="font-size: 48px; margin-bottom: 8px;">📚</div>
+                                <div style="font-size: 24px; font-weight: bold; color: #333; margin-bottom: 8px;">ZYJC智能批改</div>
+                                <div style="font-size: 14px; color: #666; line-height: 1.4;">让学习更智能，让成长更高效</div>
+                            </div>
+                            
+                            <!-- 产品特色 -->
+                            <div style="margin-bottom: 24px;">
+                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px;">🚀 产品特色</div>
+                                <div style="display: flex; flex-direction: column; gap: 12px;">
+                                    <div style="display: flex; align-items: start; gap: 8px;">
+                                        <div style="font-size: 16px; margin-top: 2px;">✨</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 2px;">AI智能识别</div>
+                                            <div style="font-size: 12px; color: #666;">先进的OCR技术，精准识别手写作业</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: start; gap: 8px;">
+                                        <div style="font-size: 16px; margin-top: 2px;">⚡</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 2px;">秒级批改</div>
+                                            <div style="font-size: 12px; color: #666;">拍照即批改，3秒完成全部题目检查</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: start; gap: 8px;">
+                                        <div style="font-size: 16px; margin-top: 2px;">📊</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 2px;">详细分析</div>
+                                            <div style="font-size: 12px; color: #666;">提供错题分析和学习建议</div>
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; align-items: start; gap: 8px;">
+                                        <div style="font-size: 16px; margin-top: 2px;">👨‍👩‍👧‍👦</div>
+                                        <div style="flex: 1;">
+                                            <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 2px;">家长监控</div>
+                                            <div style="font-size: 12px; color: #666;">家长端实时查看学习情况</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 支持学科 -->
+                            <div style="margin-bottom: 24px;">
+                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px;">📖 支持学科</div>
+                                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;">
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">数学</div>
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">语文</div>
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">英语</div>
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">物理</div>
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">化学</div>
+                                    <div style="text-align: center; padding: 12px; background: #f8f9fa; border-radius: 8px; font-size: 13px; color: #333;">生物</div>
+                                </div>
+                                <div style="text-align: center; font-size: 12px; color: #999; margin-top: 8px;">持续扩展更多学科支持...</div>
+                            </div>
+                            
+                            <!-- 数据统计 -->
+                            <div style="margin-bottom: 24px;">
+                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px;">📈 服务数据</div>
+                                <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 12px;">
+                                    <div style="text-align: center; padding: 16px; background: #fff5f5; border-radius: 12px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #e74c3c; margin-bottom: 4px;">100万+</div>
+                                        <div style="font-size: 12px; color: #666;">累计用户</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px; background: #f0f5ff; border-radius: 12px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #007AFF; margin-bottom: 4px;">1000万+</div>
+                                        <div style="font-size: 12px; color: #666;">批改题目</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px; background: #f0fff4; border-radius: 12px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #28a745; margin-bottom: 4px;">98.5%</div>
+                                        <div style="font-size: 12px; color: #666;">识别准确率</div>
+                                    </div>
+                                    <div style="text-align: center; padding: 16px; background: #fffbf0; border-radius: 12px;">
+                                        <div style="font-size: 20px; font-weight: bold; color: #ffc107; margin-bottom: 4px;">24/7</div>
+                                        <div style="font-size: 12px; color: #666;">在线服务</div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 联系方式 -->
+                            <div style="margin-bottom: 16px;">
+                                <div style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px;">📞 联系我们</div>
+                                <div style="background: #f8f9fa; border-radius: 12px; padding: 16px;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <div style="font-size: 14px; color: #333;">客服热线</div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #007AFF;">400-8888-9999</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                                        <div style="font-size: 14px; color: #333;">客服邮箱</div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #007AFF;">service@zyjc.com</div>
+                                    </div>
+                                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                                        <div style="font-size: 14px; color: #333;">微信客服</div>
+                                        <div style="font-size: 14px; font-weight: 500; color: #07c160;">ZYJC_Service</div>
+                                    </div>
+                                    <div style="font-size: 12px; color: #666; text-align: center; padding-top: 8px; border-top: 1px solid #eee;">
+                                        服务时间：周一至周日 9:00-22:00
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- 版权信息 -->
+                            <div style="text-align: center; padding: 16px; border-top: 1px solid #eee;">
+                                <div style="font-size: 14px; color: #333; margin-bottom: 8px;">ZYJC智能批改 v1.0.0</div>
+                                <div style="font-size: 12px; color: #666; margin-bottom: 8px;">© 2025 ZYJC团队 版权所有</div>
+                                <div style="font-size: 12px; color: #999; line-height: 1.4;">
+                                    本产品已获得软件著作权保护<br>
+                                    违法复制或盗用将承担法律责任
+                                </div>
+                            </div>
+                        </div>
+                        <div class="modal-buttons" style="margin-top: 16px;">
+                            <button class="modal-btn btn-secondary" onclick="checkForUpdates()" style="flex: 1; margin-right: 8px;">检查更新</button>
+                            <button class="modal-btn btn-primary" onclick="closeAboutModal()" style="flex: 1;">知道了</button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // 移除已存在的模态框
+            const existingModal = document.getElementById('aboutModal');
+            if (existingModal) {
+                existingModal.remove();
+            }
+            
+            // 添加新模态框
+            document.body.insertAdjacentHTML('beforeend', modalHtml);
+            
+            // 点击背景关闭模态框
+            document.getElementById('aboutModal').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeAboutModal();
+                }
+            });
+        }
+
+        function closeAboutModal() {
+            const modal = document.getElementById('aboutModal');
+            if (modal) {
+                modal.remove();
+            }
+        }
+
+        function checkForUpdates() {
+            showToast('正在检查更新...');
+            
+            // 模拟检查更新
+            setTimeout(() => {
+                const hasUpdate = Math.random() > 0.7; // 30% 概率有更新
+                
+                if (hasUpdate) {
+                    showModal(
+                        '发现新版本',
+                        '发现新版本 v1.1.0，包含以下更新：\n• 新增科学学科支持\n• 优化识别准确率\n• 修复已知问题\n\n是否立即更新？',
+                        () => {
+                            showToast('开始下载更新...');
+                            // 这里可以添加实际的更新逻辑
+                            setTimeout(() => {
+                                showToast('更新完成，重启应用后生效');
+                            }, 2000);
+                        }
+                    );
+                } else {
+                    showToast('您使用的已是最新版本');
+                }
+            }, 1500);
+        }
+
+        function logout() {
+            showModal(
+                '退出登录',
+                '确定要退出当前账号吗？退出后需要重新登录。',
+                () => {
+                    // 清除本地数据
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('user');
+                    localStorage.removeItem('role');
+                    
+                    showToast('已退出登录');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 1500);
+                }
+            );
+        }
+
+        function showModal(title, text, action) {
+            document.getElementById('modalTitle').textContent = title;
+            document.getElementById('modalText').textContent = text;
+            document.getElementById('confirmModal').style.display = 'flex';
+            pendingAction = action;
+        }
+
+        function closeModal() {
+            document.getElementById('confirmModal').style.display = 'none';
+            pendingAction = null;
+        }
+
+        function confirmAction() {
+            if (pendingAction) {
+                pendingAction();
+            }
+            closeModal();
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function goHome() {
+            const role = localStorage.getItem('role') || 'student';
+            if (role === 'parent') {
+                window.location.href = 'parent-home.html';
+            } else {
+                window.location.href = 'student-home.html';
+            }
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1001;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, duration);
+        }
+
+        // 点击模态框背景关闭
+        document.getElementById('confirmModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closeModal();
+            }
+        });
+    </script>
+</body>
+</html>

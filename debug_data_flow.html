@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>数据流调试页面</title>
+    <style>
+        body { font-family: monospace; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 8px; }
+        .error { color: red; background: #fee; }
+        .success { color: green; background: #efe; }
+        .warning { color: orange; background: #ffeaa7; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 4px; overflow-x: auto; }
+        button { padding: 8px 16px; margin: 5px; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <h1>🔍 数据流调试页面</h1>
+    
+    <div class="debug-section">
+        <h3>测试未知作业ID的数据流</h3>
+        <button onclick="debugDataFlow(964020)">调试 964020</button>
+        <button onclick="debugDataFlow(Date.now())">调试当前时间戳</button>
+        <button onclick="debugDataFlow(898411)">调试演示ID 898411</button>
+    </div>
+    
+    <div id="debugOutput"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let debugOutput = document.getElementById('debugOutput');
+        
+        function log(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = `debug-section ${type}`;
+            div.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            debugOutput.appendChild(div);
+        }
+        
+        async function debugDataFlow(homeworkId) {
+            debugOutput.innerHTML = '';
+            log(`🚀 开始调试作业ID: ${homeworkId}`, 'info');
+            
+            // 1. 测试 generateFallbackData
+            log('📦 步骤1: 调用 generateFallbackData', 'info');
+            const fallbackData = generateFallbackData(homeworkId);
+            log(`Fallback数据:\n<pre>${JSON.stringify(fallbackData, null, 2)}</pre>`, fallbackData.total_questions > 0 && !isDemoId(homeworkId) ? 'error' : 'success');
+            
+            // 2. 测试API调用（模拟）
+            log('🌐 步骤2: 测试API调用', 'info');
+            try {
+                const token = localStorage.getItem('token');
+                const response = await fetch(`${API_BASE}/homework/result/${homeworkId}`, {
+                    headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+                });
+                
+                if (response.ok) {
+                    const apiData = await response.json();
+                    log(`✅ API调用成功，状态: ${response.status}`, 'success');
+                    log(`API原始数据:\n<pre>${JSON.stringify(apiData, null, 2)}</pre>`, 'info');
+                    
+                    // 3. 模拟前端数据处理逻辑
+                    log('🔄 步骤3: 模拟前端数据处理', 'info');
+                    let finalData = simulateDataProcessing(apiData, fallbackData);
+                    log(`最终处理后数据:\n<pre>${JSON.stringify(finalData, null, 2)}</pre>`, 
+                        (finalData.total_questions > 0 && !isDemoId(homeworkId)) ? 'error' : 'success');
+                        
+                    // 4. 模拟updateSummary逻辑
+                    log('📊 步骤4: 模拟updateSummary处理', 'info');
+                    const summaryResult = simulateUpdateSummary(finalData);
+                    log(`Summary显示结果: ${summaryResult}`, 
+                        summaryResult.includes('6') || summaryResult.includes('8') && !isDemoId(homeworkId) ? 'error' : 'success');
+                        
+                } else {
+                    log(`❌ API调用失败，状态: ${response.status}`, 'warning');
+                    log('使用fallback数据', 'info');
+                    
+                    // 直接测试fallback数据的summary处理
+                    const summaryResult = simulateUpdateSummary(fallbackData);
+                    log(`Summary显示结果: ${summaryResult}`, 
+                        summaryResult.includes('6') || summaryResult.includes('8') && !isDemoId(homeworkId) ? 'error' : 'success');
+                }
+            } catch (error) {
+                log(`🔥 API调用异常: ${error.message}`, 'error');
+                
+                // 测试异常情况下的处理
+                const summaryResult = simulateUpdateSummary(fallbackData);
+                log(`异常情况Summary显示: ${summaryResult}`, 
+                    summaryResult.includes('6') || summaryResult.includes('8') && !isDemoId(homeworkId) ? 'error' : 'success');
+            }
+        }
+        
+        function isDemoId(id) {
+            return [898411, 773191, 942516, 942737, 899573].includes(parseInt(id));
+        }
+        
+        function simulateDataProcessing(apiData, fallbackData) {
+            // 模拟loadHomeworkDataDirectly中的处理逻辑
+            let finalData = fallbackData;
+            
+            if (apiData && (apiData.status === 'recognition_failed' || apiData.special_message)) {
+                console.log('API返回识别失败状态，直接使用');
+                finalData = apiData;
+            } else if (apiData && (apiData.subject || apiData.id) && apiData.status !== 'recognition_failed') {
+                // 只对正常的批改结果才添加默认值
+                if (!apiData.total_questions) {
+                    apiData.total_questions = 8;
+                }
+                if (!apiData.subject) {
+                    apiData.subject = 'chinese';
+                }
+                if (!apiData.correct_count && apiData.correct_count !== 0) {
+                    apiData.correct_count = Math.floor(apiData.total_questions * 0.75);
+                }
+                if (!apiData.wrong_count && apiData.wrong_count !== 0) {
+                    apiData.wrong_count = apiData.total_questions - apiData.correct_count;
+                }
+                finalData = apiData;
+            }
+            
+            // 确保数据完整性
+            if (!finalData.correction_results || !Array.isArray(finalData.correction_results)) {
+                finalData.correction_results = fallbackData.correction_results;
+            }
+            
+            return finalData;
+        }
+        
+        function simulateUpdateSummary(data) {
+            // 模拟updateSummary的逻辑
+            if (data.special_message || data.status === 'recognition_failed' || 
+                (data.total_questions === 0 && data.correct_count === 0 && data.wrong_count === 0)) {
+                return 'scoreNumber: ?, totalQuestions: ?, correctCount: -, incorrectCount: -, accuracyRate: -';
+            }
+            
+            const scorePercentage = (data.correct_count / data.total_questions) * 100;
+            return `scoreNumber: ${data.correct_count}, totalQuestions: ${data.total_questions}, correctCount: ${data.correct_count}, incorrectCount: ${data.wrong_count}, accuracyRate: ${Math.round(data.accuracy_rate || scorePercentage)}%`;
+        }
+        
+        function generateFallbackData(homeworkId) {
+            console.log(`🔥 generateFallbackData被调用 - 作业ID ${homeworkId}`);
+            
+            const EXACT_DEMO_IDS = [898411, 773191, 942516, 942737, 899573];
+            
+            if (EXACT_DEMO_IDS.includes(parseInt(homeworkId))) {
+                console.log(`✅ 作业ID ${homeworkId} 是演示ID，生成测试数据`);
+                return generateTestData(homeworkId);
+            }
+            
+            console.log(`🚫 作业ID ${homeworkId} 不在演示列表中，返回识别失败`);
+            
+            const recognitionFailedData = {
+                id: homeworkId,
+                subject: 'unknown',
+                total_questions: 0,
+                correct_count: 0,
+                wrong_count: 0,
+                accuracy_rate: 0,
+                status: 'recognition_failed',
+                original_image_url: null,
+                correction_results: [],
+                created_at: new Date().toISOString(),
+                special_message: {
+                    type: 'recognition_failed',
+                    title: '无法识别作业内容',
+                    content: '抱歉，系统无法从图片中识别出清晰的作业题目。',
+                    suggestions: [
+                        '请确保图片清晰度足够',
+                        '确保光线充足，避免阴影遮挡题目',
+                        '重新拍摄并上传更清晰的作业图片'
+                    ],
+                    reason: 'ocr_failed'
+                }
+            };
+            
+            return recognitionFailedData;
+        }
+        
+        function generateTestData(homeworkId) {
+            let selectedSubject = 'chinese';
+            if (homeworkId == '773191') {
+                selectedSubject = 'math';
+            }
+            
+            const total = 8;
+            const correct = 6;
+            
+            const corrections = [];
+            for (let i = 0; i < total; i++) {
+                corrections.push({
+                    question_number: i + 1,
+                    question_text: selectedSubject === 'chinese' ? `默写题${i+1}` : `${i+10} + ${i+5} = ?`,
+                    user_answer: `答案${i+1}`,
+                    correct_answer: `正确答案${i+1}`,
+                    is_correct: i < correct,
+                    explanation: i < correct ? '回答正确' : '需要仔细检查'
+                });
+            }
+            
+            return {
+                id: homeworkId,
+                subject: selectedSubject,
+                total_questions: total,
+                correct_count: correct,
+                wrong_count: total - correct,
+                accuracy_rate: Math.round((correct / total) * 100),
+                status: 'completed',
+                original_image_url: `/uploads/homework/homework_${homeworkId}_1.jpg`,
+                correction_results: corrections,
+                created_at: new Date().toISOString()
+            };
+        }
+    </script>
+</body>
+</html>

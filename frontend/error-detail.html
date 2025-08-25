@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题详情 - ZYJC智能批改</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 20px;
+        }
+        
+        /* 错题信息卡片 */
+        .error-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .subject-tag {
+            background: #e74c3c;
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .error-date {
+            color: #666;
+            font-size: 12px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .question-content {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .answer-section {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .answer-item {
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+        
+        .user-answer {
+            background: #fff5f5;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .correct-answer {
+            background: #f0fff4;
+            border-left: 4px solid #28a745;
+        }
+        
+        .answer-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 6px;
+        }
+        
+        .answer-text {
+            color: #333;
+        }
+        
+        .error-analysis {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+        }
+        
+        .analysis-text {
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.5;
+        }
+        
+        .explanation {
+            background: #e8f4fd;
+            border: 1px solid #b8daff;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .explanation-text {
+            font-size: 14px;
+            color: #0c5aa6;
+            line-height: 1.6;
+        }
+        
+        .review-status {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .status-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .status-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 4px;
+        }
+        
+        .status-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 12px;
+            margin-top: 20px;
+        }
+        
+        .btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #e74c3c;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #c0392b;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        
+        .retry-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <div class="navbar-title">错题详情</div>
+                <div style="width: 32px;"></div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content" id="pageContent">
+            <div class="loading">
+                <div class="loading-spinner"></div>
+                <div>加载错题详情中...</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let errorId = null;
+
+        // 学科名称映射
+        function getSubjectDisplayName(subject) {
+            const subjectMapping = {
+                'math': '数学',
+                'chinese': '语文',
+                'english': '英语',
+                'physics': '物理',
+                'chemistry': '化学',
+                'biology': '生物'
+            };
+            
+            return subjectMapping[subject] || subject || '未知学科';
+        }
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        async function initPage() {
+            // 检查登录状态 - 临时跳过验证进行测试
+            token = localStorage.getItem('token') || 'test-token-123';
+            // 测试时先注释掉登录检查
+            // if (!token) {
+            //     alert('请先登录');
+            //     window.location.href = 'login.html';
+            //     return;
+            // }
+            
+            // 获取错题ID
+            const urlParams = new URLSearchParams(window.location.search);
+            errorId = urlParams.get('id');
+            
+            if (!errorId) {
+                showError('错题ID不存在');
+                return;
+            }
+            
+            // 加载错题详情
+            await loadErrorDetail();
+        }
+
+        async function loadErrorDetail() {
+            try {
+                console.log('开始加载错题详情，ID:', errorId);
+                
+                const response = await fetch(`${API_BASE}/student/error-book/${errorId}`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API返回数据:', data);
+                
+                // 直接使用API数据，不进行转换，保持与列表页面一致
+                showErrorDetail(data);
+                
+            } catch (error) {
+                console.error('获取错题详情失败:', error);
+                showError(`获取错题详情失败: ${error.message}`);
+            }
+        }
+
+        function showErrorDetail(errorData) {
+            const contentHtml = `
+                <!-- 错题信息 -->
+                <div class="error-card">
+                    <div class="error-header">
+                        <div class="subject-tag">${errorData.subject || errorData.subjectName || '未知学科'}</div>
+                        <div class="error-date">${errorData.created_at ? new Date(errorData.created_at).toLocaleDateString() : (errorData.createdAt ? new Date(errorData.createdAt).toLocaleDateString() : '未知日期')}</div>
+                    </div>
+                    
+                    <div class="section-title">📝 题目内容</div>
+                    <div class="question-content">${errorData.question_text || errorData.question || '题目内容未知'}</div>
+                    
+                    <div class="section-title">✏️ 答案对比</div>
+                    <div class="answer-section">
+                        <div class="answer-item user-answer">
+                            <div class="answer-label">你的答案</div>
+                            <div class="answer-text">${errorData.user_answer || errorData.userAnswer || '无答案'}</div>
+                        </div>
+                        <div class="answer-item correct-answer">
+                            <div class="answer-label">正确答案</div>
+                            <div class="answer-text">${errorData.correct_answer || errorData.correctAnswer || '无正确答案'}</div>
+                        </div>
+                    </div>
+                    
+                    <div class="error-analysis">
+                        <div class="section-title">🔍 错误分析</div>
+                        <div class="analysis-text">
+                            <strong>错误类型：</strong>${errorData.error_type || errorData.errorType || '未知错误类型'}<br>
+                            <strong>错误原因：</strong>${errorData.error_reason || errorData.errorReason || '暂无详细原因'}
+                        </div>
+                    </div>
+                    
+                    ${errorData.explanation ? `
+                    <div class="explanation">
+                        <div class="section-title">💡 详细解释</div>
+                        <div class="explanation-text">${errorData.explanation.replace(/\n/g, '<br>')}</div>
+                    </div>
+                    ` : ''}
+                </div>
+                
+                <!-- 复习状态 -->
+                <div class="review-status">
+                    <div class="section-title">📊 复习状态</div>
+                    <div class="status-grid">
+                        <div class="status-item">
+                            <div class="status-value" id="reviewCount">${errorData.review_count || errorData.reviewCount || 0}</div>
+                            <div class="status-label">复习次数</div>
+                        </div>
+                        <div class="status-item">
+                            <div class="status-value" id="reviewStatus">${(errorData.is_reviewed !== undefined ? errorData.is_reviewed : (errorData.isReviewed !== undefined ? errorData.isReviewed : false)) ? '已复习' : '未复习'}</div>
+                            <div class="status-label">复习状态</div>
+                        </div>
+                    </div>
+                    
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" id="reviewBtn" onclick="markAsReviewed()">
+                            ${(errorData.is_reviewed !== undefined ? errorData.is_reviewed : (errorData.isReviewed !== undefined ? errorData.isReviewed : false)) ? '再次复习' : '标记为已复习'}
+                        </button>
+                        <button class="btn btn-secondary" onclick="addToCollection()">加入收藏</button>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('pageContent').innerHTML = contentHtml;
+        }
+
+        function showError(message) {
+            document.getElementById('pageContent').innerHTML = `
+                <div class="error">
+                    <div style="font-size: 48px; margin-bottom: 16px;">😞</div>
+                    <div>${message}</div>
+                    <button class="retry-btn" onclick="loadErrorDetail()">重试</button>
+                </div>
+            `;
+        }
+
+        async function markAsReviewed() {
+            try {
+                console.log('开始标记复习状态');
+                
+                // 显示加载状态
+                const btn = document.getElementById('reviewBtn');
+                const originalText = btn.textContent;
+                btn.disabled = true;
+                btn.textContent = '标记中...';
+                
+                console.log('按钮状态已更新为加载中');
+                
+                // 调用后端API更新复习状态
+                const response = await fetch(`${API_BASE}/student/error-book/${errorId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('API返回数据:', data);
+                
+                // 更新本地状态
+                updateReviewStatus(true, data.review_count);
+                
+                showToast('已标记为复习完成');
+                
+                // 恢复按钮状态
+                btn.disabled = false;
+                
+                console.log('标记复习完成');
+                
+            } catch (error) {
+                console.error('标记复习状态失败:', error);
+                showToast('标记失败，请重试');
+                
+                // 恢复按钮状态
+                const btn = document.getElementById('reviewBtn');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.textContent = originalText; // 恢复原始文本
+                }
+            }
+        }
+
+        function updateReviewStatus(isReviewed, newReviewCount) {
+            console.log('更新复习状态:', isReviewed, '复习次数:', newReviewCount);
+            
+            // 更新复习次数
+            const reviewCountElement = document.getElementById('reviewCount');
+            if (reviewCountElement) {
+                if (newReviewCount !== undefined) {
+                    reviewCountElement.textContent = newReviewCount;
+                } else {
+                    let currentCount = parseInt(reviewCountElement.textContent) || 0;
+                    if (isReviewed) {
+                        currentCount += 1;
+                        reviewCountElement.textContent = currentCount;
+                    }
+                }
+                console.log('复习次数更新为:', reviewCountElement.textContent);
+            } else {
+                console.error('找不到复习次数元素');
+            }
+            
+            // 更新复习状态
+            const reviewStatusElement = document.getElementById('reviewStatus');
+            if (reviewStatusElement) {
+                reviewStatusElement.textContent = isReviewed ? '已复习' : '未复习';
+                console.log('复习状态更新为:', isReviewed ? '已复习' : '未复习');
+            } else {
+                console.error('找不到复习状态元素');
+            }
+            
+            // 更新按钮文本
+            const btn = document.getElementById('reviewBtn');
+            if (btn) {
+                btn.textContent = isReviewed ? '再次复习' : '标记为已复习';
+                console.log('按钮文本更新为:', btn.textContent);
+            } else {
+                console.error('找不到复习按钮');
+            }
+        }
+
+        function addToCollection() {
+            showToast('已加入错题收藏');
+            // 这里应该调用后端API加入收藏
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

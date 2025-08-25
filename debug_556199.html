@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试作业556199数据流</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .result { 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .button { 
+            padding: 10px 16px; 
+            margin: 5px; 
+            background: #007AFF; 
+            color: white; 
+            border: none;
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 作业ID 556199 数据流调试</h1>
+    
+    <button onclick="testFallbackData()" class="button">测试Fallback数据生成</button>
+    <button onclick="testCompleteFlow()" class="button">测试完整数据流</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const homeworkId = '556199';
+        
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `result ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            resultsDiv.appendChild(logDiv);
+        }
+
+        function generateFallbackData() {
+            // 复制前端的逻辑
+            console.log(`作业ID ${homeworkId} - 无法获取准确数据，提供识别提示`);
+            
+            // 特殊处理：已知的测试作业ID
+            const knownTestIds = [898411, 773191, 942516, 942737, 899573];
+            if (knownTestIds.includes(parseInt(homeworkId))) {
+                log('这是已知测试ID，应该生成演示数据', 'info');
+                return generateTestData();
+            }
+            
+            log('这不是已知测试ID，应该返回识别失败提示', 'warning');
+            
+            // 对于其他ID，返回识别失败的友好提示
+            return {
+                id: homeworkId,
+                subject: 'unknown',
+                total_questions: 0,
+                correct_count: 0,
+                wrong_count: 0,
+                accuracy_rate: 0,
+                status: 'recognition_failed',
+                original_image_url: `/uploads/homework/homework_${homeworkId}_1.jpg`,
+                correction_results: [],
+                created_at: new Date().toISOString(),
+                special_message: {
+                    type: 'recognition_failed',
+                    title: '无法识别作业内容',
+                    content: '抱歉，系统无法从图片中识别出清晰的作业题目。',
+                    suggestions: [
+                        '请确保图片清晰度足够，文字可以清楚辨认',
+                        '确保光线充足，避免阴影遮挡题目',
+                        '重新拍摄并上传更清晰的作业图片'
+                    ],
+                    reason: 'ocr_failed'
+                }
+            };
+        }
+
+        function testFallbackData() {
+            log('=== 测试Fallback数据生成 ===', 'info');
+            
+            const data = generateFallbackData();
+            
+            log(`生成的数据:`, 'info');
+            log(`- ID: ${data.id}`, 'info');
+            log(`- subject: ${data.subject}`, 'info');
+            log(`- total_questions: ${data.total_questions}`, 'info');
+            log(`- correct_count: ${data.correct_count}`, 'info');
+            log(`- correction_results长度: ${data.correction_results.length}`, 'info');
+            log(`- special_message类型: ${data.special_message?.type}`, 'info');
+            log(`- special_message标题: ${data.special_message?.title}`, 'info');
+            
+            if (data.correction_results.length === 0 && data.special_message?.type === 'recognition_failed') {
+                log('✅ 数据正确：没有题目，有识别失败提示', 'success');
+            } else {
+                log('❌ 数据错误：应该没有题目但仍有数据', 'error');
+            }
+        }
+
+        async function testCompleteFlow() {
+            log('=== 测试完整数据流 ===', 'info');
+            
+            // 模拟前端的完整逻辑
+            const fallbackData = generateFallbackData();
+            let finalData = fallbackData;
+            
+            log('1. 生成fallbackData完成', 'info');
+            
+            // 模拟API调用
+            try {
+                const response = await fetch(`http://localhost:8000/api/v1/homework/result/${homeworkId}`);
+                log(`2. API响应状态: ${response.status}`, 'info');
+                
+                if (response.ok) {
+                    const apiData = await response.json();
+                    log('3. API调用成功，但这不应该发生', 'warning');
+                } else {
+                    log('3. API调用失败（预期），使用fallback数据', 'info');
+                }
+            } catch (error) {
+                log(`3. API调用异常: ${error.message}`, 'info');
+            }
+            
+            // 模拟数据完整性检查
+            if (!finalData.correction_results || !Array.isArray(finalData.correction_results)) {
+                log('4. ❌ 这不应该发生：correction_results为空或不是数组', 'error');
+                finalData.correction_results = fallbackData.correction_results;
+            } else {
+                log(`4. ✅ correction_results正常，长度: ${finalData.correction_results.length}`, 'success');
+            }
+            
+            log('=== 最终数据检查 ===', 'info');
+            log(`最终题目数量: ${finalData.correction_results.length}`, finalData.correction_results.length === 0 ? 'success' : 'error');
+            log(`是否有特殊消息: ${!!finalData.special_message}`, finalData.special_message ? 'success' : 'error');
+            
+            if (finalData.correction_results.length === 0 && finalData.special_message) {
+                log('🎉 完整流程正确：无题目，有友好提示', 'success');
+            } else {
+                log('💥 完整流程有问题：仍然生成了虚假题目', 'error');
+                log(`详细数据: ${JSON.stringify(finalData, null, 2)}`, 'error');
+            }
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            setTimeout(testFallbackData, 500);
+        };
+    </script>
+</body>
+</html>

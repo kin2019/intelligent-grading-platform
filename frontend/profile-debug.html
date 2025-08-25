@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Debug - 诊断页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            padding: 20px;
+            max-width: 800px;
+            margin: 0 auto;
+            background: #f5f5f5;
+        }
+        
+        .debug-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .debug-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 15px;
+            border-bottom: 2px solid #4CAF50;
+            padding-bottom: 5px;
+        }
+        
+        .status-item {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+            font-family: monospace;
+        }
+        
+        .status-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .status-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .status-info {
+            background: #d1ecf1;
+            color: #0c5460;
+            border: 1px solid #bee5eb;
+        }
+        
+        .log-area {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 4px;
+            padding: 15px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 300px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        
+        button {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        .user-info-display {
+            background: #e8f5e8;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .user-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 5px;
+        }
+        
+        .user-details {
+            font-size: 14px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <h1>Profile 页面诊断工具</h1>
+    
+    <div class="debug-section">
+        <div class="debug-title">🔧 基础检查</div>
+        <div id="basicChecks"></div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">🌐 API 连接测试</div>
+        <button onclick="testAPIConnection()">测试 API 连接</button>
+        <button onclick="testUserInfo()">测试用户信息API</button>
+        <div id="apiResults"></div>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">👤 用户信息显示测试</div>
+        <div class="user-info-display">
+            <div class="user-name" id="testUserName">正在加载...</div>
+            <div class="user-details" id="testUserInfo">加载用户信息中...</div>
+        </div>
+        <button onclick="testUserInfoUpdate()">测试更新用户信息</button>
+    </div>
+    
+    <div class="debug-section">
+        <div class="debug-title">📝 调试日志</div>
+        <div id="debugLog" class="log-area"></div>
+        <button onclick="clearLog()">清空日志</button>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let debugLog = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] ${message}`;
+            debugLog.push({ timestamp, message, type });
+            
+            const logArea = document.getElementById('debugLog');
+            if (logArea) {
+                logArea.textContent += logEntry + '\n';
+                logArea.scrollTop = logArea.scrollHeight;
+            }
+            
+            console.log(`[DEBUG ${type.toUpperCase()}]`, message);
+        }
+        
+        function clearLog() {
+            debugLog = [];
+            const logArea = document.getElementById('debugLog');
+            if (logArea) {
+                logArea.textContent = '';
+            }
+        }
+        
+        function addStatus(containerId, message, type) {
+            const container = document.getElementById(containerId);
+            if (container) {
+                const statusDiv = document.createElement('div');
+                statusDiv.className = `status-item status-${type}`;
+                statusDiv.textContent = message;
+                container.appendChild(statusDiv);
+            }
+        }
+        
+        // 基础检查
+        function runBasicChecks() {
+            log('开始运行基础检查...', 'info');
+            
+            const container = document.getElementById('basicChecks');
+            container.innerHTML = '';
+            
+            // 检查 localStorage
+            const token = localStorage.getItem('token');
+            if (token) {
+                addStatus('basicChecks', `✅ Token 存在: ${token.substring(0, 20)}...`, 'success');
+                log(`Token 检查通过: ${token.substring(0, 20)}...`, 'success');
+            } else {
+                addStatus('basicChecks', '❌ Token 不存在，设置测试 Token', 'error');
+                const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', testToken);
+                addStatus('basicChecks', `✅ 测试 Token 已设置: ${testToken.substring(0, 20)}...`, 'success');
+                log('测试 Token 已设置', 'success');
+            }
+            
+            // 检查 DOM 元素
+            const testUserName = document.getElementById('testUserName');
+            const testUserInfo = document.getElementById('testUserInfo');
+            
+            if (testUserName && testUserInfo) {
+                addStatus('basicChecks', '✅ DOM 元素存在', 'success');
+                log('DOM 元素检查通过', 'success');
+            } else {
+                addStatus('basicChecks', '❌ DOM 元素缺失', 'error');
+                log('DOM 元素检查失败', 'error');
+            }
+            
+            // 检查 API 基础 URL
+            addStatus('basicChecks', `✅ API Base URL: ${API_BASE}`, 'info');
+            log(`API Base URL: ${API_BASE}`, 'info');
+        }
+        
+        async function testAPIConnection() {
+            log('测试 API 连接...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/health`, {
+                    method: 'GET'
+                });
+                
+                log(`API Health Check 状态: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    addStatus('apiResults', '✅ API 服务器连接正常', 'success');
+                } else {
+                    addStatus('apiResults', `❌ API 服务器响应异常: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                log(`API 连接失败: ${error.message}`, 'error');
+                addStatus('apiResults', `❌ API 连接失败: ${error.message}`, 'error');
+                
+                // 尝试直接测试认证 API
+                log('尝试直接测试认证 API...', 'info');
+                await testUserInfo();
+            }
+        }
+        
+        async function testUserInfo() {
+            log('测试用户信息 API...', 'info');
+            
+            const container = document.getElementById('apiResults');
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    throw new Error('Token 不存在');
+                }
+                
+                log(`使用 Token: ${token.substring(0, 20)}...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`用户信息 API 状态: ${response.status}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const userInfo = await response.json();
+                    log(`用户信息获取成功: ${JSON.stringify(userInfo)}`, 'success');
+                    
+                    addStatus('apiResults', '✅ 用户信息 API 调用成功', 'success');
+                    addStatus('apiResults', `📋 用户数据: ${JSON.stringify(userInfo, null, 2)}`, 'info');
+                    
+                    // 自动更新测试显示
+                    updateTestUserDisplay(userInfo);
+                    
+                } else {
+                    const errorText = await response.text();
+                    log(`用户信息 API 失败: ${response.status} - ${errorText}`, 'error');
+                    addStatus('apiResults', `❌ 用户信息 API 失败: ${response.status}`, 'error');
+                    addStatus('apiResults', `📋 错误详情: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`用户信息 API 异常: ${error.message}`, 'error');
+                addStatus('apiResults', `❌ 用户信息 API 异常: ${error.message}`, 'error');
+            }
+        }
+        
+        function updateTestUserDisplay(userInfo) {
+            log('更新测试用户显示...', 'info');
+            
+            const testUserName = document.getElementById('testUserName');
+            const testUserInfo = document.getElementById('testUserInfo');
+            
+            if (testUserName) {
+                const displayName = userInfo.nickname || '未知用户';
+                testUserName.textContent = displayName;
+                log(`用户名更新为: ${displayName}`, 'success');
+            }
+            
+            if (testUserInfo) {
+                const role = userInfo.role === 'student' ? '学生' : userInfo.role === 'parent' ? '家长' : '教师';
+                const grade = userInfo.grade || '未设置年级';
+                const displayInfo = `${role} · ${grade}`;
+                testUserInfo.textContent = displayInfo;
+                log(`用户信息更新为: ${displayInfo}`, 'success');
+            }
+        }
+        
+        function testUserInfoUpdate() {
+            log('测试手动用户信息更新...', 'info');
+            
+            const mockUserInfo = {
+                nickname: '测试用户',
+                role: 'student',
+                grade: '五年级',
+                avatar_url: 'emoji:😊',
+                is_vip: false
+            };
+            
+            updateTestUserDisplay(mockUserInfo);
+        }
+        
+        // 页面加载完成后自动运行检查
+        document.addEventListener('DOMContentLoaded', function() {
+            log('页面加载完成，开始诊断...', 'info');
+            runBasicChecks();
+            
+            // 自动测试用户信息 API
+            setTimeout(() => {
+                testUserInfo();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

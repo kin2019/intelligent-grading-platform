@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>测试错题详情修复</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .test-item {
+            margin-bottom: 20px;
+            padding: 15px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+        }
+        .test-link {
+            display: inline-block;
+            background: #007AFF;
+            color: white;
+            padding: 8px 16px;
+            text-decoration: none;
+            border-radius: 6px;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+        .test-link:hover {
+            background: #0056CC;
+        }
+        .description {
+            color: #666;
+            font-size: 14px;
+            margin-top: 8px;
+        }
+        .highlight {
+            background: #fff3cd;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h2>🔧 错题详情修复测试页面</h2>
+        
+        <div class="highlight">
+            <strong>修复内容：</strong><br>
+            1. ✅ 修复学科显示错误（明明是数学题但显示英语）<br>
+            2. ✅ 修复标记已复习功能不生效的问题<br>
+            3. ✅ 前后端数据生成算法一致性
+        </div>
+        
+        <div class="test-item">
+            <h3>测试不同错题ID的学科显示</h3>
+            <p>点击下面的链接测试不同错题ID，验证学科显示是否正确：</p>
+            
+            <a href="error-detail.html?id=1" class="test-link">错题 #1 (数学)</a>
+            <a href="error-detail.html?id=2" class="test-link">错题 #2 (语文)</a> 
+            <a href="error-detail.html?id=3" class="test-link">错题 #3 (英语)</a>
+            <a href="error-detail.html?id=4" class="test-link">错题 #4 (数学)</a>
+            <a href="error-detail.html?id=5" class="test-link">错题 #5 (语文)</a>
+            
+            <div class="description">
+                根据算法：错题ID % 3 决定学科<br>
+                - ID=1,4,7... → 数学<br>
+                - ID=2,5,8... → 语文<br>
+                - ID=3,6,9... → 英语
+            </div>
+        </div>
+        
+        <div class="test-item">
+            <h3>测试标记已复习功能</h3>
+            <p>在任一错题详情页面中：</p>
+            <ol>
+                <li>点击 "✅ 标记已复习" 按钮</li>
+                <li>观察按钮是否变为 "✅ 已复习" 并被禁用</li>
+                <li>观察右上角状态是否变为 "已复习"</li>
+                <li>刷新页面，状态应该保持为已复习</li>
+                <li>访问同一错题ID，状态应该持久化</li>
+            </ol>
+            <div class="description">
+                状态会保存在 localStorage 中，重新访问同一错题ID时会保持已复习状态
+            </div>
+        </div>
+        
+        <div class="test-item">
+            <h3>测试相似题练习功能</h3>
+            <p>在错题详情页面中：</p>
+            <ol>
+                <li>点击 "📚 练习相似题" 按钮</li>
+                <li>应该跳转到相似练习页面</li>
+                <li>练习页面应该显示对应学科的相似题目</li>
+            </ol>
+        </div>
+        
+        <div class="test-item">
+            <h3>清除测试数据</h3>
+            <button onclick="clearTestData()" style="background: #dc3545; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                🗑️ 清除已复习状态
+            </button>
+            <div class="description">
+                点击此按钮可以清除所有已标记复习的错题状态，重新测试
+            </div>
+        </div>
+        
+        <div class="test-item">
+            <h3>当前状态</h3>
+            <p>已复习的错题ID：<span id="reviewedList">无</span></p>
+            <button onclick="checkStatus()" style="background: #28a745; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer;">
+                🔍 检查状态
+            </button>
+        </div>
+    </div>
+
+    <script>
+        function clearTestData() {
+            localStorage.removeItem('reviewedErrors');
+            alert('已清除所有复习状态！');
+            checkStatus();
+        }
+        
+        function checkStatus() {
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            const reviewedList = document.getElementById('reviewedList');
+            if (reviewedErrors.length === 0) {
+                reviewedList.textContent = '无';
+            } else {
+                reviewedList.textContent = reviewedErrors.join(', ');
+            }
+        }
+        
+        // 页面加载时检查状态
+        document.addEventListener('DOMContentLoaded', checkStatus);
+    </script>
+</body>
+</html>

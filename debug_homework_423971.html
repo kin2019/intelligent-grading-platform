@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试作业423971 - "使用服务器数据"问题</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 4px;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .button { 
+            padding: 10px 16px; 
+            margin: 5px; 
+            background: #007AFF; 
+            color: white; 
+            border: none;
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        .button:hover { background: #0056CC; }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试作业ID 423971 - "使用服务器数据"问题</h1>
+    
+    <div class="debug-section">
+        <h3>问题描述</h3>
+        <div class="error">
+            <strong>问题：</strong> 作业ID 423971 显示"使用服务器数据"，但API应该返回403错误
+        </div>
+    </div>
+
+    <div class="debug-section">
+        <h3>调试步骤</h3>
+        <button onclick="debugAPI()" class="button">1️⃣ 测试API响应</button>
+        <button onclick="debugFrontend()" class="button">2️⃣ 模拟前端逻辑</button>
+        <button onclick="debugFullFlow()" class="button">3️⃣ 完整流程调试</button>
+        <div id="debugResults"></div>
+    </div>
+
+    <div class="debug-section">
+        <h3>快速链接</h3>
+        <a href="http://localhost:8000/frontend/homework-result.html?id=423971" class="button" target="_blank">📊 查看问题页面</a>
+    </div>
+
+    <script>
+        const homeworkId = 423971;
+        const API_BASE = 'http://localhost:8000/api/v1';
+
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('debugResults');
+            const logDiv = document.createElement('div');
+            logDiv.className = `result ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            resultsDiv.appendChild(logDiv);
+        }
+
+        async function debugAPI() {
+            log('开始测试API响应...', 'info');
+            
+            try {
+                const response = await fetch(`${API_BASE}/homework/result/${homeworkId}`);
+                log(`API响应状态: ${response.status} ${response.statusText}`, 'info');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`API数据: ${JSON.stringify(data, null, 2)}`, 'success');
+                    log('✅ API调用成功 - 这可能是"使用服务器数据"的原因', 'success');
+                } else {
+                    const errorData = await response.json();
+                    log(`API错误数据: ${JSON.stringify(errorData, null, 2)}`, 'error');
+                    log(`❌ API调用失败 (${response.status}) - 应该使用模拟数据`, 'error');
+                }
+            } catch (error) {
+                log(`API调用异常: ${error.message}`, 'error');
+            }
+        }
+
+        async function debugFrontend() {
+            log('模拟前端数据处理逻辑...', 'info');
+            
+            // 模拟API调用
+            let finalData = { id: homeworkId, subject: 'fallback' }; // 默认fallback数据
+            
+            try {
+                const response = await fetch(`${API_BASE}/homework/result/${homeworkId}`);
+                
+                if (response.ok) {
+                    try {
+                        const apiData = await response.json();
+                        log(`API返回数据: ${JSON.stringify(apiData)}`, 'info');
+                        
+                        // 模拟前端的检查条件
+                        if (apiData && (apiData.subject || apiData.id)) {
+                            log('✅ 数据通过验证: apiData.subject=' + apiData.subject + ', apiData.id=' + apiData.id, 'success');
+                            finalData = apiData;
+                            log('🎯 这里会显示"使用服务器数据"', 'warning');
+                        } else {
+                            log('❌ 数据未通过验证', 'error');
+                            log('会显示"API数据不完整，使用模拟数据"', 'info');
+                        }
+                    } catch (parseError) {
+                        log(`JSON解析失败: ${parseError.message}`, 'error');
+                        log('会显示"数据解析失败，使用模拟数据"', 'info');
+                    }
+                } else {
+                    log(`API调用失败 (${response.status})`, 'error');
+                    if (response.status === 403) {
+                        log('会显示"未登录，使用模拟数据展示"', 'info');
+                    }
+                }
+            } catch (error) {
+                log(`网络异常: ${error.message}`, 'error');
+                log('会显示"网络异常，使用模拟数据"', 'info');
+            }
+            
+            log(`最终数据: ${JSON.stringify(finalData)}`, 'info');
+        }
+
+        async function debugFullFlow() {
+            log('=== 开始完整流程调试 ===', 'info');
+            
+            // 检查计算的学科
+            const subjects = ['chinese', 'math', 'english', 'physics', 'chemistry', 'biology'];
+            const subjectIndex = homeworkId % subjects.length;
+            log(`作业ID ${homeworkId} 算法计算学科: ${homeworkId} % ${subjects.length} = ${subjectIndex} -> ${subjects[subjectIndex]}`, 'info');
+            
+            // 检查是否在特殊处理范围内
+            const specialIds = [898411, 773191, 899573, 942516, 942737];
+            const isSpecial = specialIds.includes(homeworkId);
+            log(`是否有特殊处理: ${isSpecial}`, 'info');
+            
+            // 模拟后端逻辑
+            log('后端会尝试查询数据库，但需要认证', 'info');
+            log('如果认证失败，返回403', 'info');
+            log('如果认证成功但没有数据，生成模拟数据', 'info');
+            
+            // 实际测试
+            await debugAPI();
+            await new Promise(resolve => setTimeout(resolve, 1000));
+            await debugFrontend();
+            
+            log('=== 调试完成 ===', 'info');
+        }
+
+        // 页面加载时自动运行基本调试
+        window.onload = function() {
+            log('页面加载完成，开始调试作业ID 423971', 'info');
+            setTimeout(debugAPI, 500);
+        };
+    </script>
+</body>
+</html>

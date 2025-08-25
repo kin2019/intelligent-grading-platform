@@ -1,0 +1,781 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 学生首页</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-title {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .user-avatar {
+            width: 32px;
+            height: 32px;
+            border-radius: 16px;
+            background: rgba(255, 255, 255, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            cursor: pointer;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 用户信息卡片 */
+        .user-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+        
+        .avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-right: 12px;
+        }
+        
+        .info .name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .info .role {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .quota-info {
+            text-align: right;
+        }
+        
+        .quota-info .quota-text {
+            font-size: 12px;
+            color: #999;
+            margin-bottom: 4px;
+        }
+        
+        .quota-info .quota-count {
+            font-size: 16px;
+            font-weight: bold;
+            color: #007AFF;
+        }
+        
+        /* 功能网格 */
+        .function-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .function-item {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px 16px;
+            text-align: center;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .function-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .function-item:active {
+            transform: translateY(0);
+        }
+        
+        .function-icon {
+            font-size: 32px;
+            margin-bottom: 12px;
+            display: block;
+        }
+        
+        .function-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* 数据统计 */
+        .stats-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #007AFF;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        /* 最近作业 */
+        .homework-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 24px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .homework-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .homework-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .homework-item:hover {
+            background: #e9ecef;
+        }
+        
+        .homework-info {
+            flex: 1;
+        }
+        
+        .homework-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .homework-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .homework-stats {
+            text-align: right;
+        }
+        
+        .accuracy {
+            font-size: 14px;
+            font-weight: bold;
+            color: #007AFF;
+            margin-bottom: 4px;
+        }
+        
+        .status {
+            font-size: 10px;
+            padding: 4px 8px;
+            border-radius: 4px;
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误状态 */
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .retry-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #007AFF;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 12px;
+            }
+            
+            .function-grid {
+                gap: 12px;
+            }
+            
+            .function-item {
+                padding: 20px 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-title">智能批改</div>
+                <div class="user-avatar" onclick="goToProfile()">👤</div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 用户信息卡片 -->
+            <div class="user-card">
+                <div class="user-info">
+                    <div class="avatar">🎓</div>
+                    <div class="info">
+                        <div class="name" id="userName">正在加载...</div>
+                        <div class="role">学生</div>
+                    </div>
+                </div>
+                <div class="quota-info">
+                    <div class="quota-text">今日额度</div>
+                    <div class="quota-count" id="quotaCount">-/-</div>
+                </div>
+            </div>
+            
+            <!-- 功能入口 -->
+            <div class="function-grid">
+                <div class="function-item" onclick="goToHomeworkSubmit()">
+                    <div class="function-icon">📷</div>
+                    <div class="function-text">拍照批改</div>
+                </div>
+                
+                <div class="function-item" onclick="goToErrorBook()">
+                    <div class="function-icon">📚</div>
+                    <div class="function-text">错题本</div>
+                </div>
+                
+                <div class="function-item" onclick="goToStudyPlan()">
+                    <div class="function-icon">📋</div>
+                    <div class="function-text">学习计划</div>
+                </div>
+                
+                <div class="function-item" onclick="goToParentBind()">
+                    <div class="function-icon">👨‍👩‍👧‍👦</div>
+                    <div class="function-text">家长绑定</div>
+                </div>
+            </div>
+            
+            <!-- 学习数据统计 -->
+            <div class="stats-section" id="statsSection">
+                <div class="section-title">今日学习</div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>正在加载数据...</div>
+                </div>
+            </div>
+            
+            <!-- 最近作业 -->
+            <div class="homework-section" id="homeworkSection">
+                <div class="section-title">最近作业</div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>正在加载作业...</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item active">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item" onclick="goToErrorBook()">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">错题本</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let userInfo = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        // 页面可见性变化时检查用户信息更新
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                console.log('页面变为可见');
+                setTimeout(onPageFocus, 200); // 延时200ms确保页面完全激活
+            }
+        });
+
+        // 页面获得焦点时检查用户信息更新
+        window.addEventListener('focus', function() {
+            console.log('页面获得焦点');
+            setTimeout(onPageFocus, 200); // 延时200ms确保焦点完全获得
+        });
+
+        // 监听localStorage变化
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'user' && event.newValue) {
+                console.log('检测到localStorage中user信息变化');
+                const newUserInfo = JSON.parse(event.newValue);
+                userInfo = newUserInfo;
+                updateUserInfo(newUserInfo);
+            }
+        });
+
+        // 监听用户信息更新事件
+        window.addEventListener('userInfoUpdated', function(event) {
+            console.log('检测到用户信息更新事件');
+            userInfo = event.detail;
+            updateUserInfo(event.detail);
+        });
+
+        // 检查localStorage中的用户信息是否更新
+        function checkStoredUserInfo() {
+            const storedUser = localStorage.getItem('user');
+            if (storedUser) {
+                try {
+                    const newUserInfo = JSON.parse(storedUser);
+                    // 检查头像是否发生变化
+                    if (!userInfo || 
+                        userInfo.avatar_url !== newUserInfo.avatar_url ||
+                        userInfo.nickname !== newUserInfo.nickname) {
+                        console.log('检测到localStorage中的用户信息已更新，同步到当前页面');
+                        console.log('当前用户信息:', userInfo);
+                        console.log('最新用户信息:', newUserInfo);
+                        userInfo = newUserInfo;
+                        updateUserInfo(newUserInfo);
+                        return true;
+                    }
+                } catch (error) {
+                    console.error('解析localStorage用户信息失败:', error);
+                }
+            }
+            return false;
+        }
+
+        // 页面获得焦点时先检查localStorage，如果没有变化再调用API
+        function onPageFocus() {
+            console.log('页面获得焦点，检查用户信息');
+            const hasLocalChanges = checkStoredUserInfo();
+            if (!hasLocalChanges) {
+                console.log('localStorage无变化，重新从API获取用户信息');
+                setTimeout(() => {
+                    loadUserData();
+                }, 200);
+            }
+        }
+
+        async function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            
+            if (!token) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            if (user) {
+                userInfo = JSON.parse(user);
+                updateUserInfo(userInfo);
+            }
+            
+            // 加载数据
+            await loadUserData();
+            await loadDashboardData();
+        }
+
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const user = await response.json();
+                    userInfo = user;
+                    updateUserInfo(user);
+                    localStorage.setItem('user', JSON.stringify(user));
+                }
+            } catch (error) {
+                console.error('获取用户信息失败:', error);
+            }
+            
+            // 获取配额信息
+            try {
+                const response = await fetch(`${API_BASE}/auth/quota`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const quota = await response.json();
+                    updateQuotaInfo(quota);
+                }
+            } catch (error) {
+                console.error('获取配额信息失败:', error);
+            }
+        }
+
+        async function loadDashboardData() {
+            try {
+                const response = await fetch(`${API_BASE}/student/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateDashboard(data);
+                } else {
+                    throw new Error('获取数据失败');
+                }
+            } catch (error) {
+                console.error('获取仪表板数据失败:', error);
+                showError('statsSection', '加载学习数据失败', loadDashboardData);
+                showError('homeworkSection', '加载作业数据失败', loadDashboardData);
+            }
+        }
+
+        function updateUserInfo(user) {
+            document.getElementById('userName').textContent = user.nickname || '学生用户';
+            
+            // 更新头像显示
+            const userAvatar = document.querySelector('.user-avatar');
+            if (user.avatar_url) {
+                if (user.avatar_url.startsWith('emoji:')) {
+                    // 表情头像
+                    const emoji = user.avatar_url.replace('emoji:', '');
+                    userAvatar.textContent = emoji;
+                } else if (user.avatar_url.startsWith('http') || user.avatar_url.startsWith('/uploads/')) {
+                    // 图片头像 (支持绝对URL和相对路径)
+                    let imageUrl = user.avatar_url;
+                    if (user.avatar_url.startsWith('/')) {
+                        // 相对路径，需要加上API服务器地址
+                        imageUrl = `http://localhost:8000${user.avatar_url}`;
+                    }
+                    // 添加时间戳强制刷新图片缓存
+                    const separator = imageUrl.includes('?') ? '&' : '?';
+                    const timestampUrl = `${imageUrl}${separator}t=${Date.now()}`;
+                    userAvatar.innerHTML = `<img src="${timestampUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" alt="用户头像" onerror="this.parentElement.textContent='👤'">`;
+                } else {
+                    // 默认头像
+                    userAvatar.textContent = '👤';
+                }
+            } else {
+                // 没有头像时显示默认头像
+                userAvatar.textContent = '👤';
+            }
+        }
+
+        function updateQuotaInfo(quota) {
+            const quotaCount = document.getElementById('quotaCount');
+            quotaCount.textContent = `${quota.daily_used || 0}/${quota.daily_quota || 5}`;
+        }
+
+        function updateDashboard(data) {
+            // 更新学习统计
+            const statsSection = document.getElementById('statsSection');
+            const stats = data.daily_stats;
+            
+            statsSection.innerHTML = `
+                <div class="section-title">今日学习</div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.today_corrections}</div>
+                        <div class="stat-label">已批改</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${stats.today_errors}</div>
+                        <div class="stat-label">错题数</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${Math.round(stats.accuracy_rate)}%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${Math.round(stats.study_time / 60)}</div>
+                        <div class="stat-label">学习时长(分)</div>
+                    </div>
+                </div>
+            `;
+            
+            // 更新作业列表
+            const homeworkSection = document.getElementById('homeworkSection');
+            const homeworkList = data.recent_homework.slice(0, 3).map(hw => `
+                <div class="homework-item" onclick="goToHomeworkDetail(${hw.id})">
+                    <div class="homework-info">
+                        <div class="homework-title">${hw.title}</div>
+                        <div class="homework-meta">${hw.subject} · ${hw.total_questions}题</div>
+                    </div>
+                    <div class="homework-stats">
+                        <div class="accuracy">${Math.round(hw.accuracy_rate)}%</div>
+                        <div class="status">已完成</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            homeworkSection.innerHTML = `
+                <div class="section-title">最近作业</div>
+                <div class="homework-list">
+                    ${homeworkList}
+                </div>
+            `;
+        }
+
+        function showError(sectionId, message, retryCallback) {
+            const section = document.getElementById(sectionId);
+            section.innerHTML = `
+                <div class="error">
+                    <div class="error-icon">😞</div>
+                    <div>${message}</div>
+                    <button class="retry-btn" onclick="retryCallback()">重试</button>
+                </div>
+            `;
+        }
+
+        // 导航函数
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function goToHomeworkSubmit() {
+            window.location.href = 'homework-submit.html';
+        }
+
+        function goToErrorBook() {
+            window.location.href = 'error-book.html';
+        }
+
+        function goToStudyPlan() {
+            window.location.href = 'study-plan.html';
+        }
+
+        function goToParentBind() {
+            window.location.href = 'parent-bind.html';
+        }
+
+        function goToHomeworkDetail(id) {
+            window.location.href = `homework-result.html?id=${id}`;
+        }
+
+        function showToast(message) {
+            // 创建toast元素
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+
+        // 检查网络状态
+        function checkConnection() {
+            return navigator.onLine;
+        }
+
+        // 处理网络错误
+        window.addEventListener('offline', function() {
+            showToast('网络连接已断开');
+        });
+
+        window.addEventListener('online', function() {
+            showToast('网络连接已恢复');
+            loadDashboardData();
+        });
+    </script>
+</body>
+</html>

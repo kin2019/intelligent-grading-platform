@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>调试ID=6复习状态</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .result { margin: 10px 0; padding: 15px; border-radius: 5px; }
+        .success { background: #d4edda; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+        .warning { background: #fff3cd; border: 1px solid #ffeaa7; }
+        button { padding: 10px 20px; margin: 5px; cursor: pointer; }
+        pre { background: #f1f3f4; padding: 10px; border-radius: 4px; overflow-x: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试ID=6的复习状态问题</h1>
+    
+    <div>
+        <button onclick="checkID6Status()">📊 检查ID=6状态</button>
+        <button onclick="simulateMarkID6()">✅ 模拟标记ID=6已复习</button>
+        <button onclick="checkLocalStorage()">💾 检查localStorage</button>
+        <button onclick="clearStorage()">🧹 清除localStorage</button>
+    </div>
+
+    <div id="results"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const TOKEN = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxNzg4NTUsInN1YiI6IjUifQ.YSMhpQQulzOxNrzD5IQs1h15HIqX5U_OBJ7VMQezq5o';
+
+        function addResult(content, type = 'info') {
+            const container = document.getElementById('results');
+            const div = document.createElement('div');
+            div.className = `result ${type}`;
+            div.innerHTML = content;
+            container.appendChild(div);
+        }
+
+        function clearStorage() {
+            localStorage.clear();
+            localStorage.setItem('token', TOKEN);
+            addResult('✅ localStorage已清除', 'success');
+        }
+
+        function checkLocalStorage() {
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            addResult(`💾 localStorage中已复习错题: [${reviewedErrors.join(', ')}]`, 'info');
+            addResult(`📋 ID=6是否在已复习列表中: ${reviewedErrors.includes('6') ? '是' : '否'}`, reviewedErrors.includes('6') ? 'success' : 'warning');
+        }
+
+        function simulateMarkID6() {
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            const errorIdStr = '6';
+            
+            if (!reviewedErrors.includes(errorIdStr)) {
+                reviewedErrors.push(errorIdStr);
+                localStorage.setItem('reviewedErrors', JSON.stringify(reviewedErrors));
+                addResult(`✅ 已模拟标记 ID=6 为已复习`, 'success');
+                addResult(`💾 更新后的localStorage: [${reviewedErrors.join(', ')}]`, 'info');
+            } else {
+                addResult(`ℹ️ ID=6 已经标记为已复习`, 'info');
+            }
+        }
+
+        async function checkID6Status() {
+            const results = document.getElementById('results');
+            results.innerHTML = '';
+            
+            addResult('🔄 检查ID=6的复习状态...', 'info');
+
+            try {
+                // 1. 检查localStorage
+                const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+                const isLocalReviewed = reviewedErrors.includes('6');
+                addResult(`💾 localStorage状态: ID=6 ${isLocalReviewed ? '已复习' : '未复习'}`, isLocalReviewed ? 'success' : 'warning');
+
+                // 2. 获取错题本API数据
+                const response = await fetch(`${API_BASE}/student/error-book`, {
+                    headers: { 'Authorization': `Bearer ${TOKEN}` }
+                });
+                const data = await response.json();
+                
+                // 查找ID=6的错题
+                const error6 = data.recent_errors.find(error => error.id == 6);
+                
+                if (error6) {
+                    const apiReviewStatus = error6.is_reviewed;
+                    addResult(`📡 API状态: ID=6 ${apiReviewStatus ? '已复习' : '未复习'}`, apiReviewStatus ? 'success' : 'warning');
+                    
+                    // 3. 模拟错题本页面逻辑
+                    const errorBookFinalStatus = isLocalReviewed || apiReviewStatus;
+                    addResult(`📖 错题本页面应该显示: ID=6 ${errorBookFinalStatus ? '已复习' : '未复习'}`, errorBookFinalStatus ? 'success' : 'error');
+                    
+                    // 4. 模拟错题详情页面逻辑
+                    const errorDetailFinalStatus = isLocalReviewed || apiReviewStatus;
+                    addResult(`📄 错题详情页面应该显示: ID=6 ${errorDetailFinalStatus ? '已复习' : '未复习'}`, errorDetailFinalStatus ? 'success' : 'error');
+                    
+                    // 5. 详细信息
+                    addResult(`
+                        <h4>📋 详细状态信息 (ID=6):</h4>
+                        <pre>${JSON.stringify({
+                            id: error6.id,
+                            subject: error6.subject,
+                            question_preview: error6.question_text.substring(0, 50) + '...',
+                            api_is_reviewed: error6.is_reviewed,
+                            local_is_reviewed: isLocalReviewed,
+                            final_status: errorBookFinalStatus ? '已复习' : '未复习'
+                        }, null, 2)}</pre>
+                    `, 'info');
+                    
+                    // 6. 问题诊断
+                    if (isLocalReviewed && !errorBookFinalStatus) {
+                        addResult(`❌ 发现问题：localStorage显示已复习，但最终状态为未复习`, 'error');
+                    } else if (!isLocalReviewed && errorBookFinalStatus) {
+                        addResult(`⚠️ 注意：API显示已复习，但localStorage中无记录`, 'warning');
+                    } else {
+                        addResult(`✅ 状态一致：${errorBookFinalStatus ? '已复习' : '未复习'}`, 'success');
+                    }
+                    
+                } else {
+                    addResult(`❌ 错题本API中未找到ID=6的错题`, 'error');
+                    
+                    // 显示所有可用的错题ID
+                    const availableIds = data.recent_errors.slice(0, 10).map(e => e.id);
+                    addResult(`📋 可用的错题ID (前10个): [${availableIds.join(', ')}]`, 'info');
+                }
+
+                // 7. 测试链接
+                addResult(`
+                    <h4>🔗 测试链接:</h4>
+                    <p><a href="http://localhost:8080/frontend/error-book.html" target="_blank">错题本页面</a></p>
+                    <p><a href="http://localhost:8080/frontend/error-detail.html?id=6" target="_blank">错题详情页面 (ID=6)</a></p>
+                `, 'info');
+
+            } catch (error) {
+                addResult(`❌ 检查失败: ${error.message}`, 'error');
+            }
+        }
+
+        // 页面加载时设置token
+        localStorage.setItem('token', TOKEN);
+    </script>
+</body>
+</html>

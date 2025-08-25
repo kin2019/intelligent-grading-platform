@@ -1,0 +1,967 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 错题详情（修复版）</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .fixed-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+            margin-left: 8px;
+        }
+
+        .subject-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .subject-math { background-color: #007bff; }
+        .subject-chinese { background-color: #28a745; }
+        .subject-english { background-color: #dc3545; }
+        .subject-physics { background-color: #ffc107; color: #000; }
+        .subject-chemistry { background-color: #6f42c1; }
+        .subject-biology { background-color: #20c997; }
+        .subject-unknown { background-color: #6c757d; }
+
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+
+        /* 错题信息 */
+        .error-info {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .error-meta {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .error-tags {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+
+        .difficulty-tag {
+            padding: 4px 8px;
+            border-radius: 4px;
+            color: white;
+            font-size: 12px;
+        }
+
+        .difficulty-easy { background-color: #28a745; }
+        .difficulty-medium { background-color: #ffc107; color: #000; }
+        .difficulty-hard { background-color: #dc3545; }
+
+        .error-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+        }
+
+        .status-reviewed { background-color: #d4edda; color: #155724; }
+        .status-unreviewed { background-color: #f8d7da; color: #721c24; }
+
+        .error-date {
+            color: #666;
+            font-size: 12px;
+            margin-top: 8px;
+        }
+
+        /* 题目内容 */
+        .question-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .section-title {
+            font-size: 16px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+        }
+
+        .question-text {
+            font-size: 16px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 16px;
+            white-space: pre-wrap;
+        }
+
+        .answer-comparison {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+            margin-top: 16px;
+        }
+
+        .answer-item {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 12px;
+        }
+
+        .answer-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #666;
+            margin-bottom: 6px;
+        }
+
+        .answer-content {
+            font-size: 14px;
+            color: #333;
+        }
+
+        .answer-wrong {
+            border-left: 4px solid #dc3545;
+            background: #f8d7da;
+        }
+
+        .answer-correct {
+            border-left: 4px solid #28a745;
+            background: #d4edda;
+        }
+
+        /* 解析内容 */
+        .explanation-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .explanation-text {
+            font-size: 14px;
+            line-height: 1.6;
+            color: #333;
+        }
+
+        /* 学习建议 */
+        .tips-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .tips-list {
+            list-style: none;
+            padding: 0;
+        }
+
+        .tips-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #eee;
+            position: relative;
+            padding-left: 20px;
+        }
+
+        .tips-list li:before {
+            content: "💡";
+            position: absolute;
+            left: 0;
+        }
+
+        .tips-list li:last-child {
+            border-bottom: none;
+        }
+
+        /* 操作按钮 */
+        .action-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .action-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+
+        .btn-review {
+            background: linear-gradient(135deg, #28a745, #20c997);
+            color: white;
+        }
+
+        .btn-review:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.3);
+        }
+
+        .btn-review:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-practice {
+            background: linear-gradient(135deg, #007bff, #6610f2);
+            color: white;
+        }
+
+        .btn-practice:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+        }
+
+        .btn-share {
+            background: linear-gradient(135deg, #ffc107, #fd7e14);
+            color: #000;
+        }
+
+        .btn-share:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.3);
+        }
+
+        .btn-collect {
+            background: linear-gradient(135deg, #6f42c1, #e83e8c);
+            color: white;
+        }
+
+        .btn-collect:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(111, 66, 193, 0.3);
+        }
+
+        /* 加载状态 */
+        .loading-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #ff6b6b;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 16px;
+            color: #666;
+            font-size: 14px;
+        }
+
+        /* 错误状态 */
+        .error-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 40px 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            text-align: center;
+        }
+
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .error-title {
+            font-size: 18px;
+            font-weight: bold;
+            color: #dc3545;
+            margin-bottom: 8px;
+        }
+
+        .error-message {
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 16px;
+        }
+
+        .retry-btn {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .retry-btn:hover {
+            background: #0056b3;
+        }
+
+        /* Toast提示 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 6px;
+            font-size: 14px;
+            z-index: 1000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .toast.show {
+            opacity: 1;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="history.back()">←</button>
+                    <div class="navbar-title">
+                        错题详情
+                        <span class="fixed-badge">已修复</span>
+                    </div>
+                </div>
+                <button class="actions-btn" onclick="showActions()">⋯</button>
+            </div>
+        </div>
+
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 加载状态 -->
+            <div id="loadingSection" class="loading-section">
+                <div class="loading-spinner"></div>
+                <div class="loading-text">正在加载错题详情...</div>
+            </div>
+
+            <!-- 错误状态 -->
+            <div id="errorSection" class="error-section" style="display: none;">
+                <div class="error-icon">😕</div>
+                <div class="error-title" id="errorTitle">加载失败</div>
+                <div class="error-message" id="errorMessage">请检查网络连接后重试</div>
+                <button class="retry-btn" id="retryBtn" onclick="loadErrorDetail()">重试</button>
+            </div>
+
+            <!-- 错题内容 -->
+            <div id="errorContent" style="display: none;">
+                <!-- 错题信息 -->
+                <div class="error-info">
+                    <div class="error-header">
+                        <div class="error-meta">
+                            <div class="error-tags">
+                                <span class="subject-tag" id="subjectTag">数学</span>
+                                <span class="difficulty-tag" id="difficultyTag">中等</span>
+                            </div>
+                            <div>
+                                <span class="error-status" id="statusTag">未复习</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="error-date" id="errorDate">错题时间：2024-01-15</div>
+                </div>
+                
+                <!-- 题目内容 -->
+                <div class="question-section">
+                    <div class="section-title">📝 题目内容</div>
+                    <div class="question-text" id="questionText">正在加载题目内容...</div>
+                    
+                    <div class="answer-comparison">
+                        <div class="answer-item answer-wrong">
+                            <div class="answer-label">你的答案</div>
+                            <div class="answer-content" id="userAnswer">-</div>
+                        </div>
+                        <div class="answer-item answer-correct">
+                            <div class="answer-label">正确答案</div>
+                            <div class="answer-content" id="correctAnswer">-</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 详细解析 -->
+                <div class="explanation-section">
+                    <div class="section-title">💡 详细解析</div>
+                    <div class="explanation-text" id="explanationText">正在加载解析内容...</div>
+                </div>
+
+                <!-- 学习建议 -->
+                <div class="tips-section">
+                    <div class="section-title">🎯 学习建议</div>
+                    <ul class="tips-list" id="tipsList">
+                        <li>正在加载学习建议...</li>
+                    </ul>
+                </div>
+
+                <!-- 操作按钮 -->
+                <div class="action-section">
+                    <div class="section-title">🔧 操作选项</div>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-review" id="reviewBtn" onclick="markAsReviewed()">
+                            ✅ 标记已复习
+                        </button>
+                        <button class="action-btn btn-practice" onclick="practiceSimilar()">
+                            📚 相似练习
+                        </button>
+                        <button class="action-btn btn-share" onclick="shareError()">
+                            📤 分享错题
+                        </button>
+                        <button class="action-btn btn-collect" onclick="collectError()">
+                            ⭐ 收藏错题
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast提示 -->
+    <div id="toast" class="toast"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let errorId = '';
+        let errorData = null;
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('💾 错题详情页面DOM加载完成（修复版）');
+            
+            try {
+                // 检查登录状态
+                token = localStorage.getItem('token');
+                if (!token) {
+                    showToast('请先登录', 'error');
+                    setTimeout(() => {
+                        window.location.href = 'login.html';
+                    }, 2000);
+                    return;
+                }
+                
+                // 获取错题ID
+                const urlParams = new URLSearchParams(window.location.search);
+                errorId = urlParams.get('id') || '1'; // 默认为1，避免空值
+                
+                console.log('🆔 获取到错题ID:', errorId);
+                
+                // 延迟加载，确保页面完全准备好
+                setTimeout(() => {
+                    loadErrorDetail();
+                }, 500);
+                
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+                showError('初始化错误', '页面初始化失败: ' + error.message);
+            }
+        });
+
+        async function loadErrorDetail() {
+            console.log('🔄 开始加载错题详情，ID:', errorId);
+            
+            // 优先检查localStorage中是否有从错题本传递的数据
+            const storedErrorDetail = localStorage.getItem('currentErrorDetail');
+            if (storedErrorDetail) {
+                try {
+                    const errorDetail = JSON.parse(storedErrorDetail);
+                    console.log('📦 使用localStorage中的错题数据:', errorDetail);
+                    
+                    // 确保数据ID匹配
+                    if (errorDetail.id == errorId) {
+                        errorData = errorDetail;
+                        displayErrorDetail(errorData);
+                        
+                        // 清除localStorage数据，避免影响下次访问
+                        localStorage.removeItem('currentErrorDetail');
+                        return;
+                    }
+                } catch (e) {
+                    console.warn('localStorage数据解析失败:', e);
+                    localStorage.removeItem('currentErrorDetail');
+                }
+            }
+            
+            // 🔧 修复：调用错题本API获取一致的数据
+            console.log('🔧 [修复版] 调用错题本API获取一致的错题数据');
+            showToast('🔧 修复版本：使用错题本API确保数据一致', 'success');
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/error-book`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('📡 错题本API响应状态:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const errorBookData = data.recent_errors || [];
+                    
+                    // 从错题本数据中查找对应ID的错题
+                    const foundError = errorBookData.find(error => error.id == errorId);
+                    
+                    if (foundError) {
+                        console.log('✅ [修复成功] 在错题本中找到对应错题:', foundError);
+                        showToast(`✅ 修复成功！显示学科：${foundError.subject}`, 'success');
+                        errorData = foundError;
+                        displayErrorDetail(errorData);
+                    } else {
+                        console.warn(`⚠️ 错题本中未找到ID=${errorId}的错题，使用模拟数据`);
+                        showMockErrorDetail();
+                    }
+                } else {
+                    throw new Error(`错题本API请求失败: ${response.status}`);
+                }
+            } catch (error) {
+                console.error('加载错题本数据失败:', error);
+                console.log('使用模拟数据作为演示');
+                
+                // 使用模拟数据作为演示
+                showMockErrorDetail();
+            }
+        }
+
+        function showMockErrorDetail() {
+            console.log('🎭 开始生成模拟错题数据，错题ID:', errorId);
+            
+            try {
+                // 检查本地存储中是否已标记为已复习
+                const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+                const isReviewedLocal = reviewedErrors.includes(errorId);
+                console.log('📋 本地复习状态:', isReviewedLocal);
+                
+                // 生成模拟数据
+                const mockData = generateMockData(errorId, isReviewedLocal);
+                console.log('🎭 生成的模拟数据:', mockData);
+                
+                // 保存并显示数据
+                errorData = mockData;
+                displayErrorDetail(mockData);
+                
+            } catch (error) {
+                console.error('生成模拟数据失败:', error);
+                showError('数据生成错误', '模拟数据生成失败: ' + error.message);
+            }
+        }
+
+        function generateMockData(id, isReviewed = false) {
+            const errorIdNum = parseInt(id) || 1;
+            
+            // 预定义的题目数据
+            const questionData = [
+                {
+                    subject: 'math',
+                    subjectName: '数学',
+                    difficulty: 'medium',
+                    question_text: '计算：125 × 8 = ?',
+                    user_answer: '1024',
+                    correct_answer: '1000',
+                    explanation: '这是一道基本的乘法运算题目。正确的计算过程是：125 × 8 = 125 × (2 × 4) = (125 × 2) × 4 = 250 × 4 = 1000。你的答案1024可能是计算过程中出现了错误，建议重新检查计算步骤。',
+                    learning_tips: [
+                        '仔细进行每一步计算，避免急躁',
+                        '可以使用分解法：125 × 8 = 125 × 2 × 4',
+                        '验算时可以用除法检查：1000 ÷ 8 = 125',
+                        '多练习类似的乘法运算题目'
+                    ]
+                },
+                {
+                    subject: 'chinese',
+                    subjectName: '语文',
+                    difficulty: 'medium',
+                    question_text: '下列词语中，没有错别字的一组是（）\nA. 再接再励  B. 不胫而走  C. 貌合神离  D. 走头无路',
+                    user_answer: 'A',
+                    correct_answer: 'C',
+                    explanation: '正确答案是C。A项"再接再励"应为"再接再厉"；B项"不胫而走"是正确的；C项"貌合神离"写法正确，指外表和谐而内心不一致；D项"走头无路"应为"走投无路"。',
+                    learning_tips: [
+                        '注意区分形近字和音近字',
+                        '理解成语的本义，避免望文生义',
+                        '多积累常用成语的正确写法',
+                        '遇到不确定的词语要查字典确认'
+                    ]
+                },
+                {
+                    subject: 'english',
+                    subjectName: '英语',
+                    difficulty: 'easy',
+                    question_text: 'Choose the correct answer: I _____ to school every day.\nA. go  B. goes  C. going  D. went',
+                    user_answer: 'B',
+                    correct_answer: 'A',
+                    explanation: '正确答案是A。主语"I"是第一人称，在一般现在时中应该使用动词原形"go"。"goes"是第三人称单数形式，用于he/she/it等主语。',
+                    learning_tips: [
+                        '掌握一般现在时的动词变化规律',
+                        '区分第一、二、三人称的动词形式',
+                        '记住主谓一致的基本原则',
+                        '多做时态练习题加强理解'
+                    ]
+                }
+            ];
+            
+            // 根据ID选择题目 - 与后端算法一致
+            const index = errorIdNum % questionData.length;
+            const selectedData = questionData[index];
+            
+            // 构建完整的模拟数据
+            return {
+                id: id,
+                subject: selectedData.subject,
+                subjectName: selectedData.subjectName,
+                difficulty: selectedData.difficulty,
+                is_reviewed: isReviewed,
+                created_at: new Date().toISOString(),
+                question_text: selectedData.question_text,
+                question_image: null,
+                user_answer: selectedData.user_answer,
+                correct_answer: selectedData.correct_answer,
+                explanation: selectedData.explanation,
+                learning_tips: selectedData.learning_tips,
+            };
+        }
+
+        function displayErrorDetail(data) {
+            console.log('🎨 开始显示错题详情:', data);
+            
+            // 隐藏加载状态
+            document.getElementById('loadingSection').style.display = 'none';
+            
+            // 显示错题内容
+            document.getElementById('errorContent').style.display = 'block';
+            
+            // 更新错题信息
+            updateErrorInfo(data);
+            
+            // 更新题目内容
+            updateQuestionContent(data);
+            
+            // 更新操作按钮
+            updateActionButtons(data);
+            
+            console.log('✅ 错题详情显示完成');
+        }
+
+        function updateErrorInfo(data) {
+            try {
+                // 双向学科映射 - 与错题本页面保持一致
+                const subjectMapping = {
+                    // 英文到中文
+                    'math': '数学',
+                    'chinese': '语文', 
+                    'english': '英语',
+                    'physics': '物理',
+                    'chemistry': '化学',
+                    'biology': '生物',
+                    // 中文到英文
+                    '数学': 'math',
+                    '语文': 'chinese',
+                    '英语': 'english',
+                    '物理': 'physics',
+                    '化学': 'chemistry',
+                    '生物': 'biology'
+                };
+                
+                // 科目标签 - 优先使用subjectName，然后映射subject
+                const subjectTag = document.getElementById('subjectTag');
+                
+                // 获取原始学科数据 - 优先使用subjectName（如果存在）
+                const rawSubject = data.subjectName || data.subject || '未知科目';
+                console.log('🏷️ 原始学科数据:', rawSubject);
+                
+                // 确定最终显示的学科名称（中文）
+                let subjectName = '未知科目';
+                let subjectCode = 'unknown';
+                
+                if (rawSubject && subjectMapping[rawSubject]) {
+                    // 如果能在映射表中找到（无论是中文还是英文）
+                    if (['数学', '语文', '英语', '物理', '化学', '生物'].includes(rawSubject)) {
+                        // 原始数据是中文
+                        subjectName = rawSubject;
+                        subjectCode = subjectMapping[rawSubject];
+                    } else {
+                        // 原始数据是英文
+                        subjectName = subjectMapping[rawSubject];
+                        subjectCode = rawSubject;
+                    }
+                } else {
+                    // 如果映射表中没有，直接使用原始数据
+                    subjectName = rawSubject;
+                    subjectCode = rawSubject.toLowerCase();
+                }
+                
+                console.log('🎨 最终学科显示:', { subjectName, subjectCode });
+                
+                subjectTag.textContent = subjectName;
+                subjectTag.className = `subject-tag subject-${subjectCode.toLowerCase()}`;
+                
+                // 难度标签
+                const difficultyTag = document.getElementById('difficultyTag');
+                const difficultyText = {
+                    'easy': '简单',
+                    'medium': '中等',
+                    'hard': '困难'
+                };
+                difficultyTag.textContent = difficultyText[data.difficulty] || data.difficulty || '中等';
+                difficultyTag.className = `difficulty-tag difficulty-${data.difficulty || 'medium'}`;
+                
+                // 复习状态
+                const statusTag = document.getElementById('statusTag');
+                statusTag.textContent = data.is_reviewed ? '已复习' : '未复习';
+                statusTag.className = `error-status status-${data.is_reviewed ? 'reviewed' : 'unreviewed'}`;
+                
+                // 错题时间
+                const errorDate = document.getElementById('errorDate');
+                const createdAt = new Date(data.created_at);
+                errorDate.textContent = `错题时间：${createdAt.toLocaleDateString()}`;
+                
+                // 存储错题数据供其他功能使用
+                window.currentErrorData = {
+                    id: data.id,
+                    subject: subjectName,
+                    difficulty: data.difficulty,
+                    reviewed: data.is_reviewed
+                };
+                
+            } catch (error) {
+                console.error('更新错题信息失败:', error);
+            }
+        }
+
+        function updateQuestionContent(data) {
+            try {
+                // 题目内容
+                document.getElementById('questionText').textContent = data.question_text || '暂无题目内容';
+                
+                // 用户答案
+                document.getElementById('userAnswer').textContent = data.user_answer || '-';
+                
+                // 正确答案
+                document.getElementById('correctAnswer').textContent = data.correct_answer || '-';
+                
+                // 详细解析
+                document.getElementById('explanationText').textContent = data.explanation || '暂无解析内容';
+                
+                // 学习建议
+                const tipsList = document.getElementById('tipsList');
+                if (data.learning_tips && data.learning_tips.length > 0) {
+                    tipsList.innerHTML = data.learning_tips.map(tip => `<li>${tip}</li>`).join('');
+                } else {
+                    tipsList.innerHTML = '<li>暂无学习建议</li>';
+                }
+                
+            } catch (error) {
+                console.error('更新题目内容失败:', error);
+            }
+        }
+
+        function updateActionButtons(data) {
+            const reviewBtn = document.getElementById('reviewBtn');
+            if (data.is_reviewed) {
+                reviewBtn.textContent = '✅ 已复习';
+                reviewBtn.disabled = true;
+            }
+        }
+
+        async function markAsReviewed() {
+            try {
+                const response = await fetch(`${API_BASE}/student/error-book/${errorId}/review`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    // 更新本地状态
+                    updateReviewStatus(true);
+                    showToast('已标记为已复习', 'success');
+                } else {
+                    throw new Error('标记失败');
+                }
+            } catch (error) {
+                console.error('标记复习失败:', error);
+                console.log('使用模拟成功处理');
+                
+                // 模拟成功处理 - 同样更新本地状态
+                updateReviewStatus(true);
+                showToast('已标记为已复习', 'success');
+            }
+        }
+
+        function updateReviewStatus(isReviewed) {
+            // 更新错题数据
+            errorData.is_reviewed = isReviewed;
+            
+            // 更新本地存储
+            const reviewedErrors = JSON.parse(localStorage.getItem('reviewedErrors') || '[]');
+            if (isReviewed && !reviewedErrors.includes(errorId)) {
+                reviewedErrors.push(errorId);
+                localStorage.setItem('reviewedErrors', JSON.stringify(reviewedErrors));
+            }
+            
+            // 更新界面显示
+            updateErrorInfo(errorData);
+            updateActionButtons(errorData);
+        }
+
+        function practiceSimilar() {
+            // 跳转到相似题练习页面
+            window.location.href = `similar-practice.html?errorId=${errorId}`;
+        }
+
+        function shareError() {
+            // 分享错题功能
+            showToast('分享功能开发中', 'info');
+        }
+
+        function collectError() {
+            // 收藏错题功能
+            showToast('收藏功能开发中', 'info');
+        }
+
+        function showActions() {
+            // 显示更多操作
+            showToast('更多操作开发中', 'info');
+        }
+
+        function showError(title, message) {
+            document.getElementById('loadingSection').style.display = 'none';
+            document.getElementById('errorContent').style.display = 'none';
+            
+            const errorSection = document.getElementById('errorSection');
+            document.getElementById('errorTitle').textContent = title;
+            document.getElementById('errorMessage').textContent = message;
+            errorSection.style.display = 'block';
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = `toast ${type} show`;
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

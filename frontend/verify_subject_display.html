@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学科显示验证</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .panel { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0; 
+            border-radius: 8px; 
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        .success { border-left: 4px solid #4CAF50; background: #f8fff8; }
+        .warning { border-left: 4px solid #ff9800; background: #fff8e1; }
+        .error { border-left: 4px solid #f44336; background: #ffebee; }
+        button { 
+            background: #4CAF50; 
+            color: white; 
+            border: none; 
+            padding: 10px 20px; 
+            border-radius: 5px; 
+            cursor: pointer; 
+            margin: 5px;
+        }
+        .subject-card {
+            border: 2px solid #ddd;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .chinese-subject { border-color: #4CAF50; background: #e8f5e8; }
+        .math-subject { border-color: #2196F3; background: #e3f2fd; }
+        .chemistry-subject { border-color: #ff9800; background: #fff3e0; }
+        pre { background: #f5f5f5; padding: 10px; border-radius: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📚 学科显示验证工具</h1>
+        <p>此工具用于验证新建学习计划后学科显示是否正确</p>
+        
+        <div class="panel">
+            <h2>🎯 快速测试</h2>
+            <button onclick="createChinesePlan()">创建语文学习计划</button>
+            <button onclick="createMathPlan()">创建数学学习计划</button>
+            <button onclick="checkCurrentDisplay()">检查当前显示</button>
+            <button onclick="forceRefresh()">强制刷新验证</button>
+        </div>
+        
+        <div class="panel">
+            <h2>📊 当前学科显示状态</h2>
+            <div id="currentStatus">点击"检查当前显示"查看状态</div>
+        </div>
+        
+        <div class="panel">
+            <h2>🔍 实时比较</h2>
+            <div style="display: flex; gap: 20px;">
+                <div style="flex: 1;">
+                    <h3>API数据 (真实数据)</h3>
+                    <div id="apiData">-</div>
+                </div>
+                <div style="flex: 1;">
+                    <h3>前端显示 (用户看到的)</h3>
+                    <div id="frontendDisplay">-</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h2>🔗 页面链接</h2>
+            <p><a href="http://localhost:8000/frontend/study-plan.html" target="_blank">📋 学习计划页面 (新窗口)</a></p>
+            <p><strong>验证步骤:</strong></p>
+            <ol>
+                <li>在此页面创建语文学习计划</li>
+                <li>点击上方链接打开学习计划页面</li>
+                <li>检查学科计划区域是否显示"语文"</li>
+                <li>如果显示错误，按Ctrl+F5强制刷新</li>
+            </ol>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+        
+        async function createChinesePlan() {
+            const statusDiv = document.getElementById('currentStatus');
+            statusDiv.innerHTML = '<div style="color: blue;">正在创建语文学习计划...</div>';
+            
+            const planData = {
+                title: `语文计划 ${new Date().toLocaleTimeString()}`,
+                description: "验证学科显示的语文计划",
+                subjects: ["chinese"],
+                priority: "medium", 
+                duration_days: 5,
+                daily_time: 40,
+                tasks: [
+                    { title: "语文阅读练习", subject: "chinese", estimatedTime: 20 },
+                    { title: "语文写作训练", subject: "chinese", estimatedTime: 20 }
+                ],
+                estimated_time: 40
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan-create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 语文学习计划创建成功</h3>
+                            <p><strong>计划ID:</strong> ${result.plan_id}</p>
+                            <p><strong>标题:</strong> ${result.title}</p>
+                            <p>现在请检查学科显示是否正确</p>
+                        </div>
+                    `;
+                    
+                    // 自动检查显示
+                    setTimeout(() => {
+                        checkCurrentDisplay();
+                    }, 1000);
+                } else {
+                    throw new Error(await response.text());
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ 创建失败: ${error.message}</div>`;
+            }
+        }
+        
+        async function createMathPlan() {
+            const statusDiv = document.getElementById('currentStatus');
+            statusDiv.innerHTML = '<div style="color: blue;">正在创建数学学习计划...</div>';
+            
+            const planData = {
+                title: `数学计划 ${new Date().toLocaleTimeString()}`,
+                description: "验证学科显示的数学计划",
+                subjects: ["math"],
+                priority: "medium",
+                duration_days: 5,
+                daily_time: 45,
+                tasks: [
+                    { title: "数学计算练习", subject: "math", estimatedTime: 25 },
+                    { title: "数学应用题", subject: "math", estimatedTime: 20 }
+                ],
+                estimated_time: 45
+            };
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan-create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    statusDiv.innerHTML = `
+                        <div class="success">
+                            <h3>✅ 数学学习计划创建成功</h3>
+                            <p><strong>计划ID:</strong> ${result.plan_id}</p>
+                            <p><strong>标题:</strong> ${result.title}</p>
+                            <p>现在请检查学科显示是否正确</p>
+                        </div>
+                    `;
+                    
+                    setTimeout(() => {
+                        checkCurrentDisplay();
+                    }, 1000);
+                } else {
+                    throw new Error(await response.text());
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<div class="error">❌ 创建失败: ${error.message}</div>`;
+            }
+        }
+        
+        async function checkCurrentDisplay() {
+            const apiDiv = document.getElementById('apiData');
+            const frontendDiv = document.getElementById('frontendDisplay');
+            
+            apiDiv.innerHTML = '<div style="color: blue;">检查中...</div>';
+            frontendDiv.innerHTML = '<div style="color: blue;">检查中...</div>';
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(await response.text());
+                }
+                
+                const data = await response.json();
+                const subjects = data.subjects || [];
+                
+                // 显示API数据
+                let apiSubjects = subjects.map(s => {
+                    const subjectClass = s.subject === '语文' ? 'chinese-subject' : 
+                                        s.subject === '数学' ? 'math-subject' : 
+                                        s.subject === '化学' ? 'chemistry-subject' : '';
+                    
+                    return `
+                    <div class="subject-card ${subjectClass}">
+                        <strong>${s.subject}</strong><br>
+                        任务: ${s.completed}/${s.total}<br>
+                        进度: ${(s.progress * 100).toFixed(1)}%
+                    </div>
+                    `;
+                }).join('');
+                
+                if (subjects.length === 0) {
+                    apiSubjects = '<div class="warning">⚠️ 没有学科数据</div>';
+                }
+                
+                apiDiv.innerHTML = `
+                    <div>
+                        <p><strong>计划:</strong> ${data.title}</p>
+                        <p><strong>学科数量:</strong> ${subjects.length}</p>
+                        ${apiSubjects}
+                    </div>
+                `;
+                
+                // 模拟前端显示检查
+                const expectedSubject = subjects.length > 0 ? subjects[0].subject : '无';
+                const displayStatus = subjects.length > 0 ? 'success' : 'warning';
+                
+                frontendDiv.innerHTML = `
+                    <div class="${displayStatus}">
+                        <p><strong>应该显示的学科:</strong> ${expectedSubject}</p>
+                        <p><strong>检查方法:</strong></p>
+                        <ol style="font-size: 14px; margin: 10px 0;">
+                            <li>打开学习计划页面</li>
+                            <li>查看"📚 学科计划"区域</li>
+                            <li>确认显示的是 <strong>${expectedSubject}</strong></li>
+                            <li>如果不对，按Ctrl+F5刷新</li>
+                        </ol>
+                        
+                        <div style="background: #f0f0f0; padding: 10px; border-radius: 5px; margin: 10px 0;">
+                            <strong>如果显示错误的原因:</strong><br>
+                            • 浏览器缓存了旧数据<br>
+                            • 页面JavaScript未正确执行<br>
+                            • 网络请求失败或延迟
+                        </div>
+                    </div>
+                `;
+                
+            } catch (error) {
+                apiDiv.innerHTML = `<div class="error">❌ 检查失败: ${error.message}</div>`;
+                frontendDiv.innerHTML = `<div class="error">❌ 无法检查前端显示</div>`;
+            }
+        }
+        
+        function forceRefresh() {
+            // 清除可能的缓存数据
+            localStorage.removeItem('studyPlanCache');
+            sessionStorage.clear();
+            
+            alert('已清除本地缓存。\n\n请手动:\n1. 打开学习计划页面\n2. 按 Ctrl+F5 强制刷新\n3. 检查学科显示是否正确');
+        }
+    </script>
+</body>
+</html>

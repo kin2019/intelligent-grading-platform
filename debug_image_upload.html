@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>图片上传功能调试</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .debug-section { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+        .upload-area { 
+            border: 2px dashed #ccc; 
+            padding: 40px; 
+            text-align: center; 
+            cursor: pointer;
+            margin: 10px 0;
+        }
+        .upload-area:hover { border-color: #007AFF; background: #f8f9ff; }
+        .preview-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); 
+            gap: 10px; 
+            margin: 10px 0; 
+        }
+        .preview-item { 
+            border: 1px solid #ddd; 
+            border-radius: 8px; 
+            overflow: hidden; 
+            position: relative;
+        }
+        .preview-img { width: 100%; height: 120px; object-fit: cover; }
+        .debug-log { 
+            background: #f5f5f5; 
+            padding: 10px; 
+            border-radius: 4px; 
+            font-family: monospace; 
+            font-size: 12px; 
+            height: 200px; 
+            overflow-y: auto; 
+            border: 1px solid #ddd;
+        }
+        .button { 
+            padding: 10px 20px; 
+            margin: 5px; 
+            background: #007AFF; 
+            color: white; 
+            border: none; 
+            border-radius: 4px; 
+            cursor: pointer; 
+        }
+        .button:hover { background: #0056CC; }
+        .file-input { display: none; }
+        .status { padding: 5px 10px; margin: 5px; border-radius: 4px; font-size: 14px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>🔍 图片上传功能调试</h1>
+    
+    <div class="debug-section">
+        <h3>方法1: 点击上传区域</h3>
+        <div class="upload-area" id="uploadArea1" onclick="document.getElementById('fileInput1').click()">
+            <div>📷 点击这里选择图片</div>
+            <div style="font-size: 12px; color: #666;">支持JPG、PNG格式</div>
+        </div>
+        <input type="file" class="file-input" id="fileInput1" accept="image/*" multiple onchange="handleFileSelect(event, 'method1')">
+        <div id="status1" class="status info">等待选择文件...</div>
+        <div id="preview1" class="preview-grid"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>方法2: 按钮触发</h3>
+        <button class="button" onclick="document.getElementById('fileInput2').click()">📁 选择图片文件</button>
+        <input type="file" class="file-input" id="fileInput2" accept="image/*" multiple onchange="handleFileSelect(event, 'method2')">
+        <div id="status2" class="status info">等待选择文件...</div>
+        <div id="preview2" class="preview-grid"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>方法3: 拖拽上传</h3>
+        <div class="upload-area" id="dragArea">
+            <div>🖱️ 拖拽图片到这里</div>
+            <div style="font-size: 12px; color: #666;">或点击选择文件</div>
+        </div>
+        <input type="file" class="file-input" id="fileInput3" accept="image/*" multiple onchange="handleFileSelect(event, 'method3')">
+        <div id="status3" class="status info">等待拖拽或选择文件...</div>
+        <div id="preview3" class="preview-grid"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>📋 调试日志</h3>
+        <button class="button" onclick="clearLog()">清空日志</button>
+        <button class="button" onclick="testFileAPI()">测试文件API</button>
+        <div id="debugLog" class="debug-log"></div>
+    </div>
+    
+    <div class="debug-section">
+        <h3>🧪 实际页面测试</h3>
+        <a href="http://localhost:8000/frontend/homework-submit.html" class="button" target="_blank">打开实际提交页面</a>
+    </div>
+
+    <script>
+        let selectedFiles = [];
+        
+        function log(message) {
+            const logDiv = document.getElementById('debugLog');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function clearLog() {
+            document.getElementById('debugLog').innerHTML = '';
+        }
+        
+        function handleFileSelect(event, method) {
+            log(`=== ${method} 文件选择事件触发 ===`);
+            
+            const files = event.target.files;
+            log(`文件数量: ${files ? files.length : 0}`);
+            
+            if (!files || files.length === 0) {
+                log('❌ 没有选择文件');
+                updateStatus(method, '❌ 没有选择文件', 'error');
+                return;
+            }
+            
+            // 清空之前的选择
+            selectedFiles = [];
+            
+            // 处理所有选中的文件
+            Array.from(files).forEach((file, index) => {
+                log(`文件 ${index + 1}: ${file.name}`);
+                log(`  - 类型: ${file.type}`);
+                log(`  - 大小: ${(file.size / 1024).toFixed(1)}KB`);
+                log(`  - 最后修改: ${new Date(file.lastModified).toLocaleString()}`);
+                
+                // 验证文件类型
+                if (!file.type.startsWith('image/')) {
+                    log(`❌ ${file.name} 不是图片文件`);
+                    return;
+                }
+                
+                // 验证文件大小 (10MB)
+                if (file.size > 10 * 1024 * 1024) {
+                    log(`❌ ${file.name} 文件太大 (${(file.size / 1024 / 1024).toFixed(1)}MB)`);
+                    return;
+                }
+                
+                selectedFiles.push(file);
+                log(`✅ ${file.name} 添加成功`);
+            });
+            
+            log(`有效文件数: ${selectedFiles.length}`);
+            updateStatus(method, `✅ 已选择 ${selectedFiles.length} 个文件`, 'success');
+            
+            // 显示预览
+            showPreviews(method);
+        }
+        
+        function updateStatus(method, message, type) {
+            const statusDiv = document.getElementById(`status${method.replace('method', '')}`);
+            statusDiv.textContent = message;
+            statusDiv.className = `status ${type}`;
+        }
+        
+        function showPreviews(method) {
+            const previewDiv = document.getElementById(`preview${method.replace('method', '')}`);
+            previewDiv.innerHTML = '';
+            
+            log(`开始生成 ${selectedFiles.length} 个预览...`);
+            
+            selectedFiles.forEach((file, index) => {
+                const reader = new FileReader();
+                
+                reader.onload = function(e) {
+                    log(`预览 ${index + 1} 生成成功: ${file.name}`);
+                    
+                    const previewItem = document.createElement('div');
+                    previewItem.className = 'preview-item';
+                    previewItem.innerHTML = `
+                        <img src="${e.target.result}" class="preview-img" alt="预览 ${index + 1}">
+                        <div style="padding: 5px; font-size: 12px; text-align: center; background: rgba(0,0,0,0.7); color: white;">
+                            ${file.name}<br>
+                            ${(file.size / 1024).toFixed(1)}KB
+                        </div>
+                    `;
+                    
+                    previewDiv.appendChild(previewItem);
+                };
+                
+                reader.onerror = function(error) {
+                    log(`❌ 预览 ${index + 1} 生成失败: ${error}`);
+                };
+                
+                reader.readAsDataURL(file);
+            });
+        }
+        
+        function testFileAPI() {
+            log('=== 测试文件API支持 ===');
+            
+            // 测试File API支持
+            if (window.File && window.FileReader && window.FileList && window.Blob) {
+                log('✅ File API 完全支持');
+            } else {
+                log('❌ File API 不完全支持');
+                
+                if (!window.File) log('  - File: 不支持');
+                if (!window.FileReader) log('  - FileReader: 不支持');
+                if (!window.FileList) log('  - FileList: 不支持'); 
+                if (!window.Blob) log('  - Blob: 不支持');
+            }
+            
+            // 测试input元素
+            const testInput = document.createElement('input');
+            testInput.type = 'file';
+            if (testInput.files !== undefined) {
+                log('✅ input.files 属性支持');
+            } else {
+                log('❌ input.files 属性不支持');
+            }
+            
+            // 测试multiple属性
+            testInput.multiple = true;
+            if (testInput.multiple === true) {
+                log('✅ multiple 属性支持');
+            } else {
+                log('❌ multiple 属性不支持');
+            }
+            
+            // 测试accept属性
+            testInput.accept = 'image/*';
+            if (testInput.accept === 'image/*') {
+                log('✅ accept 属性支持');
+            } else {
+                log('❌ accept 属性不支持');
+            }
+        }
+        
+        // 设置拖拽功能
+        function setupDragAndDrop() {
+            const dragArea = document.getElementById('dragArea');
+            
+            dragArea.addEventListener('click', () => {
+                document.getElementById('fileInput3').click();
+            });
+            
+            dragArea.addEventListener('dragover', (e) => {
+                e.preventDefault();
+                dragArea.style.borderColor = '#007AFF';
+                dragArea.style.background = '#e3f2fd';
+                log('拖拽悬停...');
+            });
+            
+            dragArea.addEventListener('dragleave', (e) => {
+                e.preventDefault();
+                dragArea.style.borderColor = '#ccc';
+                dragArea.style.background = '';
+                log('拖拽离开...');
+            });
+            
+            dragArea.addEventListener('drop', (e) => {
+                e.preventDefault();
+                dragArea.style.borderColor = '#ccc';
+                dragArea.style.background = '';
+                
+                const files = e.dataTransfer.files;
+                log(`拖拽放置，文件数: ${files.length}`);
+                
+                if (files.length > 0) {
+                    // 模拟文件输入事件
+                    const fakeEvent = {
+                        target: { files: files }
+                    };
+                    handleFileSelect(fakeEvent, 'method3');
+                }
+            });
+        }
+        
+        // 页面加载完成后初始化
+        window.onload = function() {
+            log('=== 页面初始化 ===');
+            log('浏览器: ' + navigator.userAgent);
+            
+            setupDragAndDrop();
+            testFileAPI();
+            
+            log('=== 初始化完成 ===');
+            log('请尝试不同的文件选择方法...');
+        };
+    </script>
+</body>
+</html>

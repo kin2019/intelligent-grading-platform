@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profile Update Test</title>
+</head>
+<body>
+    <h1>Profile Update Test</h1>
+    
+    <form id="testForm">
+        <label>昵称: <input type="text" id="editNickname" value="测试用户" /></label><br><br>
+        <label>年级: 
+            <select id="editGrade">
+                <option value="">请选择年级</option>
+                <option value="五年级">五年级</option>
+            </select>
+        </label><br><br>
+        <label>手机号: <input type="tel" id="editPhone" value="" /></label><br><br>
+        <label>邮箱: <input type="email" id="editEmail" value="" /></label><br><br>
+        
+        <button type="button" onclick="saveProfile()">保存</button>
+    </form>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = localStorage.getItem('token') || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+
+        async function saveProfile() {
+            console.log('=== 测试版 saveProfile() 开始 ===');
+            alert('开始执行 saveProfile 函数'); // 确保函数被调用
+            
+            const nickname = document.getElementById('editNickname').value.trim();
+            const grade = document.getElementById('editGrade').value;
+            const phone = document.getElementById('editPhone').value.trim();
+            const email = document.getElementById('editEmail').value.trim();
+            
+            console.log('表单数据:', { nickname, grade, phone, email });
+            
+            if (!nickname) {
+                alert('请输入昵称');
+                return;
+            }
+            
+            try {
+                console.log('发送请求到:', `${API_BASE}/user/profile`);
+                console.log('Token:', token ? `存在(长度${token.length})` : 'missing');
+                alert('即将发送 fetch 请求'); // 确保能到达这一步
+                
+                const response = await fetch(`${API_BASE}/user/profile`, {
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        nickname: nickname || null,
+                        grade: grade || null,
+                        phone: phone || null,
+                        email: email || null
+                    })
+                });
+                
+                console.log('请求完成，状态:', response.status);
+                console.log('响应:', response);
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    console.log('更新成功:', result);
+                    alert('更新成功!');
+                } else {
+                    const errorText = await response.text();
+                    console.error('更新失败:', errorText);
+                    alert('更新失败: ' + errorText);
+                }
+            } catch (error) {
+                console.error('请求异常:', error);
+                alert('请求异常: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>

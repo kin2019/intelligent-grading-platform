@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>调试作业964020问题</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .result { margin: 10px 0; padding: 15px; border-radius: 4px; font-family: monospace; font-size: 14px; }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .warning { background: #fff3cd; color: #856404; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .button { padding: 10px 16px; margin: 5px; background: #007AFF; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        pre { white-space: pre-wrap; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 调试作业ID 964020问题</h1>
+    
+    <div class="info">
+        <strong>问题：</strong>作业ID 964020仍然显示虚假的题目分析，而不是"无法识别"提示
+    </div>
+    
+    <button onclick="checkAuth()" class="button">检查认证状态</button>
+    <button onclick="testAPI()" class="button">测试API调用</button>
+    <button onclick="testFrontendLogic()" class="button">测试前端逻辑</button>
+    <button onclick="clearStorage()" class="button">清除存储</button>
+    
+    <div id="results"></div>
+
+    <script>
+        const homeworkId = '964020';
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('results');
+            const logDiv = document.createElement('div');
+            logDiv.className = `result ${type}`;
+            logDiv.innerHTML = `<strong>[${new Date().toLocaleTimeString()}]</strong> ${message}`;
+            resultsDiv.appendChild(logDiv);
+        }
+
+        function checkAuth() {
+            log('=== 检查认证状态 ===', 'info');
+            
+            const token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            
+            log(`Token存在: ${!!token}`, token ? 'warning' : 'success');
+            if (token) {
+                log(`Token值: ${token.substring(0, 20)}...`, 'warning');
+            }
+            log(`Role: ${role || 'none'}`, 'info');
+            
+            // 检查其他可能的存储
+            log(`SessionStorage token: ${!!sessionStorage.getItem('token')}`, 'info');
+            log(`Cookies: ${document.cookie || 'none'}`, 'info');
+            
+            if (token) {
+                log('❌ 发现token，这可能导致API调用成功而不是使用fallback数据', 'error');
+            } else {
+                log('✅ 没有token，应该使用fallback数据', 'success');
+            }
+        }
+
+        async function testAPI() {
+            log('=== 测试API调用 ===', 'info');
+            
+            const token = localStorage.getItem('token');
+            
+            try {
+                const headers = token ? {
+                    'Authorization': `Bearer ${token}`
+                } : {};
+                
+                log(`请求头: ${JSON.stringify(headers)}`, 'info');
+                
+                const response = await fetch(`${API_BASE}/homework/result/${homeworkId}`, { headers });
+                
+                log(`响应状态: ${response.status} ${response.statusText}`, response.ok ? 'warning' : 'success');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log('API调用成功！这就是问题所在', 'error');
+                    log(`返回的数据有题目: ${data.correction_results?.length > 0}`, 'error');
+                    log(`数据结构: ${JSON.stringify(data, null, 2).substring(0, 500)}...`, 'error');
+                } else {
+                    const errorData = await response.json();
+                    log('API调用失败（这是预期的）', 'success');
+                    log(`错误: ${JSON.stringify(errorData)}`, 'info');
+                }
+            } catch (error) {
+                log(`API调用异常: ${error.message}`, 'info');
+            }
+        }
+
+        async function testFrontendLogic() {
+            log('=== 测试前端数据生成逻辑 ===', 'info');
+            
+            // 模拟generateFallbackData函数
+            const knownTestIds = [898411, 773191, 942516, 942737, 899573];
+            const isKnown = knownTestIds.includes(parseInt(homeworkId));
+            
+            log(`作业ID ${homeworkId} 是否在已知列表: ${isKnown}`, isKnown ? 'warning' : 'success');
+            
+            if (!isKnown) {
+                const fallbackData = {
+                    id: homeworkId,
+                    subject: 'unknown',
+                    total_questions: 0,
+                    correct_count: 0,
+                    wrong_count: 0,
+                    accuracy_rate: 0,
+                    status: 'recognition_failed',
+                    correction_results: [],
+                    special_message: {
+                        type: 'recognition_failed',
+                        title: '无法识别作业内容',
+                        content: '抱歉，系统无法从图片中识别出清晰的作业题目。',
+                        suggestions: ['请确保图片清晰', '重新拍摄图片']
+                    }
+                };
+                
+                log('✅ 前端逻辑正确，应该返回识别失败数据', 'success');
+                log(`生成的数据: correction_results长度 = ${fallbackData.correction_results.length}`, 'success');
+                log(`特殊消息类型: ${fallbackData.special_message.type}`, 'success');
+            } else {
+                log('❌ 前端逻辑会生成测试数据，包含题目', 'error');
+            }
+        }
+
+        function clearStorage() {
+            log('=== 清除存储数据 ===', 'info');
+            
+            localStorage.clear();
+            sessionStorage.clear();
+            
+            // 清除cookies（简单方法）
+            document.cookie.split(";").forEach(function(c) { 
+                document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/"); 
+            });
+            
+            log('✅ 已清除localStorage、sessionStorage和cookies', 'success');
+            log('请刷新页面测试效果', 'info');
+        }
+
+        // 页面加载时自动检查
+        window.onload = function() {
+            setTimeout(checkAuth, 500);
+        };
+    </script>
+</body>
+</html>

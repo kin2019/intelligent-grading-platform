@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>相机功能测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 600px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        
+        .test-area { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-btn { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            background: #007AFF; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #0056CC;
+        }
+        
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        #result { 
+            margin-top: 20px; 
+            padding: 16px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .status-ok { color: #28a745; }
+        .status-warning { color: #ffc107; }
+        .status-error { color: #dc3545; }
+        
+        .test-video {
+            width: 100%;
+            max-width: 400px;
+            height: 300px;
+            border-radius: 8px;
+            background: #000;
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-area">
+        <h2>📷 相机功能检测</h2>
+        <p>此页面用于检测您的设备和浏览器是否支持相机功能</p>
+        
+        <div>
+            <button class="test-btn" onclick="checkEnvironment()">🔍 检查环境</button>
+            <button class="test-btn" onclick="checkPermissions()">🔐 检查权限</button>
+            <button class="test-btn" onclick="testCamera()" id="testCameraBtn">📷 测试相机</button>
+            <button class="test-btn" onclick="listDevices()">📱 设备列表</button>
+        </div>
+        
+        <video id="testVideo" class="test-video" autoplay playsinline></video>
+        
+        <div id="result">
+            <p>点击上方按钮开始检测...</p>
+        </div>
+    </div>
+    
+    <div class="test-area">
+        <h3>🔗 返回主页面</h3>
+        <a href="homework-submit.html" class="test-btn" style="text-decoration: none;">返回拍照批改页面</a>
+    </div>
+
+    <script>
+        let currentStream = null;
+
+        function updateResult(content, className = '') {
+            const result = document.getElementById('result');
+            if (className) {
+                result.className = className;
+            }
+            result.innerHTML = content;
+        }
+
+        function checkEnvironment() {
+            updateResult('正在检查环境...');
+            
+            let results = [];
+            
+            // 检查协议
+            if (location.protocol === 'https:') {
+                results.push('<span class="status-ok">✅ HTTPS协议 - 支持相机功能</span>');
+            } else if (location.hostname === 'localhost' || location.hostname === '127.0.0.1') {
+                results.push('<span class="status-ok">✅ 本地环境 - 支持相机功能</span>');
+            } else {
+                results.push('<span class="status-error">❌ HTTP协议 - 不支持相机功能，需要HTTPS</span>');
+            }
+            
+            // 检查浏览器支持
+            if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+                results.push('<span class="status-ok">✅ 浏览器支持 getUserMedia API</span>');
+            } else {
+                results.push('<span class="status-error">❌ 浏览器不支持 getUserMedia API</span>');
+            }
+            
+            // 检查设备类型
+            const isMobile = /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+            if (isMobile) {
+                results.push('<span class="status-ok">📱 移动设备 - 建议优先使用系统相机</span>');
+            } else {
+                results.push('<span class="status-ok">💻 桌面设备 - 适合使用网页相机</span>');
+            }
+            
+            // 检查用户代理
+            results.push(`<br><strong>浏览器信息:</strong> ${navigator.userAgent}`);
+            
+            updateResult(results.join('<br>'));
+        }
+
+        async function checkPermissions() {
+            updateResult('正在检查权限...');
+            
+            try {
+                if (navigator.permissions) {
+                    const permission = await navigator.permissions.query({ name: 'camera' });
+                    let status = '';
+                    
+                    switch (permission.state) {
+                        case 'granted':
+                            status = '<span class="status-ok">✅ 相机权限已授予</span>';
+                            break;
+                        case 'denied':
+                            status = '<span class="status-error">❌ 相机权限被拒绝</span>';
+                            break;
+                        case 'prompt':
+                            status = '<span class="status-warning">⚠️ 相机权限需要用户授权</span>';
+                            break;
+                        default:
+                            status = `<span class="status-warning">⚠️ 权限状态: ${permission.state}</span>`;
+                    }
+                    
+                    updateResult(status);
+                } else {
+                    updateResult('<span class="status-warning">⚠️ 浏览器不支持权限查询API</span>');
+                }
+            } catch (error) {
+                updateResult(`<span class="status-error">❌ 权限检查失败: ${error.message}</span>`);
+            }
+        }
+
+        async function testCamera() {
+            const btn = document.getElementById('testCameraBtn');
+            const video = document.getElementById('testVideo');
+            
+            btn.disabled = true;
+            btn.textContent = '测试中...';
+            updateResult('正在测试相机...');
+            
+            try {
+                // 停止之前的流
+                if (currentStream) {
+                    currentStream.getTracks().forEach(track => track.stop());
+                }
+                
+                // 请求相机权限和流
+                const stream = await navigator.mediaDevices.getUserMedia({ 
+                    video: { 
+                        facingMode: 'environment',
+                        width: { ideal: 1280 },
+                        height: { ideal: 720 }
+                    } 
+                });
+                
+                // 显示视频
+                video.srcObject = stream;
+                video.style.display = 'block';
+                currentStream = stream;
+                
+                // 获取视频轨道信息
+                const videoTrack = stream.getVideoTracks()[0];
+                const settings = videoTrack.getSettings();
+                
+                updateResult(`
+                    <span class="status-ok">✅ 相机测试成功！</span><br>
+                    <strong>视频设备:</strong> ${videoTrack.label || '未知设备'}<br>
+                    <strong>分辨率:</strong> ${settings.width}x${settings.height}<br>
+                    <strong>帧率:</strong> ${settings.frameRate}fps<br>
+                    <strong>朝向:</strong> ${settings.facingMode || '未知'}<br>
+                    <br>
+                    <button class="test-btn" onclick="stopCamera()">🛑 停止相机</button>
+                    <button class="test-btn" onclick="captureTest()">📸 拍照测试</button>
+                `);
+                
+            } catch (error) {
+                let errorMsg = '';
+                
+                if (error.name === 'NotAllowedError') {
+                    errorMsg = '相机权限被拒绝，请允许相机访问';
+                } else if (error.name === 'NotFoundError') {
+                    errorMsg = '未找到相机设备';
+                } else if (error.name === 'NotReadableError') {
+                    errorMsg = '相机被其他程序占用';
+                } else {
+                    errorMsg = error.message;
+                }
+                
+                updateResult(`<span class="status-error">❌ 相机测试失败: ${errorMsg}</span>`);
+                video.style.display = 'none';
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📷 测试相机';
+            }
+        }
+
+        function stopCamera() {
+            const video = document.getElementById('testVideo');
+            
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+                currentStream = null;
+            }
+            
+            video.srcObject = null;
+            video.style.display = 'none';
+            
+            updateResult('<span class="status-ok">✅ 相机已停止</span>');
+        }
+
+        function captureTest() {
+            const video = document.getElementById('testVideo');
+            
+            if (!video.videoWidth || !video.videoHeight) {
+                updateResult('<span class="status-error">❌ 视频尚未就绪</span>');
+                return;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(video, 0, 0);
+            
+            canvas.toBlob((blob) => {
+                if (blob) {
+                    const size = (blob.size / 1024).toFixed(1);
+                    updateResult(`
+                        <span class="status-ok">✅ 拍照测试成功！</span><br>
+                        <strong>图片大小:</strong> ${size} KB<br>
+                        <strong>分辨率:</strong> ${canvas.width}x${canvas.height}<br>
+                        <img src="${canvas.toDataURL()}" style="max-width: 200px; border-radius: 8px; margin-top: 10px;">
+                    `);
+                } else {
+                    updateResult('<span class="status-error">❌ 拍照失败</span>');
+                }
+            }, 'image/jpeg', 0.9);
+        }
+
+        async function listDevices() {
+            updateResult('正在获取设备列表...');
+            
+            try {
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                const videoDevices = devices.filter(device => device.kind === 'videoinput');
+                const audioDevices = devices.filter(device => device.kind === 'audioinput');
+                
+                let result = `<strong>发现 ${videoDevices.length} 个摄像头设备:</strong><br>`;
+                
+                if (videoDevices.length > 0) {
+                    videoDevices.forEach((device, index) => {
+                        result += `${index + 1}. ${device.label || `摄像头 ${index + 1}`} (ID: ${device.deviceId.substring(0, 8)}...)<br>`;
+                    });
+                } else {
+                    result += '❌ 未找到摄像头设备<br>';
+                }
+                
+                result += `<br><strong>发现 ${audioDevices.length} 个音频输入设备</strong>`;
+                
+                updateResult(result);
+            } catch (error) {
+                updateResult(`<span class="status-error">❌ 无法获取设备列表: ${error.message}</span>`);
+            }
+        }
+
+        // 页面卸载时停止相机
+        window.addEventListener('beforeunload', () => {
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+        });
+
+        // 自动检查环境
+        window.addEventListener('load', () => {
+            setTimeout(checkEnvironment, 500);
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name=\"viewport" content="width=device-width, initial-scale=1.0">
+    <title>简易PDF生成器测试</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            max-width: 800px; 
+            margin: 0 auto; 
+            padding: 20px; 
+            background: #f5f5f5; 
+        }
+        
+        .test-area { 
+            background: white; 
+            padding: 20px; 
+            border-radius: 12px; 
+            margin-bottom: 20px; 
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .test-btn { 
+            padding: 12px 24px; 
+            margin: 8px; 
+            background: #28a745; 
+            color: white; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-size: 14px;
+        }
+        
+        .test-btn:hover {
+            background: #218838;
+        }
+        
+        .test-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        
+        #result { 
+            margin-top: 20px; 
+            padding: 16px; 
+            background: #f8f9fa; 
+            border-radius: 8px; 
+            font-size: 14px;
+            line-height: 1.5;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        
+        .sample-questions {
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 16px;
+            margin: 16px 0;
+        }
+        
+        .question-item {
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #28a745;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-area">
+        <h2>📋 简易PDF生成器测试</h2>
+        <p>此页面用于测试SimplePDFGenerator，现在支持直接下载PDF文件，完美支持中文内容</p>
+        <p><strong>功能：</strong>点击测试按钮后会直接生成并下载PDF文件到本地，无需打开新窗口</p>
+        
+        <div>
+            <button class="test-btn" onclick="testDirectDownloadPDF()" id="directDownloadBtn">⬇️ 测试直接下载PDF</button>
+            <button class="test-btn" onclick="testSimplePDF()" id="testBtn">🔍 测试简易PDF生成</button>
+            <button class="test-btn" onclick="testHTMLToPDF()" id="htmlToPdfBtn">🌐 测试HTML转PDF（备用）</button>
+            <button class="test-btn" onclick="testWithConsoleDebug()" id="debugBtn">🐛 调试模式测试</button>
+            <button class="test-btn" onclick="clearResult()">🧹 清空结果</button>
+        </div>
+        
+        <div class="sample-questions">
+            <h4>测试数据预览：</h4>
+            <div class="question-item">
+                <strong>题目1：</strong>计算：125 × 8 = ?<br>
+                <strong>答案：</strong>1000<br>
+                <strong>解析：</strong>这是一道基本的乘法运算题目，需要注意进位处理
+            </div>
+            <div class="question-item">
+                <strong>题目2：</strong>下列词语中，没有错别字的一组是（）<br>
+                <strong>答案：</strong>B<br>
+                <strong>解析：</strong>注意区分形近字和音近字的写法差异
+            </div>
+            <div class="question-item">
+                <strong>题目3：</strong>Choose the correct answer: I ____ to school every day.<br>
+                <strong>答案：</strong>go<br>
+                <strong>解析：</strong>一般现在时，第一人称单数用动词原形
+            </div>
+        </div>
+        
+        <div id="result">
+            点击上方按钮开始测试简易PDF生成功能...
+        </div>
+    </div>
+    
+    <div class="test-area">
+        <h3>🔗 导航</h3>
+        <a href="error-book.html" class="test-btn" style="text-decoration: none;">返回错题本页面</a>
+        <a href="pdf-test.html" class="test-btn" style="text-decoration: none;">完整PDF测试页面</a>
+    </div>
+
+    <script src="simple-pdf-generator.js"></script>
+    <script>
+        function updateResult(content) {
+            const result = document.getElementById('result');
+            result.textContent = content;
+        }
+
+        function clearResult() {
+            updateResult('结果已清空，可以重新开始测试...');
+        }
+
+        async function testSimplePDF(options = {}) {
+            const btn = event.target;
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+            
+            const optionText = options.translateChinese ? 
+                (options.showBothLanguages ? '中英对照模式' : '纯英文模式') : 
+                '默认模式';
+            
+            updateResult(`开始测试简易PDF生成 - ${optionText}...\n`);
+            
+            try {
+                // 检查SimplePDFGenerator是否加载
+                if (typeof SimplePDFGenerator === 'undefined') {
+                    throw new Error('SimplePDFGenerator未加载');
+                }
+                
+                updateResult(`SimplePDFGenerator已加载\n正在创建测试数据...\n选项: ${JSON.stringify(options, null, 2)}\n`);
+                
+                // 使用测试数据
+                const testQuestions = SimplePDFGenerator.createTestQuestions();
+                updateResult(`测试数据创建完成，共${testQuestions.length}道题目\n正在生成PDF...\n`);
+                
+                // 创建生成器实例
+                const generator = new SimplePDFGenerator();
+                
+                // 生成PDF（传入选项）
+                const success = await generator.generatePDF(testQuestions, options);
+                
+                if (success) {
+                    updateResult(`✅ ${optionText}PDF文件已生成并开始下载！\n生成时间：${new Date().toLocaleTimeString()}\n\n文件名格式：练习题集-YYYYMMDD.pdf\n内容与相似练习页面完全一致，支持完整中文显示！\n\n请检查浏览器下载文件夹查看PDF文件。`);
+                } else {
+                    throw new Error('PDF生成返回失败状态');
+                }
+                
+            } catch (error) {
+                updateResult(`❌ ${optionText}PDF生成失败\n错误信息：${error.message}\n错误堆栈：\n${error.stack || '无堆栈信息'}`);
+                console.error('测试失败:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        async function testWithConsoleDebug() {
+            const btn = document.getElementById('debugBtn');
+            btn.disabled = true;
+            btn.textContent = '调试中...';
+            
+            updateResult('开始调试模式测试...\n请打开浏览器开发者工具的控制台查看详细日志\n\n');
+            
+            try {
+                console.clear();
+                console.log('=== 简易PDF生成器调试测试开始 ===');
+                
+                // 检查环境
+                console.log('检查SimplePDFGenerator:', typeof SimplePDFGenerator);
+                console.log('检查Canvas支持:', !!document.createElement('canvas').getContext);
+                console.log('检查Blob支持:', typeof Blob !== 'undefined');
+                console.log('检查URL.createObjectURL支持:', typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function');
+                
+                const testQuestions = [
+                    {
+                        number: 1,
+                        difficulty: 'same',
+                        content: '这是一个测试题目：2 + 2 = ?',
+                        answer: '4',
+                        analysis: '简单的加法运算'
+                    }
+                ];
+                
+                console.log('测试题目数据:', testQuestions);
+                
+                const generator = new SimplePDFGenerator();
+                console.log('SimplePDFGenerator实例创建完成');
+                
+                // 测试内容生成
+                const canvas = document.createElement('canvas');
+                const ctx = canvas.getContext('2d');
+                ctx.font = '12px Arial';
+                
+                const pageContent = generator.generatePageContent(testQuestions, ctx);
+                console.log('页面内容生成完成，长度:', pageContent.length);
+                console.log('页面内容预览:', pageContent.substring(0, 500));
+                
+                const pdfContent = generator.buildPDFContent(testQuestions, ctx);
+                console.log('PDF内容构建完成，总长度:', pdfContent.length);
+                
+                // 生成完整PDF
+                const success = await generator.generatePDF(testQuestions);
+                
+                updateResult(`调试测试完成\n结果：${success ? '成功' : '失败'}\n\n详细信息请查看浏览器控制台\n生成时间：${new Date().toLocaleTimeString()}`);
+                
+                console.log('=== 简易PDF生成器调试测试结束 ===');
+                
+            } catch (error) {
+                updateResult(`调试测试失败\n错误：${error.message}\n详细信息请查看控制台`);
+                console.error('调试测试失败:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🐛 调试模式测试';
+            }
+        }
+        
+        async function testDirectDownloadPDF() {
+            const btn = document.getElementById('directDownloadBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '下载中...';
+            
+            updateResult('开始测试直接下载PDF功能...\n');
+            
+            try {
+                // 检查SimplePDFGenerator是否加载
+                if (typeof SimplePDFGenerator === 'undefined') {
+                    throw new Error('SimplePDFGenerator未加载');
+                }
+                
+                updateResult('SimplePDFGenerator已加载\n正在创建测试数据...\n');
+                
+                // 使用测试数据
+                const testQuestions = SimplePDFGenerator.createTestQuestions();
+                updateResult(`测试数据创建完成，共${testQuestions.length}道题目\n正在生成PDF并下载...\n`);
+                
+                // 创建生成器实例并直接下载
+                const generator = new SimplePDFGenerator();
+                const success = await generator.generateDirectPDF(testQuestions);
+                
+                if (success) {
+                    updateResult(`✅ PDF文件直接下载成功！\n生成时间：${new Date().toLocaleTimeString()}\n\n文件已保存到浏览器下载文件夹\n文件名：练习题集-YYYYMMDD.pdf\n\n包含完整的中文内容，格式与相似练习页面完全一致！`);
+                } else {
+                    throw new Error('PDF直接下载失败');
+                }
+                
+            } catch (error) {
+                updateResult(`❌ PDF直接下载测试失败\n错误信息：${error.message}\n\n可能原因：\n1. Canvas不支持\n2. Blob API不可用\n3. 图片转换失败\n\n建议使用备用的HTML转PDF方式`);
+                console.error('直接下载测试失败:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+        
+        async function testHTMLToPDF() {
+            const btn = document.getElementById('htmlToPdfBtn');
+            const originalText = btn.textContent;
+            btn.disabled = true;
+            btn.textContent = '生成中...';
+            
+            updateResult('开始测试HTML转PDF备用方案...\n');
+            
+            try {
+                if (typeof SimplePDFGenerator === 'undefined') {
+                    throw new Error('SimplePDFGenerator未加载');
+                }
+                
+                const testQuestions = SimplePDFGenerator.createTestQuestions();
+                const generator = new SimplePDFGenerator();
+                
+                updateResult(`开始使用HTML转PDF方案...\n题目数量：${testQuestions.length}\n`);
+                
+                const success = await generator.generateHTMLToPDF(testQuestions);
+                
+                if (success) {
+                    updateResult(`✅ HTML转PDF备用方案成功！\n生成时间：${new Date().toLocaleTimeString()}\n\n已打开新窗口或显示预览\n请按提示使用浏览器打印功能保存为PDF`);
+                } else {
+                    throw new Error('HTML转PDF失败');
+                }
+                
+            } catch (error) {
+                updateResult(`❌ HTML转PDF测试失败\n错误信息：${error.message}`);
+                console.error('HTML转PDF测试失败:', error);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+            }
+        }
+
+        // 页面加载完成后显示状态
+        window.addEventListener('load', () => {
+            const hasGenerator = typeof SimplePDFGenerator !== 'undefined';
+            const hasCanvas = !!document.createElement('canvas').getContext;
+            const hasBlob = typeof Blob !== 'undefined';
+            
+            updateResult(`页面加载完成
+环境检查：
+✓ SimplePDFGenerator: ${hasGenerator ? '已加载' : '未加载'}
+✓ Canvas支持: ${hasCanvas ? '支持' : '不支持'}
+✓ Blob支持: ${hasBlob ? '支持' : '不支持'}
+
+${hasGenerator && hasCanvas && hasBlob ? '✅ 环境正常，可以开始测试' : '❌ 环境有问题，可能无法正常生成PDF'}`);
+        });
+    </script>
+</body>
+</html>

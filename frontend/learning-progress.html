@@ -1,0 +1,832 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>学习进度 - ZYJC智能批改</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 80px;
+        }
+        
+        /* 孩子选择器 */
+        .child-selector {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .selector-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .child-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .child-tab {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .child-tab.active {
+            background: #9b59b6;
+            color: white;
+            border-color: #9b59b6;
+        }
+        
+        /* 总体进度 */
+        .overall-progress {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .progress-overview {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .progress-item {
+            text-align: center;
+            padding: 20px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #e8e9ff 100%);
+            border-radius: 12px;
+            border: 1px solid #e0e0ff;
+        }
+        
+        .progress-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #9b59b6;
+            margin-bottom: 8px;
+        }
+        
+        .progress-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* 学科进度 */
+        .subject-progress {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .subject-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .subject-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #9b59b6;
+        }
+        
+        .subject-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .subject-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .subject-percentage {
+            font-size: 18px;
+            font-weight: bold;
+            color: #9b59b6;
+        }
+        
+        .subject-stats {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+        
+        .progress-bar-container {
+            position: relative;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background: #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        /* 学习日历 */
+        .learning-calendar {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .calendar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .calendar-title {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .calendar-nav {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .nav-btn {
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f8f9fa;
+            border-radius: 6px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 4px;
+        }
+        
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .calendar-day.header {
+            font-weight: bold;
+            color: #666;
+            cursor: default;
+        }
+        
+        .calendar-day.active {
+            background: #9b59b6;
+            color: white;
+        }
+        
+        .calendar-day.completed {
+            background: #28a745;
+            color: white;
+        }
+        
+        .calendar-day.partial {
+            background: #ffc107;
+            color: #333;
+        }
+        
+        /* 成就徽章 */
+        .achievements {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .achievement-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+        }
+        
+        .achievement-item {
+            text-align: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: transform 0.2s ease;
+        }
+        
+        .achievement-item:hover {
+            transform: translateY(-2px);
+        }
+        
+        .achievement-item.unlocked {
+            background: linear-gradient(135deg, #ffd700 0%, #ffb347 100%);
+            color: #333;
+        }
+        
+        .achievement-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .achievement-title {
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        /* 加载和错误状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #9b59b6;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        
+        .retry-btn {
+            background: #9b59b6;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #9b59b6;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <div class="navbar-title">学习进度</div>
+                <button class="settings-btn" onclick="showSettings()">⚙️</button>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 孩子选择器 -->
+            <div class="child-selector">
+                <div class="selector-title"></div>
+                <div class="child-tabs" id="childTabs">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 总体进度 -->
+            <div class="overall-progress">
+                <div class="section-title">📈 总体进度</div>
+                <div class="progress-overview" id="overallProgress">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载进度中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学科进度 -->
+            <div class="subject-progress">
+                <div class="section-title">📚 学科进度</div>
+                <div class="subject-list" id="subjectProgress">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载学科进度中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学习日历 -->
+            <div class="learning-calendar">
+                <div class="section-title">📅 学习日历</div>
+                <div class="calendar-header">
+                    <div class="calendar-title" id="calendarTitle">2025年8月</div>
+                    <div class="calendar-nav">
+                        <button class="nav-btn" onclick="previousMonth()">←</button>
+                        <button class="nav-btn" onclick="nextMonth()">→</button>
+                    </div>
+                </div>
+                <div class="calendar-grid" id="calendarGrid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>生成日历中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 成就徽章 -->
+            <div class="achievements">
+                <div class="section-title">🏆 成就徽章</div>
+                <div class="achievement-grid" id="achievementGrid">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载成就中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goToParentHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">📈</div>
+                <div class="nav-text">进度</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let children = [];
+        let currentChildId = null;
+        let currentMonth = new Date();
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        async function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                // 为了演示，临时设置一个测试token
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXJlbnRfMzEiLCJpYXQiOjE3NTU5NTk0NDEsImV4cCI6MTc1NjA0NTg0MX0.zOS2t-bWHYhGiupkESyg-3RXtAwegcsQ5YMkiEfdoFI';
+                localStorage.setItem('token', token);
+                console.log('使用测试token进行演示');
+            }
+            
+            // 加载孩子列表
+            await loadChildren();
+            // 初始化日历
+            generateCalendar();
+        }
+
+        async function loadChildren() {
+            try {
+                const response = await fetch(`${API_BASE}/parent/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    children = data.children;
+                    updateChildTabs();
+                    
+                    // 默认选择有学习数据的孩子（优先选择ID 34）
+                    if (children.length > 0) {
+                        // 优先选择ID为34的孩子，因为它有学习数据
+                        const childWithData = children.find(child => child.id === 34);
+                        const selectedChild = childWithData || children[0];
+                        selectChild(selectedChild.id);
+                    }
+                } else {
+                    throw new Error('获取孩子列表失败');
+                }
+            } catch (error) {
+                console.error('获取孩子列表失败:', error);
+                document.getElementById('childTabs').innerHTML = 
+                    '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildren()">重试</button></div>';
+            }
+        }
+
+        function updateChildTabs() {
+            const childTabsHtml = children.map(child => {
+                // 将英文avatar转换为中文显示
+                let avatarDisplay = child.avatar || '👶';
+                if (avatarDisplay === 'student') {
+                    avatarDisplay = '学生';
+                }
+                
+                return `
+                    <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
+                            onclick="selectChild(${child.id})"
+                            data-child-id="${child.id}">
+                        ${avatarDisplay} ${child.name}
+                    </button>
+                `;
+            }).join('');
+            
+            document.getElementById('childTabs').innerHTML = childTabsHtml;
+        }
+
+        async function selectChild(childId) {
+            currentChildId = childId;
+            
+            // 更新选中状态
+            document.querySelectorAll('.child-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.childId == childId);
+            });
+            
+            // 加载该孩子的学习进度
+            await loadLearningProgress();
+        }
+
+        async function loadLearningProgress() {
+            if (!currentChildId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/parent/children/${currentChildId}/progress`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateOverallProgress(data.overall);
+                    updateSubjectProgress(data.subjects);
+                    updateAchievements(data.achievements);
+                } else {
+                    throw new Error('获取学习进度失败');
+                }
+            } catch (error) {
+                console.error('获取学习进度失败:', error);
+                showProgressError();
+            }
+        }
+
+        function showProgressError() {
+            document.getElementById('overallProgress').innerHTML = '<div class="error">加载进度失败 <button class="retry-btn" onclick="loadLearningProgress()">重试</button></div>';
+            document.getElementById('subjectProgress').innerHTML = '<div class="error">加载学科进度失败</div>';
+            document.getElementById('achievementGrid').innerHTML = '<div class="error">加载成就失败</div>';
+        }
+
+
+        function updateOverallProgress(overall) {
+            const progressHtml = `
+                <div class="progress-item">
+                    <div class="progress-number">${overall.totalProgress}%</div>
+                    <div class="progress-label">总体进度</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${overall.totalProgress}%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-number">${overall.weeklyGoal}%</div>
+                    <div class="progress-label">周目标</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${overall.weeklyGoal}%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-number">${overall.dailyStreak}</div>
+                    <div class="progress-label">连续学习天数</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${Math.min(overall.dailyStreak * 5, 100)}%"></div>
+                    </div>
+                </div>
+                <div class="progress-item">
+                    <div class="progress-number">${overall.monthlyGoal}%</div>
+                    <div class="progress-label">月目标</div>
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: ${overall.monthlyGoal}%"></div>
+                    </div>
+                </div>
+            `;
+            
+            document.getElementById('overallProgress').innerHTML = progressHtml;
+        }
+
+        function updateSubjectProgress(subjects) {
+            const subjectsHtml = subjects.map(subject => `
+                <div class="subject-item">
+                    <div class="subject-header">
+                        <div class="subject-name">${subject.name}</div>
+                        <div class="subject-percentage">${subject.progress}%</div>
+                    </div>
+                    <div class="subject-stats">
+                        <div>已完成 ${subject.completed}/${subject.total}</div>
+                        <div>最近得分: ${subject.recentScore}</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${subject.progress}%"></div>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('subjectProgress').innerHTML = subjectsHtml;
+        }
+
+
+        function updateAchievements(achievements) {
+            const achievementsHtml = achievements.map(achievement => `
+                <div class="achievement-item ${achievement.unlocked ? 'unlocked' : ''}" 
+                     onclick="viewAchievement('${achievement.title}')">
+                    <div class="achievement-icon">${achievement.icon}</div>
+                    <div class="achievement-title">${achievement.title}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('achievementGrid').innerHTML = achievementsHtml;
+        }
+
+        function generateCalendar() {
+            const year = currentMonth.getFullYear();
+            const month = currentMonth.getMonth();
+            
+            document.getElementById('calendarTitle').textContent = 
+                `${year}年${month + 1}月`;
+            
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startDate = new Date(firstDay);
+            startDate.setDate(startDate.getDate() - firstDay.getDay());
+            
+            const calendarHtml = [];
+            
+            // 添加星期标题
+            const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
+            weekdays.forEach(day => {
+                calendarHtml.push(`<div class="calendar-day header">${day}</div>`);
+            });
+            
+            // 添加日期
+            const currentDate = new Date(startDate);
+            for (let i = 0; i < 42; i++) {
+                const isCurrentMonth = currentDate.getMonth() === month;
+                const isToday = currentDate.toDateString() === new Date().toDateString();
+                
+                let dayClass = 'calendar-day';
+                if (isToday) dayClass += ' active';
+                // TODO: 从后端获取每日学习数据来确定日期状态
+                // else if (isCurrentMonth && hasLearningData(currentDate)) dayClass += ' completed';
+                // else if (isCurrentMonth && hasPartialData(currentDate)) dayClass += ' partial';
+                
+                calendarHtml.push(`
+                    <div class="${dayClass}" onclick="selectDate('${currentDate.toISOString()}')">
+                        ${isCurrentMonth ? currentDate.getDate() : ''}
+                    </div>
+                `);
+                
+                currentDate.setDate(currentDate.getDate() + 1);
+            }
+            
+            document.getElementById('calendarGrid').innerHTML = calendarHtml.join('');
+        }
+
+        function previousMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() - 1);
+            generateCalendar();
+        }
+
+        function nextMonth() {
+            currentMonth.setMonth(currentMonth.getMonth() + 1);
+            generateCalendar();
+        }
+
+        function selectDate(dateString) {
+            showToast(`查看 ${new Date(dateString).getMonth() + 1}/${new Date(dateString).getDate()} 学习记录`);
+        }
+
+
+        function viewAchievement(title) {
+            showToast(`查看成就: ${title}`);
+        }
+
+        function showSettings() {
+            showToast('进度设置功能开发中...');
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function goToParentHome() {
+            window.location.href = 'parent-home.html';
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

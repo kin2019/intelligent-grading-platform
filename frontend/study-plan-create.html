@@ -1,0 +1,1592 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 创建学习计划</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .save-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 80px);
+        }
+        
+        /* 表单组件 */
+        .form-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .form-input {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .form-textarea {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 12px;
+            font-size: 14px;
+            resize: vertical;
+            min-height: 80px;
+            transition: border-color 0.3s ease;
+            background: #fff;
+        }
+        
+        .form-textarea:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        /* 科目选择 */
+        .subjects-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .subject-item {
+            padding: 12px 8px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+        
+        .subject-item:hover {
+            background: #e9ecef;
+        }
+        
+        .subject-item.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+        
+        /* 时间选择器 */
+        .time-selector {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+        
+        .time-input {
+            padding: 8px 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            text-align: center;
+            width: 80px;
+        }
+        
+        .time-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+        
+        .time-label {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* 优先级选择 */
+        .priority-options {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .priority-item {
+            padding: 8px 16px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .priority-item:hover {
+            background: #e9ecef;
+        }
+        
+        .priority-item.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+        
+        .priority-high {
+            color: #f44336;
+        }
+        
+        .priority-medium {
+            color: #ff9800;
+        }
+        
+        .priority-low {
+            color: #4CAF50;
+        }
+        
+        .priority-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+        
+        .priority-high .priority-dot {
+            background: #f44336;
+        }
+        
+        .priority-medium .priority-dot {
+            background: #ff9800;
+        }
+        
+        .priority-low .priority-dot {
+            background: #4CAF50;
+        }
+        
+        /* 任务列表 */
+        .tasks-list {
+            margin-top: 16px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .task-subject {
+            padding: 2px 6px;
+            background: #e3f2fd;
+            color: #1976D2;
+            border-radius: 3px;
+            font-size: 11px;
+            flex-shrink: 0;
+        }
+        
+        .task-title {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+        }
+        
+        .task-time {
+            font-size: 12px;
+            color: #666;
+            flex-shrink: 0;
+        }
+        
+        .remove-task-btn {
+            background: none;
+            border: none;
+            color: #f44336;
+            cursor: pointer;
+            padding: 4px;
+            border-radius: 4px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .remove-task-btn:hover {
+            background: #ffebee;
+        }
+        
+        /* 添加任务按钮 */
+        .add-task-btn {
+            width: 100%;
+            padding: 12px;
+            background: #f8f9fa;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            color: #666;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        
+        .add-task-btn:hover {
+            border-color: #4CAF50;
+            color: #4CAF50;
+            background: #e8f5e8;
+        }
+        
+        /* 模板选择 */
+        .template-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .template-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .template-item:hover {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+        }
+        
+        .template-item.selected {
+            border-color: #4CAF50;
+            background: #e8f5e8;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.2);
+            position: relative;
+        }
+        
+        .template-item.selected::after {
+            content: '✓';
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: #4CAF50;
+            color: white;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .template-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .template-desc {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 提交按钮 */
+        .submit-section {
+            padding: 20px 0;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            height: 56px;
+            background: linear-gradient(90deg, #4CAF50 0%, #388E3C 100%);
+            border: none;
+            border-radius: 16px;
+            color: white;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.3);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .submit-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 12px 25px rgba(76, 175, 80, 0.4);
+        }
+        
+        .submit-btn:active {
+            transform: translateY(0);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-top: 2px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 智能建议 */
+        .ai-suggestions {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .suggestion-list {
+            margin-top: 12px;
+        }
+        
+        .suggestion-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 8px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .suggestion-item:hover {
+            background: rgba(255, 255, 255, 0.9);
+        }
+        
+        .suggestion-icon {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        
+        .suggestion-text {
+            flex: 1;
+            font-size: 13px;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .use-suggestion-btn {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .subjects-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .template-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div class="navbar-title">创建学习计划</div>
+                </div>
+                <button class="save-btn" onclick="saveDraft()">保存草稿</button>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 快速创建 -->
+            <div class="ai-suggestions">
+                <div class="section-title">
+                    ⚡ 快速创建学习计划
+                </div>
+                <div class="suggestion-list" id="aiSuggestions">
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">📖</div>
+                        <div class="suggestion-text">数学专项练习（30分钟/天，适合提升计算能力）</div>
+                        <button class="use-suggestion-btn" onclick="useSuggestion(0)">选择</button>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">📝</div>
+                        <div class="suggestion-text">语文阅读理解（25分钟/天，提升理解能力）</div>
+                        <button class="use-suggestion-btn" onclick="useSuggestion(1)">选择</button>
+                    </div>
+                    <div class="suggestion-item">
+                        <div class="suggestion-icon">🌟</div>
+                        <div class="suggestion-text">综合复习计划（45分钟/天，全面提升）</div>
+                        <button class="use-suggestion-btn" onclick="useSuggestion(2)">选择</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 基本信息 -->
+            <div class="form-section">
+                <div class="section-title">
+                    📝 基本信息
+                </div>
+                <div class="form-group">
+                    <label class="form-label">计划标题</label>
+                    <input type="text" class="form-input" id="planTitle" placeholder="例如：本周数学复习计划">
+                </div>
+                <div class="form-group">
+                    <label class="form-label">计划描述</label>
+                    <textarea class="form-textarea" id="planDescription" placeholder="简要描述这个学习计划的目标和内容..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label">计划时长</label>
+                    <div class="time-selector">
+                        <input type="number" class="time-input" id="planDays" value="7" min="1" max="30">
+                        <span class="time-label">天</span>
+                        <span class="time-label">·</span>
+                        <input type="number" class="time-input" id="dailyTime" value="30" min="15" max="120">
+                        <span class="time-label">分钟/天</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学科选择 -->
+            <div class="form-section">
+                <div class="section-title">
+                    📚 学科选择
+                </div>
+                <div class="subjects-grid">
+                    <div class="subject-item" data-subject="math" onclick="toggleSubject('math')">
+                        数学
+                    </div>
+                    <div class="subject-item" data-subject="chinese" onclick="toggleSubject('chinese')">
+                        语文
+                    </div>
+                    <div class="subject-item" data-subject="english" onclick="toggleSubject('english')">
+                        英语
+                    </div>
+                    <div class="subject-item" data-subject="physics" onclick="toggleSubject('physics')">
+                        物理
+                    </div>
+                    <div class="subject-item" data-subject="chemistry" onclick="toggleSubject('chemistry')">
+                        化学
+                    </div>
+                    <div class="subject-item" data-subject="biology" onclick="toggleSubject('biology')">
+                        生物
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学习任务 -->
+            <div class="form-section">
+                <div class="section-title">
+                    ✅ 学习任务
+                </div>
+                <div class="tasks-list" id="tasksList">
+                    <!-- 任务列表将在这里动态生成 -->
+                </div>
+                <button class="add-task-btn" onclick="addTask()">
+                    ➕ 添加任务
+                </button>
+            </div>
+            
+            <!-- 优先级设置 -->
+            <div class="form-section">
+                <div class="section-title">
+                    🎯 优先级
+                </div>
+                <div class="priority-options">
+                    <div class="priority-item priority-high" data-priority="high" onclick="setPriority('high')">
+                        <div class="priority-dot"></div>
+                        <span>高</span>
+                    </div>
+                    <div class="priority-item priority-medium selected" data-priority="medium" onclick="setPriority('medium')">
+                        <div class="priority-dot"></div>
+                        <span>中</span>
+                    </div>
+                    <div class="priority-item priority-low" data-priority="low" onclick="setPriority('low')">
+                        <div class="priority-dot"></div>
+                        <span>低</span>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学习目标 -->
+            <div class="form-section">
+                <div class="section-title">
+                    🎯 选择学习目标
+                </div>
+                <div class="template-grid" id="templateGrid">
+                    <!-- 学习目标将根据用户年级动态生成 -->
+                    <div class="template-item" onclick="useTemplate('basic')">
+                        <div class="template-title">📚 基础提升</div>
+                        <div class="template-desc">巩固基础知识，适合成绩不稳定</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('intensive')">
+                        <div class="template-title">🚀 快速突破</div>
+                        <div class="template-desc">集中训练，快速提高成绩</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('maintenance')">
+                        <div class="template-title">🔄 保持状态</div>
+                        <div class="template-desc">维持现有水平，防止退步</div>
+                    </div>
+                    <div class="template-item" onclick="useTemplate('exam')">
+                        <div class="template-title">📝 考试准备</div>
+                        <div class="template-desc">针对考试的专项复习</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 提交按钮 -->
+            <div class="submit-section">
+                <button class="submit-btn" id="submitBtn" onclick="createPlan()">
+                    <span id="submitText">💪 开始我的学习计划</span>
+                    <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let selectedSubjects = []; // 修改：默认不选择任何学科，让用户自己选择
+        let selectedPriority = 'medium';
+        let tasks = [];
+        let isSubmitting = false;
+        let isPlanCreated = false; // 添加标记，表示计划是否已创建成功
+        let userProfile = null; // 存储用户资料，包含年级信息
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                console.log('未找到登录token，设置测试token');
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', token);
+            }
+            
+            // 修改：不再默认选择任何学科
+            selectedSubjects = [];
+            
+            // 加载用户信息以获取年级，用于个性化推荐
+            loadUserProfile();
+            
+            updateTasksList();
+        }
+
+        async function loadUserProfile() {
+            try {
+                console.log('加载用户资料以获取年级信息...');
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+
+                if (response.ok) {
+                    userProfile = await response.json();
+                    console.log('用户资料加载成功，年级:', userProfile.grade);
+                    
+                    // 根据用户年级更新快速创建建议
+                    updateGradeBasedSuggestions();
+                } else {
+                    console.error('用户资料加载失败:', response.status);
+                    // 使用默认年级
+                    userProfile = { grade: '五年级' };
+                    updateGradeBasedSuggestions();
+                }
+            } catch (error) {
+                console.error('加载用户资料异常:', error);
+                // 使用默认年级
+                userProfile = { grade: '五年级' };
+                updateGradeBasedSuggestions();
+            }
+        }
+
+        function updateGradeBasedSuggestions() {
+            const gradeBasedSuggestions = getGradeBasedSuggestions(userProfile.grade);
+            const suggestionsContainer = document.getElementById('aiSuggestions');
+            
+            // 更新快速创建建议内容
+            suggestionsContainer.innerHTML = gradeBasedSuggestions.map((suggestion, index) => `
+                <div class="suggestion-item">
+                    <div class="suggestion-icon">${suggestion.icon}</div>
+                    <div class="suggestion-text">${suggestion.text}</div>
+                    <button class="use-suggestion-btn" onclick="useSuggestion(${index})">选择</button>
+                </div>
+            `).join('');
+            
+            // 更新学习目标模板
+            updateGradeBasedTemplates();
+            
+            console.log(`已为${userProfile.grade}用户更新快速创建建议和学习目标`);
+        }
+
+        function updateGradeBasedTemplates() {
+            const gradeBasedTemplates = getGradeBasedTemplates(userProfile.grade);
+            const templateGrid = document.getElementById('templateGrid');
+            
+            templateGrid.innerHTML = gradeBasedTemplates.map(template => `
+                <div class="template-item" onclick="useTemplate('${template.type}')">
+                    <div class="template-title">${template.icon} ${template.title}</div>
+                    <div class="template-desc">${template.description}</div>
+                </div>
+            `).join('');
+        }
+
+        function getGradeBasedTemplates(grade) {
+            // 根据年级提供个性化的学习目标模板
+            const isElementary = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'].includes(grade);
+            const isJunior = ['初一', '初二', '初三'].includes(grade);
+            const isSenior = ['高一', '高二', '高三'].includes(grade);
+
+            if (isElementary) {
+                return [
+                    { type: 'basic', icon: '🎯', title: '基础巩固', description: '夯实基础知识，培养学习兴趣' },
+                    { type: 'skill', icon: '🧠', title: '能力提升', description: '发展思维能力，提高学习效率' },
+                    { type: 'habit', icon: '⏰', title: '习惯养成', description: '培养良好学习习惯和方法' },
+                    { type: 'exam', icon: '📝', title: '阶段测评', description: '定期检测学习成果' }
+                ];
+            } else if (isJunior) {
+                return [
+                    { type: 'foundation', icon: '📚', title: '知识梳理', description: '系统梳理各科知识点' },
+                    { type: 'intensive', icon: '🚀', title: '专项突破', description: '针对薄弱环节重点攻克' },
+                    { type: 'comprehensive', icon: '🌟', title: '综合训练', description: '跨学科综合能力培养' },
+                    { type: 'exam', icon: '🎯', title: '中考冲刺', description: '针对中考的专项训练' }
+                ];
+            } else if (isSenior) {
+                return [
+                    { type: 'advanced', icon: '🎓', title: '高阶学习', description: '深度理解，掌握高阶思维' },
+                    { type: 'competitive', icon: '🏆', title: '竞赛备战', description: '针对各类竞赛的专业训练' },
+                    { type: 'university', icon: '🌟', title: '大学衔接', description: '为大学学习做好准备' },
+                    { type: 'gaokao', icon: '🚀', title: '高考冲刺', description: '全面系统的高考备考' }
+                ];
+            } else {
+                // 默认模板
+                return [
+                    { type: 'basic', icon: '📚', title: '基础提升', description: '巩固基础知识，适合成绩不稳定' },
+                    { type: 'intensive', icon: '🚀', title: '快速突破', description: '集中训练，快速提高成绩' },
+                    { type: 'maintenance', icon: '🔄', title: '保持状态', description: '维持现有水平，防止退步' },
+                    { type: 'exam', icon: '📝', title: '考试准备', description: '针对考试的专项复习' }
+                ];
+            }
+        }
+
+        function getGradeBasedSuggestions(grade) {
+            // 根据不同年级提供个性化的学习计划建议
+            const gradeConfig = {
+                '一年级': {
+                    suggestions: [
+                        { icon: '🔤', text: '拼音练习计划（20分钟/天，适合巩固拼音基础）' },
+                        { icon: '🔢', text: '数字认知训练（15分钟/天，培养数感）' },
+                        { icon: '✏️', text: '书写练习计划（25分钟/天，规范字形）' }
+                    ]
+                },
+                '二年级': {
+                    suggestions: [
+                        { icon: '📖', text: '阅读理解入门（25分钟/天，培养阅读兴趣）' },
+                        { icon: '➕', text: '加减法强化（20分钟/天，提升运算速度）' },
+                        { icon: '🎨', text: '看图写话训练（30分钟/天，发展表达能力）' }
+                    ]
+                },
+                '三年级': {
+                    suggestions: [
+                        { icon: '📚', text: '语文阅读拓展（30分钟/天，提升理解能力）' },
+                        { icon: '✖️', text: '乘除法专项（25分钟/天，掌握乘法表）' },
+                        { icon: '🌟', text: '综合基础巩固（40分钟/天，全面提升）' }
+                    ]
+                },
+                '四年级': {
+                    suggestions: [
+                        { icon: '📝', text: '作文写作训练（35分钟/天，提升写作能力）' },
+                        { icon: '📐', text: '几何图形认识（30分钟/天，培养空间思维）' },
+                        { icon: '🧠', text: '逻辑思维训练（45分钟/天，综合能力提升）' }
+                    ]
+                },
+                '五年级': {
+                    suggestions: [
+                        { icon: '📖', text: '数学应用题专项（30分钟/天，提升解题能力）' },
+                        { icon: '📝', text: '语文阅读理解（25分钟/天，加强理解分析）' },
+                        { icon: '🌟', text: '综合复习计划（45分钟/天，全面提升）' }
+                    ]
+                },
+                '六年级': {
+                    suggestions: [
+                        { icon: '🎓', text: '小升初数学冲刺（40分钟/天，重点难点突破）' },
+                        { icon: '📚', text: '语文综合复习（35分钟/天，系统梳理知识点）' },
+                        { icon: '🚀', text: '升学备考计划（50分钟/天，全面备战小升初）' }
+                    ]
+                },
+                '初一': {
+                    suggestions: [
+                        { icon: '🧮', text: '代数基础训练（35分钟/天，掌握方程概念）' },
+                        { icon: '🏛️', text: '文言文入门（30分钟/天，培养古文理解）' },
+                        { icon: '🌍', text: '初中知识衔接（45分钟/天，适应初中学习）' }
+                    ]
+                },
+                '初二': {
+                    suggestions: [
+                        { icon: '📐', text: '几何证明训练（40分钟/天，提升逻辑推理）' },
+                        { icon: '⚗️', text: '物理概念理解（35分钟/天，掌握基本原理）' },
+                        { icon: '🔬', text: '理科思维强化（50分钟/天，综合训练）' }
+                    ]
+                },
+                '初三': {
+                    suggestions: [
+                        { icon: '🎯', text: '中考数学冲刺（45分钟/天，重点题型突破）' },
+                        { icon: '📖', text: '语文阅读写作（40分钟/天，提升语言运用）' },
+                        { icon: '🚀', text: '中考全科备考（60分钟/天，系统复习冲刺）' }
+                    ]
+                },
+                '高一': {
+                    suggestions: [
+                        { icon: '📊', text: '函数概念强化（45分钟/天，掌握函数思想）' },
+                        { icon: '🏛️', text: '古诗文深度解析（40分钟/天，提升文学素养）' },
+                        { icon: '🌟', text: '高中学习适应（50分钟/天，培养学习方法）' }
+                    ]
+                },
+                '高二': {
+                    suggestions: [
+                        { icon: '📐', text: '立体几何训练（50分钟/天，培养空间想象）' },
+                        { icon: '🧪', text: '化学实验理解（45分钟/天，掌握实验原理）' },
+                        { icon: '📚', text: '文理分科强化（55分钟/天，专业方向发展）' }
+                    ]
+                },
+                '高三': {
+                    suggestions: [
+                        { icon: '🎓', text: '高考数学专项（60分钟/天，题型系统训练）' },
+                        { icon: '📝', text: '作文素材积累（45分钟/天，提升写作水平）' },
+                        { icon: '🚀', text: '高考全面冲刺（75分钟/天，综合备考提升）' }
+                    ]
+                }
+            };
+
+            return gradeConfig[grade] ? gradeConfig[grade].suggestions : gradeConfig['五年级'].suggestions;
+        }
+
+        function toggleSubject(subject) {
+            const item = document.querySelector(`[data-subject="${subject}"]`);
+            const index = selectedSubjects.indexOf(subject);
+            
+            if (index > -1) {
+                // 如果已选择，则取消选择（允许取消所有选择）
+                selectedSubjects.splice(index, 1);
+                item.classList.remove('selected');
+            } else {
+                // 如果未选择，则添加选择
+                selectedSubjects.push(subject);
+                item.classList.add('selected');
+            }
+            
+            updateTasksList();
+        }
+
+        function setPriority(priority) {
+            document.querySelectorAll('.priority-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            document.querySelector(`[data-priority="${priority}"]`).classList.add('selected');
+            selectedPriority = priority;
+        }
+
+        function addTask() {
+            // 检查是否已选择学科
+            if (selectedSubjects.length === 0) {
+                showToast('📚 请先选择学科再添加任务哦');
+                return;
+            }
+            
+            // 简化版：直接弹窗输入任务
+            const taskTitle = prompt('请输入任务标题：');
+            if (taskTitle && taskTitle.trim()) {
+                const estimatedTime = parseInt(prompt('预计用时（分钟）：', '30')) || 30;
+                
+                // 如果选择了多个学科，让用户选择
+                let selectedSubject;
+                if (selectedSubjects.length === 1) {
+                    selectedSubject = selectedSubjects[0];
+                } else {
+                    const subjectOptions = selectedSubjects.map(s => getSubjectName(s)).join('\n');
+                    const choice = prompt(`选择任务所属学科：\n${subjectOptions}\n\n请输入学科名称：`);
+                    const subjectMap = {
+                        '数学': 'math', '语文': 'chinese', '英语': 'english',
+                        '物理': 'physics', '化学': 'chemistry', '生物': 'biology'
+                    };
+                    selectedSubject = Object.keys(subjectMap).find(key => key === choice);
+                    selectedSubject = subjectMap[selectedSubject] || selectedSubjects[0];
+                }
+                
+                tasks.push({
+                    id: Date.now(),
+                    title: taskTitle.trim(),
+                    subject: selectedSubject,  // 修复：保存英文学科代码而不是中文名称
+                    estimatedTime: estimatedTime
+                });
+                
+                updateTasksList();
+            }
+        }
+
+        function removeTask(taskId) {
+            tasks = tasks.filter(task => task.id !== taskId);
+            updateTasksList();
+        }
+
+        function updateTasksList() {
+            const tasksList = document.getElementById('tasksList');
+            
+            if (tasks.length === 0) {
+                tasksList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">还没有添加任务，点击下方按钮添加</div>';
+                return;
+            }
+            
+            const tasksHtml = tasks.map(task => `
+                <div class="task-item">
+                    <div class="task-subject">${getSubjectName(task.subject)}</div>
+                    <div class="task-title">${task.title}</div>
+                    <div class="task-time">${task.estimatedTime}分钟</div>
+                    <button class="remove-task-btn" onclick="removeTask(${task.id})">×</button>
+                </div>
+            `).join('');
+            
+            tasksList.innerHTML = tasksHtml;
+        }
+
+
+
+        function useSuggestion(index) {
+            // 获取当前年级的建议
+            const gradeBasedSuggestions = getGradeBasedSuggestions(userProfile.grade);
+            const selectedSuggestion = gradeBasedSuggestions[index];
+            
+            if (!selectedSuggestion) return;
+            
+            // 根据建议内容智能解析学科和时间
+            const suggestionText = selectedSuggestion.text;
+            
+            // 提取时间信息（如：30分钟/天）
+            const timeMatch = suggestionText.match(/（(\d+)分钟/);
+            const dailyTime = timeMatch ? parseInt(timeMatch[1]) : 30;
+            
+            // 根据建议内容选择合适的学科
+            let recommendedSubjects = [];
+            if (suggestionText.includes('数学') || suggestionText.includes('计算') || suggestionText.includes('几何') || suggestionText.includes('代数') || suggestionText.includes('应用题')) {
+                recommendedSubjects.push('math');
+            }
+            if (suggestionText.includes('语文') || suggestionText.includes('阅读') || suggestionText.includes('作文') || suggestionText.includes('写作') || suggestionText.includes('拼音') || suggestionText.includes('文言文')) {
+                recommendedSubjects.push('chinese');
+            }
+            if (suggestionText.includes('英语') || suggestionText.includes('单词') || suggestionText.includes('语法')) {
+                recommendedSubjects.push('english');
+            }
+            if (suggestionText.includes('物理') || suggestionText.includes('实验')) {
+                recommendedSubjects.push('physics');
+            }
+            if (suggestionText.includes('化学')) {
+                recommendedSubjects.push('chemistry');
+            }
+            if (suggestionText.includes('生物')) {
+                recommendedSubjects.push('biology');
+            }
+            
+            // 如果没有检测到特定学科，根据年级推荐主要学科
+            if (recommendedSubjects.length === 0) {
+                const grade = userProfile.grade;
+                const isElementary = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'].includes(grade);
+                const isJunior = ['初一', '初二', '初三'].includes(grade);
+                
+                if (isElementary) {
+                    recommendedSubjects = ['math', 'chinese'];
+                } else if (isJunior) {
+                    recommendedSubjects = ['math', 'chinese', 'english'];
+                } else {
+                    recommendedSubjects = ['math', 'chinese', 'english', 'physics'];
+                }
+            }
+            
+            // 设置表单内容
+            document.getElementById('planTitle').value = `我的${userProfile.grade}学习计划`;
+            document.getElementById('planDescription').value = suggestionText.split('（')[0]; // 取括号前的描述部分
+            document.getElementById('dailyTime').value = dailyTime.toString();
+            
+            // 清除之前的学科选择
+            selectedSubjects = [];
+            document.querySelectorAll('.subject-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 选择推荐的学科
+            recommendedSubjects.forEach(subject => {
+                toggleSubject(subject);
+            });
+            
+            // 根据年级和建议类型生成相应的任务
+            tasks = generateGradeBasedTasks(userProfile.grade, suggestionText, recommendedSubjects, dailyTime);
+            updateTasksList();
+            
+            showToast(`已为您快速创建${userProfile.grade}专用学习计划！`);
+        }
+
+        function generateGradeBasedTasks(grade, suggestionText, subjects, totalTime) {
+            const tasks = [];
+            const timePerSubject = Math.floor(totalTime / subjects.length);
+            
+            // 根据年级定义不同的任务类型
+            const taskTemplates = {
+                elementary: {
+                    math: [
+                        { title: '数字练习', time: 0.4 },
+                        { title: '基础运算', time: 0.6 }
+                    ],
+                    chinese: [
+                        { title: '拼音练习', time: 0.3 },
+                        { title: '字词学习', time: 0.4 },
+                        { title: '阅读练习', time: 0.3 }
+                    ],
+                    english: [
+                        { title: '单词学习', time: 0.5 },
+                        { title: '基础对话', time: 0.5 }
+                    ]
+                },
+                junior: {
+                    math: [
+                        { title: '概念理解', time: 0.3 },
+                        { title: '例题练习', time: 0.4 },
+                        { title: '应用训练', time: 0.3 }
+                    ],
+                    chinese: [
+                        { title: '文言文学习', time: 0.3 },
+                        { title: '阅读理解', time: 0.4 },
+                        { title: '作文练习', time: 0.3 }
+                    ],
+                    english: [
+                        { title: '语法学习', time: 0.4 },
+                        { title: '阅读理解', time: 0.3 },
+                        { title: '听力训练', time: 0.3 }
+                    ],
+                    physics: [
+                        { title: '概念学习', time: 0.4 },
+                        { title: '实验理解', time: 0.6 }
+                    ]
+                },
+                senior: {
+                    math: [
+                        { title: '函数理解', time: 0.3 },
+                        { title: '题型训练', time: 0.4 },
+                        { title: '综合应用', time: 0.3 }
+                    ],
+                    chinese: [
+                        { title: '古诗文分析', time: 0.3 },
+                        { title: '现代文阅读', time: 0.3 },
+                        { title: '作文写作', time: 0.4 }
+                    ],
+                    english: [
+                        { title: '高级语法', time: 0.3 },
+                        { title: '完型填空', time: 0.3 },
+                        { title: '作文训练', time: 0.4 }
+                    ],
+                    physics: [
+                        { title: '物理建模', time: 0.4 },
+                        { title: '实验分析', time: 0.3 },
+                        { title: '综合应用', time: 0.3 }
+                    ]
+                }
+            };
+            
+            // 确定年级类型
+            const isElementary = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'].includes(grade);
+            const isJunior = ['初一', '初二', '初三'].includes(grade);
+            const isSenior = ['高一', '高二', '高三'].includes(grade);
+            
+            let templateType = 'elementary';
+            if (isJunior) templateType = 'junior';
+            else if (isSenior) templateType = 'senior';
+            
+            // 为每个学科生成任务
+            subjects.forEach((subject, index) => {
+                const subjectTemplates = taskTemplates[templateType][subject] || taskTemplates[templateType]['math'];
+                
+                subjectTemplates.forEach((template, taskIndex) => {
+                    const taskTime = Math.round(timePerSubject * template.time);
+                    if (taskTime > 0) {
+                        tasks.push({
+                            id: Date.now() + index * 1000 + taskIndex,
+                            title: `${getSubjectName(subject)}${template.title}`,
+                            subject: subject,
+                            estimatedTime: taskTime
+                        });
+                    }
+                });
+            });
+            
+            return tasks;
+        }
+
+        // 新增函数：优化模板应用，确保与年级匹配
+        function useTemplate(templateType) {
+            // 先清除所有模板的选中状态
+            document.querySelectorAll('.template-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 给当前点击的模板添加选中状态
+            event.target.closest('.template-item').classList.add('selected');
+            
+            // 如果用户没有选择学科，根据年级推荐合适的学科
+            if (selectedSubjects.length === 0) {
+                const grade = userProfile ? userProfile.grade : '五年级';
+                const isElementary = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'].includes(grade);
+                const isJunior = ['初一', '初二', '初三'].includes(grade);
+                
+                if (isElementary) {
+                    toggleSubject('math');
+                    if (templateType === 'intensive' || templateType === 'exam') {
+                        toggleSubject('chinese'); // 高强度或考试准备需要多学科
+                    }
+                } else if (isJunior) {
+                    toggleSubject('math');
+                    toggleSubject('chinese');
+                    if (templateType === 'comprehensive' || templateType === 'exam') {
+                        toggleSubject('english'); // 综合训练或中考冲刺需要英语
+                    }
+                } else {
+                    // 高中默认选择更多学科
+                    toggleSubject('math');
+                    toggleSubject('chinese');
+                    toggleSubject('english');
+                    if (templateType === 'advanced' || templateType === 'gaokao') {
+                        toggleSubject('physics'); // 高阶学习或高考冲刺加入理科
+                    }
+                }
+            }
+            
+            // 根据年级和模板类型生成对应的计划信息
+            const gradeBasedTemplates = getTemplatesByGradeAndType(userProfile?.grade || '五年级', templateType);
+            
+            if (gradeBasedTemplates) {
+                document.getElementById('planTitle').value = gradeBasedTemplates.title;
+                document.getElementById('planDescription').value = gradeBasedTemplates.description;
+                
+                // 调整时间设置
+                if (gradeBasedTemplates.dailyTime) {
+                    document.getElementById('dailyTime').value = gradeBasedTemplates.dailyTime.toString();
+                }
+                if (gradeBasedTemplates.durationDays) {
+                    document.getElementById('planDays').value = gradeBasedTemplates.durationDays.toString();
+                }
+                
+                // 根据用户选择的学科和年级生成任务
+                tasks = [];
+                selectedSubjects.forEach(subject => {
+                    const subjectTasks = generateTasksForGradeTemplate(subject, gradeBasedTemplates.taskTemplates, templateType);
+                    tasks.push(...subjectTasks);
+                });
+                
+                updateTasksList();
+                showToast(`已应用${gradeBasedTemplates.title}模板`);
+            }
+        }
+
+        // 新增函数：根据年级和模板类型获取模板配置
+        function getTemplatesByGradeAndType(grade, templateType) {
+            const isElementary = ['一年级', '二年级', '三年级', '四年级', '五年级', '六年级'].includes(grade);
+            const isJunior = ['初一', '初二', '初三'].includes(grade);
+            const isSenior = ['高一', '高二', '高三'].includes(grade);
+            
+            const templates = {
+                elementary: {
+                    'basic': {
+                        title: `我的${grade}基础巩固计划`,
+                        description: '夯实基础知识，培养学习兴趣和良好习惯',
+                        dailyTime: 25,
+                        durationDays: 7,
+                        taskTemplates: [
+                            { title: '基础知识复习', time: 15 },
+                            { title: '趣味练习', time: 10 }
+                        ]
+                    },
+                    'skill': {
+                        title: `我的${grade}能力提升计划`,
+                        description: '发展思维能力，提高学习效率',
+                        dailyTime: 30,
+                        durationDays: 10,
+                        taskTemplates: [
+                            { title: '思维训练', time: 15 },
+                            { title: '能力拓展', time: 15 }
+                        ]
+                    },
+                    'habit': {
+                        title: `我的${grade}习惯养成计划`,
+                        description: '培养良好学习习惯和方法',
+                        dailyTime: 20,
+                        durationDays: 14,
+                        taskTemplates: [
+                            { title: '习惯练习', time: 10 },
+                            { title: '方法训练', time: 10 }
+                        ]
+                    },
+                    'exam': {
+                        title: `我的${grade}阶段测评计划`,
+                        description: '定期检测学习成果，查缺补漏',
+                        dailyTime: 35,
+                        durationDays: 5,
+                        taskTemplates: [
+                            { title: '知识复习', time: 20 },
+                            { title: '模拟练习', time: 15 }
+                        ]
+                    }
+                },
+                junior: {
+                    'foundation': {
+                        title: `我的${grade}知识梳理计划`,
+                        description: '系统梳理各科知识点，建立知识体系',
+                        dailyTime: 45,
+                        durationDays: 10,
+                        taskTemplates: [
+                            { title: '知识梳理', time: 25 },
+                            { title: '体系构建', time: 20 }
+                        ]
+                    },
+                    'intensive': {
+                        title: `我的${grade}专项突破计划`,
+                        description: '针对薄弱环节重点攻克',
+                        dailyTime: 50,
+                        durationDays: 7,
+                        taskTemplates: [
+                            { title: '专项训练', time: 30 },
+                            { title: '强化练习', time: 20 }
+                        ]
+                    },
+                    'comprehensive': {
+                        title: `我的${grade}综合训练计划`,
+                        description: '跨学科综合能力培养',
+                        dailyTime: 60,
+                        durationDays: 14,
+                        taskTemplates: [
+                            { title: '综合练习', time: 35 },
+                            { title: '能力训练', time: 25 }
+                        ]
+                    },
+                    'exam': {
+                        title: `我的${grade}中考冲刺计划`,
+                        description: '针对中考的专项训练和综合提升',
+                        dailyTime: 70,
+                        durationDays: 21,
+                        taskTemplates: [
+                            { title: '考点复习', time: 40 },
+                            { title: '真题训练', time: 30 }
+                        ]
+                    }
+                },
+                senior: {
+                    'advanced': {
+                        title: `我的${grade}高阶学习计划`,
+                        description: '深度理解，掌握高阶思维方法',
+                        dailyTime: 60,
+                        durationDays: 14,
+                        taskTemplates: [
+                            { title: '深度学习', time: 35 },
+                            { title: '思维提升', time: 25 }
+                        ]
+                    },
+                    'competitive': {
+                        title: `我的${grade}竞赛备战计划`,
+                        description: '针对各类竞赛的专业训练',
+                        dailyTime: 80,
+                        durationDays: 21,
+                        taskTemplates: [
+                            { title: '竞赛训练', time: 50 },
+                            { title: '专题突破', time: 30 }
+                        ]
+                    },
+                    'university': {
+                        title: `我的${grade}大学衔接计划`,
+                        description: '为大学学习做好充分准备',
+                        dailyTime: 55,
+                        durationDays: 14,
+                        taskTemplates: [
+                            { title: '衔接学习', time: 30 },
+                            { title: '能力准备', time: 25 }
+                        ]
+                    },
+                    'gaokao': {
+                        title: `我的${grade}高考冲刺计划`,
+                        description: '全面系统的高考备考策略',
+                        dailyTime: 90,
+                        durationDays: 30,
+                        taskTemplates: [
+                            { title: '高考复习', time: 55 },
+                            { title: '模拟训练', time: 35 }
+                        ]
+                    }
+                }
+            };
+            
+            let gradeType = 'elementary';
+            if (isJunior) gradeType = 'junior';
+            else if (isSenior) gradeType = 'senior';
+            
+            return templates[gradeType][templateType] || templates[gradeType]['basic'];
+        }
+
+        // 新增函数：为特定年级和模板生成任务
+        function generateTasksForGradeTemplate(subject, taskTemplates, templateType) {
+            const grade = userProfile?.grade || '五年级';
+            const subjectName = getSubjectName(subject);
+            
+            return taskTemplates.map((template, index) => ({
+                id: Date.now() + Math.random() * 1000 + index,
+                title: `${subjectName}${template.title}`,
+                subject: subject,
+                estimatedTime: template.time
+            }));
+        }
+
+
+        async function createPlan() {
+            if (isSubmitting) return;
+            
+            // 验证必填项
+            const title = document.getElementById('planTitle').value.trim();
+            if (!title) {
+                showToast('📝 请给您的学习计划起个名字吧');
+                return;
+            }
+            
+            if (selectedSubjects.length === 0) {
+                showToast('📚 请选择要学习的科目哦');
+                return;
+            }
+            
+            if (tasks.length === 0) {
+                showToast('✍️ 请添加一些学习任务吧');
+                return;
+            }
+            
+            isSubmitting = true;
+            setSubmitButtonLoading(true);
+            
+            try {
+                const planData = {
+                    title: title,
+                    description: document.getElementById('planDescription').value.trim(),
+                    subjects: selectedSubjects,
+                    priority: selectedPriority,
+                    duration_days: parseInt(document.getElementById('planDays').value) || 7,
+                    daily_time: parseInt(document.getElementById('dailyTime').value) || 30,
+                    tasks: tasks,
+                    estimated_time: tasks.reduce((total, task) => total + task.estimatedTime, 0)
+                };
+                
+                const response = await fetch(`${API_BASE}/student/study-plan-create`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(planData)
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    isPlanCreated = true; // 标记计划已创建成功
+                    showToast('🎉 学习计划创建成功！即将跳转到学习页面...');
+                    
+                    // 延迟跳转到学习计划页面
+                    setTimeout(() => {
+                        window.location.href = 'study-plan.html';
+                    }, 2000);
+                } else {
+                    const error = await response.json();
+                    throw new Error(error.message || '创建失败，请重试');
+                }
+                
+            } catch (error) {
+                console.error('创建学习计划失败:', error);
+                showToast('创建失败：' + error.message);
+            } finally {
+                isSubmitting = false;
+                setSubmitButtonLoading(false);
+            }
+        }
+
+        function setSubmitButtonLoading(loading) {
+            const btn = document.getElementById('submitBtn');
+            const text = document.getElementById('submitText');
+            const spinner = document.getElementById('loadingSpinner');
+            
+            if (loading) {
+                btn.disabled = true;
+                text.style.display = 'none';
+                spinner.style.display = 'inline-block';
+            } else {
+                btn.disabled = false;
+                text.style.display = 'inline';
+                spinner.style.display = 'none';
+            }
+        }
+
+        function saveDraft() {
+            const draftData = {
+                title: document.getElementById('planTitle').value,
+                description: document.getElementById('planDescription').value,
+                subjects: selectedSubjects,
+                priority: selectedPriority,
+                tasks: tasks,
+                timestamp: new Date().getTime()
+            };
+            
+            localStorage.setItem('study_plan_draft', JSON.stringify(draftData));
+            showToast('草稿已保存');
+        }
+
+        function loadDraft() {
+            const draft = localStorage.getItem('study_plan_draft');
+            if (draft) {
+                try {
+                    const draftData = JSON.parse(draft);
+                    document.getElementById('planTitle').value = draftData.title || '';
+                    document.getElementById('planDescription').value = draftData.description || '';
+                    
+                    // 恢复学科选择
+                    selectedSubjects = draftData.subjects || [];
+                    document.querySelectorAll('.subject-item').forEach(item => {
+                        const subject = item.dataset.subject;
+                        if (selectedSubjects.includes(subject)) {
+                            item.classList.add('selected');
+                        } else {
+                            item.classList.remove('selected');
+                        }
+                    });
+                    
+                    // 恢复优先级
+                    setPriority(draftData.priority || 'medium');
+                    
+                    // 恢复任务
+                    tasks = draftData.tasks || [];
+                    updateTasksList();
+                    
+                    showToast('已恢复草稿内容');
+                } catch (error) {
+                    console.error('加载草稿失败:', error);
+                }
+            }
+        }
+
+        function getSubjectName(subject) {
+            const subjects = {
+                'math': '数学',
+                'chinese': '语文',
+                'english': '英语',
+                'physics': '物理',
+                'chemistry': '化学',
+                'biology': '生物'
+            };
+            return subjects[subject] || subject;
+        }
+
+        function goBack() {
+            // 如果计划已创建成功，直接返回
+            if (isPlanCreated) {
+                window.location.href = 'study-plan.html';
+                return;
+            }
+            
+            const title = document.getElementById('planTitle').value.trim();
+            const description = document.getElementById('planDescription').value.trim();
+            
+            // 只有当有实际内容输入时才提示确认
+            if (title || description || tasks.length > 0) {
+                if (confirm('确定要离开吗？未保存的内容将丢失。')) {
+                    window.location.href = 'study-plan.html';
+                }
+            } else {
+                window.location.href = 'study-plan.html';
+            }
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                if (document.body.contains(toast)) {
+                    document.body.removeChild(toast);
+                }
+            }, duration);
+        }
+
+        // 页面离开前检查 - 只在未成功创建计划且有内容变更时提示
+        window.addEventListener('beforeunload', function(e) {
+            // 如果计划已创建成功或正在提交，不显示警告
+            if (isPlanCreated || isSubmitting) {
+                return;
+            }
+            
+            const title = document.getElementById('planTitle').value.trim();
+            const description = document.getElementById('planDescription').value.trim();
+            
+            // 只有当有实际内容输入时才提示
+            if (title || description || tasks.length > 0) {
+                e.preventDefault();
+                e.returnValue = '你所做的更改可能未保存，确定要离开吗？';
+                return '你所做的更改可能未保存，确定要离开吗？';
+            }
+        });
+
+        // 自动保存草稿
+        setInterval(function() {
+            const title = document.getElementById('planTitle').value.trim();
+            if (title) {
+                saveDraft();
+            }
+        }, 30000); // 每30秒自动保存
+    </script>
+</body>
+</html>

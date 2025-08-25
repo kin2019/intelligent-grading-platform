@@ -1,0 +1,43 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(curl:*)",
+      "Bash(python:*)",
+      "Bash(start http://localhost:8000/frontend/subject-detail.html?subject=%E6%95%B0%E5%AD%A6)",
+      "Bash(start firefox \"http://localhost:8000/frontend/subject-detail.html?subject=数学\")",
+      "Bash(start firefox \"D:\\work\\project\\zyjc\\frontend\\study-plan-create.html\")",
+      "Bash(start firefox \"D:\\work\\project\\zyjc\\test_consistency.html\")",
+      "Bash(start http://localhost:8000/frontend/study-plan.html)",
+      "Bash(pip install:*)",
+      "Bash(rm:*)",
+      "Bash(start firefox:*)",
+      "Bash(del test.db)",
+      "Bash(taskkill:*)",
+      "Bash(powershell:*)",
+      "Bash(start \"http://localhost:8080/frontend/error-detail.html?id=1\")",
+      "Bash(start:*)",
+      "Bash(dir:*)",
+      "Bash(ls:*)",
+      "Bash(del:*)",
+      "Bash(timeout:*)",
+      "Bash(find:*)",
+      "Bash(grep:*)",
+      "Bash(node:*)",
+      "Bash(cmd /c:*)",
+      "Bash(git init:*)",
+      "Bash(git add:*)",
+      "Bash(git remote:*)",
+      "Bash(git push:*)",
+      "Bash(git commit:*)",
+      "Bash(git fetch:*)",
+      "Bash(git config:*)"
+    ],
+    "deny": [],
+    "ask": [],
+    "additionalDirectories": [
+      "D:\\",
+      "D:\\d D:\\work\\project",
+      "D:\\d\\work\\project\\zyjc"
+    ]
+  }
+}

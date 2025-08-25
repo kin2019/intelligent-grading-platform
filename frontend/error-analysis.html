@@ -1,0 +1,978 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题分析 - ZYJC智能批改</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+            flex: 1;
+            text-align: center;
+        }
+        
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 80px;
+        }
+        
+        /* 孩子选择器 */
+        .child-selector {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .selector-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .child-tabs {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .child-tab {
+            flex: 1;
+            padding: 12px;
+            border: 1px solid #e0e0e0;
+            background: white;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 14px;
+        }
+        
+        .child-tab.active {
+            background: #e74c3c;
+            color: white;
+            border-color: #e74c3c;
+        }
+        
+        /* 错题统计 */
+        .error-stats {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+        }
+        
+        .stat-item {
+            text-align: center;
+            padding: 16px;
+            background: #fff5f5;
+            border-radius: 12px;
+            border: 1px solid #ffebee;
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 学科分布 */
+        .subject-distribution {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .subject-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .subject-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #fff5f5;
+            border-radius: 12px;
+            border-left: 4px solid #e74c3c;
+        }
+        
+        .subject-info {
+            flex: 1;
+        }
+        
+        .subject-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .subject-stats {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .subject-count {
+            text-align: right;
+        }
+        
+        .count-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #e74c3c;
+            margin-bottom: 4px;
+        }
+        
+        .count-label {
+            font-size: 10px;
+            color: #666;
+        }
+        
+        /* 错题类型 */
+        .error-types {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .type-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .type-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #ffc107;
+        }
+        
+        .type-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .type-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        .type-percentage {
+            font-size: 14px;
+            font-weight: bold;
+            color: #ffc107;
+        }
+        
+        .type-description {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.4;
+        }
+        
+        /* 最近错题 */
+        .recent-errors {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .error-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .error-item {
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .error-item:hover {
+            background: #e9ecef;
+        }
+        
+        .error-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+        
+        .error-subject {
+            font-size: 12px;
+            background: #e74c3c;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        
+        .error-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .error-question {
+            font-size: 14px;
+            color: #333;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        
+        .error-reason {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 学习建议 */
+        .suggestions {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .ai-suggestions {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .ai-suggestion-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 12px;
+            padding: 16px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .ai-suggestion-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            transform: translate(20px, -20px);
+        }
+        
+        .ai-suggestion-card.priority-high {
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a6f 100%);
+        }
+        
+        .ai-suggestion-card.priority-medium {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+        }
+        
+        .ai-suggestion-card.priority-low {
+            background: linear-gradient(135deg, #45b7d1 0%, #96c93d 100%);
+        }
+        
+        .ai-suggestion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .ai-suggestion-icon {
+            font-size: 24px;
+            margin-right: 12px;
+        }
+        
+        .ai-suggestion-title {
+            font-size: 16px;
+            font-weight: bold;
+            margin: 0;
+        }
+        
+        .ai-suggestion-type {
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-left: auto;
+        }
+        
+        .ai-suggestion-content {
+            font-size: 14px;
+            line-height: 1.5;
+            margin-bottom: 12px;
+            opacity: 0.95;
+        }
+        
+        .ai-suggestion-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        
+        .ai-suggestion-action {
+            background: rgba(255, 255, 255, 0.15);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 16px;
+            font-size: 12px;
+            border: none;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .ai-suggestion-action:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+        
+        .ai-suggestion-improvement {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 8px;
+            font-size: 10px;
+            font-weight: bold;
+        }
+        
+        /* AI标识 */
+        .ai-powered-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 500;
+            margin-bottom: 16px;
+        }
+        
+        .ai-powered-badge::before {
+            content: '🤖';
+            font-size: 14px;
+        }
+        
+        /* 传统建议样式保留作为后备 */
+        .suggestion-content {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            border-radius: 8px;
+            padding: 16px;
+        }
+        
+        .suggestion-item {
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #856404;
+            line-height: 1.4;
+        }
+        
+        .suggestion-item:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* 加载和错误状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #e74c3c;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        
+        .retry-btn {
+            background: #e74c3c;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 12px;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #e74c3c;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <div class="navbar-title">错题分析</div>
+                <button class="filter-btn" onclick="showFilters()">🔍</button>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 孩子选择器 -->
+            <div class="child-selector">
+                <div class="selector-title"></div>
+                <div class="child-tabs" id="childTabs">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 错题统计 -->
+            <div class="error-stats">
+                <div class="section-title">📊 错题统计</div>
+                <div class="stats-grid" id="errorStats">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载统计中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学科分布 -->
+            <div class="subject-distribution">
+                <div class="section-title">📚 学科分布</div>
+                <div class="subject-list" id="subjectDistribution">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载学科分布中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 错题类型 -->
+            <div class="error-types">
+                <div class="section-title">🔍 错题类型分析</div>
+                <div class="type-list" id="errorTypes">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>分析错题类型中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 最近错题 -->
+            <div class="recent-errors">
+                <div class="section-title">📝 最近错题</div>
+                <div class="error-list" id="recentErrors">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>加载错题记录中...</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 学习建议 -->
+            <div class="suggestions">
+                <div class="section-title">💡 学习建议</div>
+                <div class="suggestion-content" id="suggestions">
+                    <div class="loading">
+                        <div class="loading-spinner"></div>
+                        <div>生成建议中...</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goToParentHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">🔍</div>
+                <div class="nav-text">错题</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let children = [];
+        let currentChildId = null;
+
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        async function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                alert('请先登录');
+                window.location.href = 'login.html';
+                return;
+            }
+            
+            // 加载孩子列表
+            await loadChildren();
+        }
+
+        async function loadChildren() {
+            try {
+                const response = await fetch(`${API_BASE}/parent/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    children = data.children;
+                    updateChildTabs();
+                    
+                    // 默认选择第一个孩子
+                    if (children.length > 0) {
+                        selectChild(children[0].id);
+                    }
+                } else {
+                    throw new Error('获取孩子列表失败');
+                }
+            } catch (error) {
+                console.error('获取孩子列表失败:', error);
+                document.getElementById('childTabs').innerHTML = 
+                    '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildren()">重试</button></div>';
+            }
+        }
+
+        function updateChildTabs() {
+            const childTabsHtml = children.map(child => {
+                // 将英文avatar转换为中文显示
+                let avatarDisplay = child.avatar || '👶';
+                if (avatarDisplay === 'student') {
+                    avatarDisplay = '学生';
+                }
+                
+                return `
+                    <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
+                            onclick="selectChild(${child.id})"
+                            data-child-id="${child.id}">
+                        ${avatarDisplay} ${child.name}
+                    </button>
+                `;
+            }).join('');
+            
+            document.getElementById('childTabs').innerHTML = childTabsHtml;
+        }
+
+        async function selectChild(childId) {
+            currentChildId = childId;
+            
+            // 更新选中状态
+            document.querySelectorAll('.child-tab').forEach(tab => {
+                tab.classList.toggle('active', tab.dataset.childId == childId);
+            });
+            
+            // 加载该孩子的错题分析
+            await loadErrorAnalysis();
+        }
+
+        async function loadErrorAnalysis() {
+            if (!currentChildId) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/parent/children/${currentChildId}/errors`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateErrorStats(data.stats);
+                    updateSubjectDistribution(data.subjects);
+                    updateErrorTypes(data.types);
+                    updateRecentErrors(data.recentErrors);
+                    updateSuggestions(data.suggestions, data.aiRecommendations);
+                } else {
+                    throw new Error('获取错题分析失败');
+                }
+            } catch (error) {
+                console.error('获取错题分析失败:', error);
+                showErrorAnalysisError();
+            }
+        }
+
+        function showErrorAnalysisError() {
+            document.getElementById('errorStats').innerHTML = '<div class="error">加载统计失败 <button class="retry-btn" onclick="loadErrorAnalysis()">重试</button></div>';
+            document.getElementById('subjectDistribution').innerHTML = '<div class="error">加载学科分布失败</div>';
+            document.getElementById('errorTypes').innerHTML = '<div class="error">加载错题类型失败</div>';
+            document.getElementById('recentErrors').innerHTML = '<div class="error">加载错题记录失败</div>';
+            document.getElementById('suggestions').innerHTML = '<div class="error">加载建议失败</div>';
+        }
+
+
+        function updateErrorStats(stats) {
+            const statsHtml = `
+                <div class="stat-item">
+                    <div class="stat-number">${stats.totalErrors}</div>
+                    <div class="stat-label">总错题数</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.unreviewedErrors}</div>
+                    <div class="stat-label">未复习</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.thisWeekErrors}</div>
+                    <div class="stat-label">本周新增</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-number">${stats.improvedErrors}</div>
+                    <div class="stat-label">已改进</div>
+                </div>
+            `;
+            
+            document.getElementById('errorStats').innerHTML = statsHtml;
+        }
+
+        function updateSubjectDistribution(subjects) {
+            if (subjects.length === 0) {
+                document.getElementById('subjectDistribution').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📚</div>
+                        <div>暂无学科错题数据</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">继续努力学习，保持优秀表现！</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const subjectsHtml = subjects.map(subject => `
+                <div class="subject-item">
+                    <div class="subject-info">
+                        <div class="subject-name">${subject.subject}</div>
+                        <div class="subject-stats">${subject.totalQuestions}题 · 正确率${subject.accuracy}%</div>
+                    </div>
+                    <div class="subject-count">
+                        <div class="count-number">${subject.errorCount}</div>
+                        <div class="count-label">错题</div>
+                    </div>
+                </div>
+            `).join('');
+            
+            document.getElementById('subjectDistribution').innerHTML = subjectsHtml;
+        }
+
+        function updateErrorTypes(types) {
+            if (types.length === 0) {
+                document.getElementById('errorTypes').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
+                        <div>暂无错题类型分析</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">还没有错题数据可供分析</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const typesHtml = types.map(type => `
+                <div class="type-item">
+                    <div class="type-header">
+                        <div class="type-name">${type.type}</div>
+                        <div class="type-percentage">${type.percentage}%</div>
+                    </div>
+                    <div class="type-description">${type.description}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('errorTypes').innerHTML = typesHtml;
+        }
+
+        function updateRecentErrors(errors) {
+            if (errors.length === 0) {
+                document.getElementById('recentErrors').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
+                        <div>暂无错题记录</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">继续努力，保持优秀的成绩！</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const errorsHtml = errors.map(error => `
+                <div class="error-item" onclick="viewErrorDetail(${error.id})">
+                    <div class="error-header">
+                        <div class="error-subject">${error.subject}</div>
+                        <div class="error-date">${error.date}</div>
+                    </div>
+                    <div class="error-question">${error.question}</div>
+                    <div class="error-reason">错因：${error.reason}</div>
+                </div>
+            `).join('');
+            
+            document.getElementById('recentErrors').innerHTML = errorsHtml;
+        }
+
+        function updateSuggestions(suggestions, aiRecommendations = null) {
+            const suggestionsContainer = document.getElementById('suggestions');
+            
+            // 检查是否有AI建议数据
+            if (aiRecommendations && Array.isArray(aiRecommendations) && aiRecommendations.length > 0) {
+                // 显示AI驱动的建议
+                const aiSuggestionsHtml = `
+                    <div class="ai-powered-badge">AI 智能学习建议</div>
+                    <div class="ai-suggestions">
+                        ${aiRecommendations.map(rec => `
+                            <div class="ai-suggestion-card priority-${rec.priority}">
+                                <div class="ai-suggestion-improvement">预期提升 ${rec.estimated_improvement || 10}%</div>
+                                <div class="ai-suggestion-header">
+                                    <span class="ai-suggestion-icon">${rec.icon}</span>
+                                    <h4 class="ai-suggestion-title">${rec.title}</h4>
+                                    <span class="ai-suggestion-type">${rec.type}</span>
+                                </div>
+                                <div class="ai-suggestion-content">${rec.content}</div>
+                                ${rec.action_items && rec.action_items.length > 0 ? `
+                                    <div class="ai-suggestion-actions">
+                                        ${rec.action_items.slice(0, 3).map(action => `
+                                            <button class="ai-suggestion-action">${action}</button>
+                                        `).join('')}
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+                suggestionsContainer.innerHTML = aiSuggestionsHtml;
+                
+                // 添加行动项点击事件
+                document.querySelectorAll('.ai-suggestion-action').forEach(button => {
+                    button.addEventListener('click', function() {
+                        this.style.background = 'rgba(255, 255, 255, 0.3)';
+                        this.innerHTML += ' ✓';
+                        this.disabled = true;
+                        showToast('已标记为关注项目！');
+                    });
+                });
+                
+            } else if (suggestions && suggestions.length > 0) {
+                // 显示传统文本建议
+                const suggestionsHtml = suggestions.map(suggestion => `
+                    <div class="suggestion-item">• ${suggestion}</div>
+                `).join('');
+                
+                suggestionsContainer.innerHTML = `
+                    <div class="suggestion-content">
+                        ${suggestionsHtml}
+                    </div>
+                `;
+            } else {
+                // 默认建议
+                suggestionsContainer.innerHTML = `
+                    <div class="suggestion-content">
+                        <div class="suggestion-item">• 继续保持当前的学习节奏，持续努力！</div>
+                    </div>
+                `;
+            }
+        }
+
+        function viewErrorDetail(errorId) {
+            window.location.href = `error-detail.html?id=${errorId}`;
+        }
+
+        function showFilters() {
+            showToast('筛选功能开发中...');
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function goToParentHome() {
+            window.location.href = 'parent-home.html';
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, 2000);
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 作业记录</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+            border-radius: 6px;
+            transition: background 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+            min-height: calc(100vh - 80px);
+        }
+        
+        /* 筛选栏 */
+        .filter-section {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .filter-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 16px;
+        }
+        
+        .filter-tab {
+            flex: 1;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border: none;
+            border-radius: 8px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .filter-tab.active {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .stats-row {
+            display: flex;
+            justify-content: space-between;
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 作业列表 */
+        .homework-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .homework-item {
+            background: #ffffff;
+            border-radius: 12px;
+            padding: 16px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .homework-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+        }
+        
+        .homework-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+        
+        .homework-info {
+            flex: 1;
+        }
+        
+        .homework-subject {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .homework-date {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .accuracy-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .accuracy-high {
+            background: #d4edda;
+            color: #155724;
+        }
+        
+        .accuracy-medium {
+            background: #fff3cd;
+            color: #856404;
+        }
+        
+        .accuracy-low {
+            background: #f8d7da;
+            color: #721c24;
+        }
+        
+        .homework-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .stat-group {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+        
+        .stat-item {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .stat-number {
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .homework-tags {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        
+        .homework-tag {
+            background: #f0f5ff;
+            color: #1e40af;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 10px;
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #007AFF;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 12px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        /* 错误状态 */
+        .error {
+            text-align: center;
+            padding: 40px;
+            color: #dc3545;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .retry-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            margin-top: 16px;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #666;
+        }
+        
+        .empty-icon {
+            font-size: 64px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+        
+        .empty-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .empty-desc {
+            font-size: 14px;
+            line-height: 1.4;
+            margin-bottom: 24px;
+        }
+        
+        .start-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .stat-group {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div class="navbar-title">作业记录</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 筛选栏 -->
+            <div class="filter-section">
+                <div class="filter-tabs">
+                    <button class="filter-tab active" onclick="filterBySubject('all')">全部</button>
+                    <button class="filter-tab" onclick="filterBySubject('math')">数学</button>
+                    <button class="filter-tab" onclick="filterBySubject('chinese')">语文</button>
+                    <button class="filter-tab" onclick="filterBySubject('english')">英语</button>
+                    <button class="filter-tab" onclick="filterBySubject('physics')">物理</button>
+                    <button class="filter-tab" onclick="filterBySubject('chemistry')">化学</button>
+                </div>
+                <div class="stats-row">
+                    <span>共 <span id="totalCount">-</span> 次批改</span>
+                    <span>平均正确率 <span id="avgAccuracy">-%</span></span>
+                </div>
+            </div>
+            
+            <!-- 作业列表 -->
+            <div id="homeworkListContainer">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div>正在加载作业记录...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let homeworkList = [];
+        let currentFilter = 'all';
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        async function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                showToast('请先登录');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            
+            // 加载作业列表
+            await loadHomeworkList();
+        }
+
+        async function loadHomeworkList() {
+            const container = document.getElementById('homeworkListContainer');
+            
+            console.log('=== 开始加载作业列表 ===');
+            console.log('API地址:', `${API_BASE}/homework/list`);
+            console.log('Token:', token);
+            
+            try {
+                console.log('发送请求...');
+                const response = await fetch(`${API_BASE}/homework/list?limit=50&offset=0`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('响应状态:', response.status);
+                console.log('响应头:', [...response.headers.entries()]);
+                
+                if (response.ok) {
+                    homeworkList = await response.json();
+                    console.log('作业列表数据:', homeworkList);
+                    updateStats();
+                    renderHomeworkList();
+                } else {
+                    const error = await response.json();
+                    console.error('API错误响应:', error);
+                    throw new Error(`HTTP ${response.status}: ${JSON.stringify(error)}`);
+                }
+            } catch (error) {
+                console.error('加载作业列表失败:', error);
+                container.innerHTML = `
+                    <div class="error">
+                        <div class="error-icon">😞</div>
+                        <div>加载作业记录失败</div>
+                        <div style="font-size: 12px; color: #999; margin: 8px 0;">${error.message}</div>
+                        <button class="retry-btn" onclick="loadHomeworkList()">重试</button>
+                    </div>
+                `;
+            }
+        }
+
+        function updateStats() {
+            const filteredList = filterHomeworkList();
+            const totalCount = filteredList.length;
+            const avgAccuracy = totalCount > 0 
+                ? Math.round(filteredList.reduce((sum, hw) => sum + hw.accuracy_rate, 0) / totalCount)
+                : 0;
+            
+            document.getElementById('totalCount').textContent = totalCount;
+            document.getElementById('avgAccuracy').textContent = avgAccuracy;
+        }
+
+        function filterHomeworkList() {
+            if (currentFilter === 'all') {
+                return homeworkList;
+            }
+            return homeworkList.filter(hw => hw.subject === currentFilter);
+        }
+
+        function renderHomeworkList() {
+            const container = document.getElementById('homeworkListContainer');
+            const filteredList = filterHomeworkList();
+            
+            if (filteredList.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-icon">📚</div>
+                        <div class="empty-title">暂无作业记录</div>
+                        <div class="empty-desc">开始您的第一次作业批改吧！<br>点击下方按钮开始体验智能批改</div>
+                        <button class="start-btn" onclick="goToSubmit()">开始批改</button>
+                    </div>
+                `;
+                return;
+            }
+            
+            const homeworkHTML = filteredList.map(homework => {
+                const date = new Date(homework.created_at);
+                const dateStr = date.toLocaleDateString('zh-CN', {
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+                
+                const accuracy = homework.accuracy_rate;
+                let accuracyClass = 'accuracy-low';
+                if (accuracy >= 90) accuracyClass = 'accuracy-high';
+                else if (accuracy >= 70) accuracyClass = 'accuracy-medium';
+                
+                const subjectNames = {
+                    'math': '数学',
+                    'chinese': '语文', 
+                    'english': '英语',
+                    'physics': '物理',
+                    'chemistry': '化学',
+                    'biology': '生物',
+                    'history': '历史',
+                    'geography': '地理'
+                };
+                
+                const gradeNames = {
+                    'elementary': '小学',
+                    'middle': '中学',
+                    'high': '高中'
+                };
+                
+                const subjectTypeNames = {
+                    'arithmetic': '口算',
+                    'basic': '基础',
+                    'advanced': '进阶',
+                    'algebra': '代数',
+                    'geometry': '几何'
+                };
+                
+                return `
+                    <div class="homework-item" onclick="goToHomeworkDetail(${homework.id})">
+                        <div class="homework-header">
+                            <div class="homework-info">
+                                <div class="homework-subject">${subjectNames[homework.subject] || homework.subject}</div>
+                                <div class="homework-date">${dateStr}</div>
+                            </div>
+                            <div class="accuracy-badge ${accuracyClass}">
+                                ${Math.round(accuracy)}%
+                            </div>
+                        </div>
+                        
+                        <div class="homework-stats">
+                            <div class="stat-group">
+                                <div class="stat-item">
+                                    题目 <span class="stat-number">${homework.total_questions}</span>
+                                </div>
+                                <div class="stat-item">
+                                    正确 <span class="stat-number">${homework.correct_count}</span>
+                                </div>
+                                <div class="stat-item">
+                                    错误 <span class="stat-number">${homework.wrong_count}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="homework-tags">
+                            <div class="homework-tag">${gradeNames[homework.grade_level] || homework.grade_level}</div>
+                            ${homework.subject_type ? `<div class="homework-tag">${subjectTypeNames[homework.subject_type] || homework.subject_type}</div>` : ''}
+                            <div class="homework-tag">${homework.status === 'completed' ? '已完成' : '处理中'}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+            
+            container.innerHTML = `<div class="homework-list">${homeworkHTML}</div>`;
+        }
+
+        function filterBySubject(subject) {
+            // 更新按钮状态
+            document.querySelectorAll('.filter-tab').forEach(tab => {
+                tab.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // 更新筛选条件并重新渲染
+            currentFilter = subject;
+            updateStats();
+            renderHomeworkList();
+        }
+
+        function goToHomeworkDetail(homeworkId) {
+            window.location.href = `homework-result.html?id=${homeworkId}`;
+        }
+
+        function goToSubmit() {
+            window.location.href = 'homework-submit.html';
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1001;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, duration);
+        }
+    </script>
+</body>
+</html>

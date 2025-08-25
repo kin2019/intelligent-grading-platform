@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Token Injection for Testing</title>
+</head>
+<body>
+    <h1>设置测试Token</h1>
+    <p>点击下面的按钮设置测试用户的认证Token：</p>
+    
+    <button onclick="setTestToken('1')">设置 User 1 的 Token (Parent)</button>
+    <button onclick="setTestToken('44')">设置 User 44 的 Token (Parent)</button>
+    <br><br>
+    <button onclick="checkToken()">查看当前Token</button>
+    <button onclick="clearToken()">清除Token</button>
+    <br><br>
+    <a href="parent-home.html">前往家长首页</a>
+
+    <script>
+        const tokens = {
+            '1': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTU5NjAyMTAsInN1YiI6IjEifQ.iMj_bhTiIZ7v3hh8aMPvMDsRFFhleFcqCeuyNMdZdiM',
+            '44': 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTU5NjAyMTAsInN1YiI6IjQ0In0.aCyerxMNZujBiu-BC95EuGiAu55RaA2-MNyHCbec85I'
+        };
+
+        function setTestToken(userId) {
+            const token = tokens[userId];
+            localStorage.setItem('token', token);
+            
+            // Also set user info
+            const userInfo = {
+                id: userId === '1' ? 43 : 45,
+                openid: userId,
+                nickname: userId === '1' ? '测试家长1' : '测试家长2', 
+                role: 'parent'
+            };
+            localStorage.setItem('user', JSON.stringify(userInfo));
+            
+            alert(`已设置 User ${userId} 的Token和用户信息`);
+        }
+
+        function checkToken() {
+            const token = localStorage.getItem('token');
+            const user = localStorage.getItem('user');
+            console.log('Current Token:', token);
+            console.log('Current User:', user);
+            alert('Token: ' + (token ? token.substring(0, 50) + '...' : 'None') + 
+                  '\nUser: ' + (user || 'None'));
+        }
+
+        function clearToken() {
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+            alert('已清除所有认证信息');
+        }
+    </script>
+</body>
+</html>

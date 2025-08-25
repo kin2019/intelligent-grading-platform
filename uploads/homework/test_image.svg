@@ -1,0 +1,22 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="300" fill="#f8f9fa"/>
+    <rect x="20" y="20" width="360" height="260" fill="white" stroke="#ddd" stroke-width="2" rx="8"/>
+    
+    <!-- 模拟作业题目 -->
+    <text x="40" y="60" font-family="Arial" font-size="18" font-weight="bold" fill="#333">语文作业 - 古诗默写</text>
+    
+    <!-- 题目1 -->
+    <text x="40" y="100" font-family="Arial" font-size="14" fill="#666">1. 请默写：春眠不觉晓，</text>
+    <text x="60" y="120" font-family="Arial" font-size="14" fill="#333">处处闻啼鸟</text>
+    
+    <!-- 题目2 -->
+    <text x="40" y="160" font-family="Arial" font-size="14" fill="#666">2. 请默写：床前明月光，</text>
+    <text x="60" y="180" font-family="Arial" font-size="14" fill="#333">疑是地上霜</text>
+    
+    <!-- 题目3 -->
+    <text x="40" y="220" font-family="Arial" font-size="14" fill="#666">3. 请默写：白日依山尽，</text>
+    <text x="60" y="240" font-family="Arial" font-size="14" fill="#333">黄河入海流</text>
+    
+    <!-- 作业标识 -->
+    <text x="320" y="280" font-family="Arial" font-size="12" fill="#999">作业ID: 942516</text>
+</svg>

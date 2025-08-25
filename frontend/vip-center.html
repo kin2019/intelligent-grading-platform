@@ -1,0 +1,986 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - VIP中心</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            padding: 10px 20px 20px;
+            color: #333;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: #333;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .crown-icon {
+            font-size: 20px;
+            margin-left: 8px;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 当前VIP状态 */
+        .vip-status {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 20px;
+            color: #333;
+            text-align: center;
+            box-shadow: 0 4px 20px rgba(255, 215, 0, 0.3);
+        }
+        
+        .vip-status.non-vip {
+            background: linear-gradient(135deg, #e0e0e0 0%, #bdbdbd 100%);
+            color: #666;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .status-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .status-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 8px;
+        }
+        
+        .status-desc {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 16px;
+        }
+        
+        .status-info {
+            display: flex;
+            justify-content: center;
+            gap: 24px;
+            margin-top: 16px;
+        }
+        
+        .info-item {
+            text-align: center;
+        }
+        
+        .info-number {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 4px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            opacity: 0.8;
+        }
+        
+        /* VIP计划 */
+        .plans-section {
+            margin-bottom: 20px;
+        }
+        
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            text-align: center;
+        }
+        
+        .plans-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .plan-card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .plan-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.12);
+        }
+        
+        .plan-card.recommended {
+            border-color: #FFD700;
+            background: linear-gradient(135deg, #fff9e6 0%, #fff3d4 100%);
+        }
+        
+        .plan-card.current {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
+        }
+        
+        .plan-badge {
+            position: absolute;
+            top: -8px;
+            right: 16px;
+            background: #FFD700;
+            color: #333;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: bold;
+        }
+        
+        .plan-badge.current {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        .plan-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        .plan-name {
+            font-size: 20px;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .plan-desc {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 16px;
+        }
+        
+        .plan-price {
+            display: flex;
+            align-items: baseline;
+            justify-content: center;
+            gap: 4px;
+        }
+        
+        .price-symbol {
+            font-size: 16px;
+            color: #666;
+        }
+        
+        .price-number {
+            font-size: 32px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+        
+        .price-unit {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .original-price {
+            font-size: 14px;
+            color: #999;
+            text-decoration: line-through;
+            margin-left: 8px;
+        }
+        
+        .plan-features {
+            list-style: none;
+            margin: 20px 0;
+        }
+        
+        .plan-features li {
+            display: flex;
+            align-items: center;
+            margin-bottom: 12px;
+            font-size: 14px;
+        }
+        
+        .feature-icon {
+            margin-right: 8px;
+            font-size: 16px;
+            width: 20px;
+        }
+        
+        .feature-check {
+            color: #4CAF50;
+        }
+        
+        .feature-cross {
+            color: #f44336;
+        }
+        
+        .plan-button {
+            width: 100%;
+            height: 44px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-primary {
+            background: linear-gradient(90deg, #FFD700 0%, #FFA500 100%);
+            color: #333;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 165, 0, 0.4);
+        }
+        
+        .btn-secondary {
+            background: #f0f0f0;
+            color: #666;
+        }
+        
+        .btn-secondary:hover {
+            background: #e0e0e0;
+        }
+        
+        .btn-current {
+            background: #4CAF50;
+            color: white;
+        }
+        
+        /* VIP特权展示 */
+        .benefits-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .benefits-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 16px;
+            margin-top: 16px;
+        }
+        
+        .benefit-item {
+            text-align: center;
+            padding: 16px 8px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .benefit-icon {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+        
+        .benefit-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .benefit-desc {
+            font-size: 12px;
+            color: #666;
+            line-height: 1.3;
+        }
+        
+        /* 支付方式 */
+        .payment-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 80px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .payment-methods {
+            display: flex;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .payment-method {
+            flex: 1;
+            padding: 16px 8px;
+            background: #f8f9fa;
+            border: 2px solid transparent;
+            border-radius: 12px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .payment-method:hover {
+            border-color: #007AFF;
+        }
+        
+        .payment-method.selected {
+            border-color: #007AFF;
+            background: #e3f2fd;
+        }
+        
+        .payment-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+        
+        .payment-name {
+            font-size: 12px;
+            color: #333;
+        }
+        
+        /* 购买确认模态框 */
+        .modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+        
+        .modal-content {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 300px;
+            width: 90%;
+            text-align: center;
+        }
+        
+        .modal-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .modal-plan-info {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+        
+        .modal-plan-name {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+        
+        .modal-plan-price {
+            font-size: 24px;
+            font-weight: bold;
+            color: #FF6B35;
+        }
+        
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+        
+        .modal-btn {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        .btn-modal-primary {
+            background: #007AFF;
+            color: #ffffff;
+        }
+        
+        .btn-modal-secondary {
+            background: #f0f0f0;
+            color: #333;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #FFD700;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .status-info {
+                gap: 16px;
+            }
+            
+            .benefits-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div class="navbar-title">VIP中心</div>
+                    <div class="crown-icon">👑</div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 当前VIP状态 -->
+            <div class="vip-status" id="vipStatus">
+                <div class="status-icon">👑</div>
+                <div class="status-title" id="statusTitle">VIP会员</div>
+                <div class="status-desc" id="statusDesc">尊享智能批改特权</div>
+                <div class="status-info" id="statusInfo">
+                    <div class="info-item">
+                        <div class="info-number" id="remainingQuota">∞</div>
+                        <div class="info-label">剩余次数</div>
+                    </div>
+                    <div class="info-item">
+                        <div class="info-number" id="expiryDate">2025-12-31</div>
+                        <div class="info-label">到期时间</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VIP计划 -->
+            <div class="plans-section">
+                <div class="section-title">选择您的VIP计划</div>
+                <div class="plans-grid">
+                    <!-- 月度会员 -->
+                    <div class="plan-card" data-plan="monthly" onclick="selectPlan('monthly')">
+                        <div class="plan-header">
+                            <div class="plan-name">月度VIP</div>
+                            <div class="plan-desc">适合短期使用，灵活续费</div>
+                            <div class="plan-price">
+                                <span class="price-symbol">¥</span>
+                                <span class="price-number">29</span>
+                                <span class="price-unit">/月</span>
+                            </div>
+                        </div>
+                        <ul class="plan-features">
+                            <li><span class="feature-icon feature-check">✓</span>无限次智能批改</li>
+                            <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
+                            <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
+                            <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
+                            <li><span class="feature-icon feature-cross">✗</span>专属客服</li>
+                            <li><span class="feature-icon feature-cross">✗</span>家长报告</li>
+                        </ul>
+                        <button class="plan-button btn-secondary">选择月度VIP</button>
+                    </div>
+                    
+                    <!-- 季度会员 -->
+                    <div class="plan-card recommended" data-plan="quarterly" onclick="selectPlan('quarterly')">
+                        <div class="plan-badge">推荐</div>
+                        <div class="plan-header">
+                            <div class="plan-name">季度VIP</div>
+                            <div class="plan-desc">最受欢迎，性价比最高</div>
+                            <div class="plan-price">
+                                <span class="price-symbol">¥</span>
+                                <span class="price-number">79</span>
+                                <span class="price-unit">/3个月</span>
+                                <span class="original-price">¥87</span>
+                            </div>
+                        </div>
+                        <ul class="plan-features">
+                            <li><span class="feature-icon feature-check">✓</span>无限次智能批改</li>
+                            <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
+                            <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
+                            <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
+                            <li><span class="feature-icon feature-check">✓</span>专属客服</li>
+                            <li><span class="feature-icon feature-cross">✗</span>家长报告</li>
+                        </ul>
+                        <button class="plan-button btn-primary">选择季度VIP</button>
+                    </div>
+                    
+                    <!-- 年度会员 -->
+                    <div class="plan-card" data-plan="yearly" onclick="selectPlan('yearly')">
+                        <div class="plan-header">
+                            <div class="plan-name">年度VIP</div>
+                            <div class="plan-desc">超值优惠，全功能体验</div>
+                            <div class="plan-price">
+                                <span class="price-symbol">¥</span>
+                                <span class="price-number">199</span>
+                                <span class="price-unit">/年</span>
+                                <span class="original-price">¥348</span>
+                            </div>
+                        </div>
+                        <ul class="plan-features">
+                            <li><span class="feature-icon feature-check">✓</span>无限次智能批改</li>
+                            <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
+                            <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
+                            <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
+                            <li><span class="feature-icon feature-check">✓</span>专属客服</li>
+                            <li><span class="feature-icon feature-check">✓</span>家长报告</li>
+                        </ul>
+                        <button class="plan-button btn-secondary">选择年度VIP</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- VIP特权展示 -->
+            <div class="benefits-section">
+                <div class="section-title">VIP专享特权</div>
+                <div class="benefits-grid">
+                    <div class="benefit-item">
+                        <div class="benefit-icon">🚀</div>
+                        <div class="benefit-title">无限批改</div>
+                        <div class="benefit-desc">不限次数使用智能批改功能</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">🎯</div>
+                        <div class="benefit-title">精准解析</div>
+                        <div class="benefit-desc">AI深度分析，详细解题思路</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">📚</div>
+                        <div class="benefit-title">智能错题本</div>
+                        <div class="benefit-desc">自动整理错题，针对性复习</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">📋</div>
+                        <div class="benefit-title">学习计划</div>
+                        <div class="benefit-desc">个性化制定学习计划</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">👨‍👩‍👧‍👦</div>
+                        <div class="benefit-title">家长报告</div>
+                        <div class="benefit-desc">详细学习情况反馈</div>
+                    </div>
+                    <div class="benefit-item">
+                        <div class="benefit-icon">💬</div>
+                        <div class="benefit-title">专属客服</div>
+                        <div class="benefit-desc">一对一专业答疑服务</div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 支付方式 -->
+            <div class="payment-section">
+                <div class="section-title">支付方式</div>
+                <div class="payment-methods">
+                    <div class="payment-method selected" data-method="wechat">
+                        <div class="payment-icon">💚</div>
+                        <div class="payment-name">微信支付</div>
+                    </div>
+                    <div class="payment-method" data-method="alipay">
+                        <div class="payment-icon">💙</div>
+                        <div class="payment-name">支付宝</div>
+                    </div>
+                    <div class="payment-method" data-method="apple">
+                        <div class="payment-icon">🍎</div>
+                        <div class="payment-name">Apple Pay</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 购买确认模态框 -->
+        <div class="modal" id="purchaseModal">
+            <div class="modal-content">
+                <div class="modal-title">确认购买</div>
+                <div class="modal-plan-info">
+                    <div class="modal-plan-name" id="modalPlanName">季度VIP</div>
+                    <div class="modal-plan-price" id="modalPlanPrice">¥79</div>
+                </div>
+                <div class="modal-buttons">
+                    <button class="modal-btn btn-modal-secondary" onclick="closePurchaseModal()">取消</button>
+                    <button class="modal-btn btn-modal-primary" onclick="confirmPurchase()">确认支付</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item" onclick="goToErrorBook()">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">错题本</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">💎</div>
+                <div class="nav-text">VIP</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let userInfo = null;
+        let selectedPlan = '';
+        let selectedPayment = 'wechat';
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                showToast('请先登录');
+                setTimeout(() => {
+                    window.location.href = 'login.html';
+                }, 2000);
+                return;
+            }
+            
+            // 绑定支付方式选择
+            bindPaymentMethods();
+            
+            // 加载用户VIP状态
+            loadVIPStatus();
+        }
+
+        function bindPaymentMethods() {
+            document.querySelectorAll('.payment-method').forEach(method => {
+                method.addEventListener('click', function() {
+                    document.querySelectorAll('.payment-method').forEach(m => m.classList.remove('selected'));
+                    this.classList.add('selected');
+                    selectedPayment = this.dataset.method;
+                });
+            });
+        }
+
+        async function loadVIPStatus() {
+            try {
+                const response = await fetch(`${API_BASE}/user/vip-status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    updateVIPStatus(data);
+                } else {
+                    throw new Error('获取VIP状态失败');
+                }
+            } catch (error) {
+                console.error('加载VIP状态失败:', error);
+                showLoadError();
+            }
+        }
+
+        function showLoadError() {
+            // 显示加载错误
+            const vipStatus = document.getElementById('vipStatus');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            const remainingQuota = document.getElementById('remainingQuota');
+            const expiryDate = document.getElementById('expiryDate');
+            
+            statusTitle.textContent = '加载失败';
+            statusDesc.textContent = '无法获取VIP状态信息';
+            remainingQuota.textContent = '--';
+            expiryDate.textContent = '--';
+            
+            // 显示错误提示和重试按钮
+            const errorDiv = document.createElement('div');
+            errorDiv.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #dc3545;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">😞</div>
+                    <div style="font-size: 16px; margin-bottom: 8px;">加载VIP信息失败</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">请检查网络连接或稍后重试</div>
+                    <button style="padding: 8px 16px; background: #007AFF; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="loadVIPStatus()">
+                        重试
+                    </button>
+                </div>
+            `;
+            
+            const container = document.querySelector('.page-content');
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+
+        function updateVIPStatus(data) {
+            const vipStatus = document.getElementById('vipStatus');
+            const statusTitle = document.getElementById('statusTitle');
+            const statusDesc = document.getElementById('statusDesc');
+            const remainingQuota = document.getElementById('remainingQuota');
+            const expiryDate = document.getElementById('expiryDate');
+
+            if (data.is_vip) {
+                statusTitle.textContent = 'VIP会员';
+                statusDesc.textContent = '尊享智能批改特权';
+                remainingQuota.textContent = '∞';
+                expiryDate.textContent = new Date(data.expire_date).toLocaleDateString();
+                
+                // 标记当前计划
+                if (data.vip_type) {
+                    const currentPlan = document.querySelector(`[data-plan="${data.vip_type}"]`);
+                    if (currentPlan) {
+                        currentPlan.classList.add('current');
+                        const badge = currentPlan.querySelector('.plan-badge');
+                        if (badge) {
+                            badge.textContent = '当前';
+                            badge.classList.add('current');
+                        } else {
+                            const newBadge = document.createElement('div');
+                            newBadge.className = 'plan-badge current';
+                            newBadge.textContent = '当前';
+                            currentPlan.appendChild(newBadge);
+                        }
+                        
+                        const button = currentPlan.querySelector('.plan-button');
+                        button.textContent = '当前计划';
+                        button.className = 'plan-button btn-current';
+                        button.disabled = true;
+                    }
+                }
+            } else {
+                vipStatus.classList.add('non-vip');
+                statusTitle.textContent = '普通用户';
+                statusDesc.textContent = '升级VIP解锁全部功能';
+                remainingQuota.textContent = data.remaining_quota || 0;
+                expiryDate.textContent = '未开通';
+                
+                // 更新状态信息标签
+                const infoItems = document.querySelectorAll('.info-label');
+                infoItems[0].textContent = '今日剩余';
+                infoItems[1].textContent = 'VIP状态';
+            }
+        }
+
+        function selectPlan(planType) {
+            // 如果是当前计划，不执行任何操作
+            const planCard = document.querySelector(`[data-plan="${planType}"]`);
+            if (planCard.classList.contains('current')) {
+                return;
+            }
+            
+            selectedPlan = planType;
+            
+            // 显示购买确认模态框
+            showPurchaseModal(planType);
+        }
+
+        function showPurchaseModal(planType) {
+            const modal = document.getElementById('purchaseModal');
+            const modalPlanName = document.getElementById('modalPlanName');
+            const modalPlanPrice = document.getElementById('modalPlanPrice');
+            
+            const planInfo = {
+                monthly: { name: '月度VIP', price: '¥29' },
+                quarterly: { name: '季度VIP', price: '¥79' },
+                yearly: { name: '年度VIP', price: '¥199' }
+            };
+            
+            modalPlanName.textContent = planInfo[planType].name;
+            modalPlanPrice.textContent = planInfo[planType].price;
+            modal.style.display = 'flex';
+        }
+
+        function closePurchaseModal() {
+            document.getElementById('purchaseModal').style.display = 'none';
+            selectedPlan = '';
+        }
+
+        async function confirmPurchase() {
+            if (!selectedPlan) return;
+            
+            try {
+                showToast('正在处理支付...');
+                
+                const response = await fetch(`${API_BASE}/payment/create-order`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        plan_type: selectedPlan,
+                        payment_method: selectedPayment
+                    })
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 支付成功处理
+                    closePurchaseModal();
+                    showToast('支付成功！VIP权益已生效');
+                    
+                    // 延迟刷新页面状态
+                    setTimeout(() => {
+                        location.reload();
+                    }, 2000);
+                } else {
+                    throw new Error('支付失败');
+                }
+            } catch (error) {
+                console.error('支付失败:', error);
+                
+                // 支付失败处理
+                closePurchaseModal();
+                showToast('支付失败：' + error.message);
+            }
+        }
+
+        function goBack() {
+            window.history.back();
+        }
+
+        function goHome() {
+            const role = localStorage.getItem('role') || 'student';
+            if (role === 'parent') {
+                window.location.href = 'parent-home.html';
+            } else {
+                window.location.href = 'student-home.html';
+            }
+        }
+
+        function goToErrorBook() {
+            window.location.href = 'error-book.html';
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1001;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, duration);
+        }
+
+        // 点击模态框背景关闭
+        document.getElementById('purchaseModal').addEventListener('click', function(e) {
+            if (e.target === this) {
+                closePurchaseModal();
+            }
+        });
+    </script>
+</body>
+</html>

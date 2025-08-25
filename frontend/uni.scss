@@ -1,0 +1,204 @@
+/**
+ * 全局样式变量
+ * 这里定义了所有全局的样式变量，包括颜色、尺寸、字体等
+ * 根据苹果设计风格和学科主题色彩系统设计
+ */
+
+/* ==================== 学科主题色彩 ==================== */
+$subject-math: #007AFF;        // 数学 - 深蓝色
+$subject-chinese: #FF3B30;     // 语文 - 红色  
+$subject-english: #34C759;     // 英语 - 绿色
+$subject-physics: #AF52DE;     // 物理 - 紫色
+$subject-chemistry: #FF9500;   // 化学 - 橙色
+$subject-biology: #32D74B;     // 生物 - 浅绿色
+
+/* ==================== 基础色彩系统 ==================== */
+// 主色调
+$primary-color: #007AFF;
+$secondary-color: #5856D6;
+
+// 功能色彩
+$success-color: #34C759;
+$warning-color: #FF9500; 
+$error-color: #FF3B30;
+$info-color: #5AC8FA;
+
+// 灰度色阶
+$gray-1: #F2F2F7;    // 最浅灰
+$gray-2: #E5E5EA;    // 浅灰
+$gray-3: #D1D1D6;    // 中浅灰
+$gray-4: #C7C7CC;    // 中灰
+$gray-5: #AEAEB2;    // 深中灰
+$gray-6: #8E8E93;    // 深灰
+$gray-7: #636366;    // 很深灰
+$gray-8: #48484A;    // 极深灰
+$gray-9: #1C1C1E;    // 接近黑色
+
+// 背景色
+$bg-color: #F8F8F8;
+$bg-color-white: #FFFFFF;
+$bg-color-dark: #000000;
+
+// 文字颜色
+$text-color: #1C1C1E;          // 主要文字
+$text-color-secondary: #8E8E93; // 次要文字
+$text-color-placeholder: #AEAEB2; // 占位符文字
+$text-color-white: #FFFFFF;     // 白色文字
+
+/* ==================== 圆角系统 ==================== */
+$radius-small: 8rpx;     // 小圆角 - 按钮、标签
+$radius-medium: 12rpx;   // 中圆角 - 卡片内容
+$radius-large: 18rpx;    // 大圆角 - 主要容器
+$radius-xlarge: 24rpx;   // 超大圆角 - 弹窗、面板
+
+/* ==================== 阴影系统 ==================== */
+$shadow-light: 0 2rpx 10rpx rgba(0, 0, 0, 0.05);
+$shadow-card: 0 2rpx 10rpx rgba(0, 0, 0, 0.08);
+$shadow-float: 0 6rpx 20rpx rgba(0, 0, 0, 0.12);
+$shadow-modal: 0 10rpx 40rpx rgba(0, 0, 0, 0.15);
+
+/* ==================== 字体系统 ==================== */
+$font-size-xs: 20rpx;     // 极小字体
+$font-size-sm: 24rpx;     // 小字体
+$font-size-base: 28rpx;   // 基础字体
+$font-size-lg: 32rpx;     // 大字体
+$font-size-xl: 36rpx;     // 超大字体
+$font-size-2xl: 42rpx;    // 标题字体
+$font-size-3xl: 48rpx;    // 大标题字体
+
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 600;
+$font-weight-heavy: 700;
+
+/* ==================== 间距系统 ==================== */
+$spacing-xs: 8rpx;
+$spacing-sm: 12rpx;
+$spacing-base: 16rpx;
+$spacing-lg: 24rpx;
+$spacing-xl: 32rpx;
+$spacing-2xl: 48rpx;
+$spacing-3xl: 64rpx;
+
+/* ==================== 布局系统 ==================== */
+$container-padding: 32rpx;
+$page-padding: 24rpx;
+$card-padding: 32rpx;
+$section-margin: 48rpx;
+
+/* ==================== Z-index 层级 ==================== */
+$z-index-mask: 1000;
+$z-index-popup: 1010;
+$z-index-toast: 1020;
+$z-index-loading: 1030;
+$z-index-modal: 1040;
+
+/* ==================== 动画时间 ==================== */
+$animation-fast: 0.2s;
+$animation-base: 0.3s;
+$animation-slow: 0.5s;
+
+/* ==================== 边框 ==================== */
+$border-width: 1rpx;
+$border-color: #E5E5EA;
+$border-color-light: #F2F2F7;
+
+/* ==================== 通用混合器 ==================== */
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin flex-start {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+@mixin text-ellipsis {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@mixin text-ellipsis-multi($lines: 2) {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: $lines;
+  -webkit-box-orient: vertical;
+}
+
+// 卡片样式
+@mixin card-style {
+  background: $bg-color-white;
+  border-radius: $radius-large;
+  box-shadow: $shadow-card;
+  padding: $card-padding;
+}
+
+// 按钮样式
+@mixin button-primary {
+  background: $primary-color;
+  color: $text-color-white;
+  border-radius: $radius-medium;
+  padding: $spacing-base $spacing-xl;
+  font-weight: $font-weight-medium;
+  border: none;
+  
+  &:active {
+    opacity: 0.8;
+  }
+}
+
+// 学科主题样式
+@mixin subject-theme($color) {
+  .subject-theme {
+    --subject-color: #{$color};
+    --subject-bg: #{rgba($color, 0.1)};
+    --subject-border: #{rgba($color, 0.2)};
+  }
+}
+
+/* ==================== 状态颜色 ==================== */
+$status-pending: #FF9500;    // 待处理
+$status-processing: #5AC8FA; // 处理中
+$status-completed: #34C759;  // 已完成
+$status-failed: #FF3B30;     // 失败
+
+/* ==================== VIP 等级颜色 ==================== */
+$vip-free: #8E8E93;         // 免费版
+$vip-basic: #007AFF;        // 标准版  
+$vip-premium: #AF52DE;      // 专业版
+$vip-family: #FF9500;       // 家庭版
+
+/* ==================== 难度等级颜色 ==================== */
+$difficulty-easy: #34C759;   // 简单
+$difficulty-medium: #FF9500; // 中等
+$difficulty-hard: #FF3B30;   // 困难
+
+/* ==================== 响应式断点 ==================== */
+$breakpoint-sm: 576rpx;
+$breakpoint-md: 768rpx;
+$breakpoint-lg: 992rpx;
+$breakpoint-xl: 1200rpx;
+
+/* ==================== 安全区域 ==================== */
+$safe-area-top: constant(safe-area-inset-top);
+$safe-area-bottom: constant(safe-area-inset-bottom);
+$safe-area-left: constant(safe-area-inset-left);
+$safe-area-right: constant(safe-area-inset-right);
+
+// 兼容性写法
+$safe-area-top: env(safe-area-inset-top);
+$safe-area-bottom: env(safe-area-inset-bottom);
+$safe-area-left: env(safe-area-inset-left);
+$safe-area-right: env(safe-area-inset-right);

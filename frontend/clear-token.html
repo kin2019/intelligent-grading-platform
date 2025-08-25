@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>清除并设置新Token</title>
+</head>
+<body>
+    <h1>清除并设置新Token</h1>
+    <button id="clearAndSet">清除旧数据并设置新Token</button>
+    <div id="result"></div>
+
+    <script>
+        document.getElementById('clearAndSet').addEventListener('click', function() {
+            // 清除所有localStorage数据
+            localStorage.clear();
+            console.log('已清除所有localStorage数据');
+            
+            // 设置新的token（有头像的用户）
+            const newToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NCIsImlhdCI6MTc1NTk2MDExNywiZXhwIjoxNzU2MDQ2NTE3fQ.XIf8ozG8fkqcRNv4EbAz0oFNp6BNd_uxHNkY0q4rMVg';
+            localStorage.setItem('token', newToken);
+            
+            document.getElementById('result').innerHTML = '<p>✅ 已清除旧数据并设置新Token</p><p>现在可以访问 <a href="parent-home.html">家长首页</a> 查看头像效果</p>';
+            
+            console.log('已设置新token:', newToken);
+        });
+    </script>
+</body>
+</html>

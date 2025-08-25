@@ -1,0 +1,20 @@
+<svg width="400" height="300" viewBox="0 0 400 300" xmlns="http://www.w3.org/2000/svg">
+    <rect width="400" height="300" fill="#f8f9fa"/>
+    <rect x="20" y="20" width="360" height="260" fill="white" stroke="#ddd" stroke-width="2" rx="8"/>
+    
+    <!-- 人物头像占位符 -->
+    <circle cx="200" cy="120" r="40" fill="#e0e0e0"/>
+    <circle cx="190" cy="110" r="3" fill="#999"/>
+    <circle cx="210" cy="110" r="3" fill="#999"/>
+    <path d="M185,130 Q200,140 215,130" stroke="#999" stroke-width="2" fill="none"/>
+    
+    <!-- 语文学科标识 -->
+    <text x="200" y="180" font-family="Arial" font-size="16" font-weight="bold" fill="#333" text-anchor="middle">语文作业</text>
+    
+    <!-- 提示文字 -->
+    <text x="200" y="200" font-family="Arial" font-size="12" fill="#666" text-anchor="middle">用户上传的自拍照片</text>
+    <text x="200" y="220" font-family="Arial" font-size="12" fill="#666" text-anchor="middle">请确保提交正确的作业图片</text>
+    
+    <!-- 作业标识 -->
+    <text x="320" y="280" font-family="Arial" font-size="12" fill="#999">作业ID: 899573</text>
+</svg>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API响应调试工具</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .debug-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #ddd; 
+            border-radius: 8px;
+            background: #f9f9f9;
+        }
+        .result { 
+            margin: 10px 0; 
+            padding: 15px; 
+            border-radius: 4px;
+            font-family: monospace;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+            font-size: 14px;
+        }
+        .success { background: #d4edda; color: #155724; }
+        .error { background: #f8d7da; color: #721c24; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .button { 
+            padding: 10px 16px; 
+            margin: 5px; 
+            background: #007AFF; 
+            color: white; 
+            border: none;
+            border-radius: 4px; 
+            cursor: pointer;
+        }
+        .button:hover { background: #0056CC; }
+        input[type="text"] {
+            padding: 8px;
+            margin: 5px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 200px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔍 API响应调试工具</h1>
+    
+    <div class="debug-section">
+        <h3>作业ID测试</h3>
+        <input type="text" id="homeworkId" value="942516" placeholder="输入作业ID">
+        <button class="button" onclick="testAPI()">🧪 测试API响应</button>
+        <button class="button" onclick="testWithAuth()">🔑 带认证测试</button>
+        <button class="button" onclick="testDirectAPI()">📡 直接API调用</button>
+    </div>
+
+    <div class="debug-section">
+        <h3>API响应结果</h3>
+        <div id="apiResult" class="result info">等待测试...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>数据完整性检查</h3>
+        <div id="validationResult" class="result info">等待验证...</div>
+    </div>
+
+    <div class="debug-section">
+        <h3>快速测试链接</h3>
+        <button class="button" onclick="testMultipleIDs()">🔢 测试多个ID</button>
+        <div id="multipleResults" class="result info" style="display:none;"></div>
+    </div>
+
+    <script>
+        function log(message, type = 'info') {
+            console.log(message);
+            const resultDiv = document.getElementById('apiResult');
+            resultDiv.className = `result ${type}`;
+            resultDiv.textContent = message;
+        }
+
+        function validateData(data) {
+            const validationDiv = document.getElementById('validationResult');
+            
+            const checks = [
+                { field: 'id', value: data.id, required: true },
+                { field: 'subject', value: data.subject, required: true },
+                { field: 'total_questions', value: data.total_questions, required: true },
+                { field: 'correct_count', value: data.correct_count, required: false },
+                { field: 'wrong_count', value: data.wrong_count, required: false },
+                { field: 'accuracy_rate', value: data.accuracy_rate, required: false },
+                { field: 'status', value: data.status, required: false },
+                { field: 'correction_results', value: data.correction_results, required: false }
+            ];
+
+            let validationResult = '=== 数据完整性检查 ===\n';
+            let isComplete = true;
+            
+            checks.forEach(check => {
+                const exists = check.value !== undefined && check.value !== null;
+                const status = exists ? '✅' : (check.required ? '❌' : '⚠️');
+                validationResult += `${status} ${check.field}: ${check.value}\n`;
+                
+                if (check.required && !exists) {
+                    isComplete = false;
+                }
+            });
+
+            validationResult += `\n=== 前端检查条件 ===\n`;
+            validationResult += `apiData: ${!!data} ${!!data ? '✅' : '❌'}\n`;
+            validationResult += `apiData.subject: ${!!data.subject} ${!!data.subject ? '✅' : '❌'}\n`;
+            validationResult += `apiData.total_questions: ${!!data.total_questions} ${!!data.total_questions ? '✅' : '❌'}\n`;
+            validationResult += `\n检查条件结果: ${data && data.subject && data.total_questions ? '✅ 通过' : '❌ 不通过'}\n`;
+            validationResult += `整体完整性: ${isComplete ? '✅ 完整' : '❌ 不完整'}`;
+
+            validationDiv.className = `result ${isComplete && data && data.subject && data.total_questions ? 'success' : 'error'}`;
+            validationDiv.textContent = validationResult;
+        }
+
+        async function testAPI() {
+            const homeworkId = document.getElementById('homeworkId').value;
+            log('正在测试 API 响应...', 'info');
+            
+            try {
+                const response = await fetch(`/api/v1/homework/result/${homeworkId}`);
+                
+                log(`=== API 响应状态 ===
+状态码: ${response.status}
+状态文本: ${response.statusText}
+Content-Type: ${response.headers.get('content-type')}
+`, response.ok ? 'success' : 'error');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`=== API 响应数据 ===
+${JSON.stringify(data, null, 2)}`, 'success');
+                    
+                    validateData(data);
+                } else {
+                    const errorText = await response.text();
+                    log(`=== API 错误响应 ===
+错误内容: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`=== API 调用异常 ===
+错误类型: ${error.name}
+错误信息: ${error.message}
+错误堆栈: ${error.stack}`, 'error');
+            }
+        }
+
+        async function testWithAuth() {
+            const homeworkId = document.getElementById('homeworkId').value;
+            log('正在测试带认证的 API 响应...', 'info');
+            
+            try {
+                const response = await fetch(`/api/v1/homework/result/${homeworkId}`, {
+                    headers: {
+                        'Authorization': 'Bearer demo-token',
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                log(`=== 带认证的 API 响应 ===
+状态码: ${response.status}
+认证头: Bearer demo-token
+`, response.ok ? 'success' : 'error');
+
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`=== 响应数据 ===
+${JSON.stringify(data, null, 2)}`, 'success');
+                    validateData(data);
+                } else {
+                    const errorText = await response.text();
+                    log(`=== 认证API错误 ===
+错误: ${errorText}`, 'error');
+                }
+            } catch (error) {
+                log(`=== 认证API异常 ===
+${error.message}`, 'error');
+            }
+        }
+
+        async function testDirectAPI() {
+            const homeworkId = document.getElementById('homeworkId').value;
+            log('正在测试直接 API 调用...', 'info');
+            
+            // 模拟直接后端调用逻辑
+            const subjects = ['chinese', 'math', 'english', 'physics', 'chemistry', 'biology'];
+            const subjectNames = ['语文', '数学', '英语', '物理', '化学', '生物'];
+            const index = parseInt(homeworkId) % subjects.length;
+            
+            log(`=== 直接算法计算 ===
+作业ID: ${homeworkId}
+计算: ${homeworkId} % ${subjects.length} = ${index}
+学科(英): ${subjects[index]}
+学科(中): ${subjectNames[index]}
+
+=== 模拟数据生成 ===`, 'info');
+
+            // 模拟一个完整的响应
+            const mockData = {
+                id: parseInt(homeworkId),
+                subject: subjects[index],
+                total_questions: 8,
+                correct_count: 6,
+                wrong_count: 2,
+                accuracy_rate: 75.0,
+                status: "completed",
+                correction_results: [
+                    {
+                        question_number: 1,
+                        question_text: "测试题目",
+                        user_answer: "A",
+                        correct_answer: "A",
+                        is_correct: true
+                    }
+                ]
+            };
+
+            log(`模拟完整响应:
+${JSON.stringify(mockData, null, 2)}`, 'success');
+            
+            validateData(mockData);
+        }
+
+        async function testMultipleIDs() {
+            const ids = [942516, 942737, 898411, 773191, 123456];
+            const resultsDiv = document.getElementById('multipleResults');
+            resultsDiv.style.display = 'block';
+            resultsDiv.className = 'result info';
+            resultsDiv.textContent = '正在测试多个ID...';
+            
+            let results = '=== 多个ID测试结果 ===\n';
+            
+            for (const id of ids) {
+                try {
+                    const response = await fetch(`/api/v1/homework/result/${id}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const isComplete = data && data.subject && data.total_questions;
+                        results += `ID ${id}: ${isComplete ? '✅ 完整' : '❌ 不完整'} (学科: ${data.subject || 'N/A'})\n`;
+                    } else {
+                        results += `ID ${id}: ❌ API错误 (${response.status})\n`;
+                    }
+                } catch (error) {
+                    results += `ID ${id}: ❌ 异常 (${error.message})\n`;
+                }
+            }
+            
+            resultsDiv.textContent = results;
+        }
+
+        // 页面加载时自动测试
+        window.onload = function() {
+            console.log('=== API调试工具初始化 ===');
+            // 自动测试默认ID
+            testAPI();
+        };
+    </script>
+</body>
+</html>

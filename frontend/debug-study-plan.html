@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug - 学习计划</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .debug-panel { 
+            position: fixed; 
+            top: 10px; 
+            right: 10px; 
+            background: #fff; 
+            border: 2px solid #007AFF; 
+            padding: 15px; 
+            border-radius: 8px; 
+            max-width: 300px;
+            z-index: 1000;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .debug-panel h4 { margin: 0 0 10px 0; color: #007AFF; }
+        .debug-log { font-size: 12px; margin: 5px 0; }
+        .debug-log.success { color: #28a745; }
+        .debug-log.error { color: #dc3545; }
+        .debug-log.info { color: #17a2b8; }
+        
+        .container { max-width: 400px; margin: 0 auto; background: #f5f5f5; min-height: 100vh; }
+        .navbar { background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%); padding: 10px 20px 20px; color: white; position: relative; }
+        .navbar-content { display: flex; align-items: center; justify-content: space-between; margin-top: 20px; }
+        .navbar-title { font-size: 18px; font-weight: bold; }
+        .page-content { padding: 20px; margin-top: -10px; border-radius: 20px 20px 0 0; background: #f5f5f5; position: relative; z-index: 1; }
+        
+        .current-plan { background: #ffffff; border-radius: 16px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+        .loading { text-align: center; padding: 40px 20px; background: #ffffff; border-radius: 16px; margin-bottom: 20px; box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08); }
+        .loading-spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid #f3f3f3; border-top: 3px solid #4CAF50; border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 16px; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-text { font-size: 14px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="debug-panel">
+        <h4>🐛 调试信息</h4>
+        <div id="debugLogs"></div>
+        <button onclick="clearDebugLogs()">清除日志</button>
+    </div>
+
+    <div class="container">
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-title">Debug - 学习计划</div>
+            </div>
+        </div>
+        
+        <div class="page-content">
+            <div class="current-plan" id="currentPlan">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在加载学习计划...</div>
+                </div>
+            </div>
+            
+            <div style="text-align: center; margin: 20px 0;">
+                <button onclick="manualReload()" style="padding: 10px 20px; background: #007AFF; color: white; border: none; border-radius: 5px;">
+                    手动重新加载
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let debugLogs = [];
+        
+        function addDebugLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const log = { timestamp, message, type };
+            debugLogs.push(log);
+            updateDebugPanel();
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateDebugPanel() {
+            const panel = document.getElementById('debugLogs');
+            panel.innerHTML = debugLogs.map(log => 
+                `<div class="debug-log ${log.type}">[${log.timestamp}] ${log.message}</div>`
+            ).join('');
+            panel.scrollTop = panel.scrollHeight;
+        }
+        
+        function clearDebugLogs() {
+            debugLogs = [];
+            updateDebugPanel();
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            addDebugLog('页面DOM加载完成', 'success');
+            initPage();
+        });
+
+        function initPage() {
+            addDebugLog('开始初始化页面', 'info');
+            
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                addDebugLog('未找到登录token，设置测试token', 'info');
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', token);
+            } else {
+                addDebugLog('找到已存在的token', 'success');
+            }
+            
+            // 加载数据
+            loadStudyPlanData();
+        }
+
+        async function loadStudyPlanData() {
+            addDebugLog('开始加载学习计划数据', 'info');
+            
+            try {
+                addDebugLog(`发送API请求到: ${API_BASE}/student/study-plan`, 'info');
+                
+                const response = await fetch(`${API_BASE}/student/study-plan`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                addDebugLog(`API响应状态: ${response.status} ${response.statusText}`, response.ok ? 'success' : 'error');
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    addDebugLog(`API数据获取成功: Plan ID ${data.plan_id}, Title: ${data.title}`, 'success');
+                    addDebugLog(`学科: ${data.subjects?.map(s => s.subject).join(', ') || '无'}`, 'info');
+                    addDebugLog(`任务数: ${data.tasks?.length || 0}`, 'info');
+                    
+                    updateCurrentPlan(data);
+                } else {
+                    const errorText = await response.text();
+                    addDebugLog(`API请求失败: ${errorText}`, 'error');
+                    throw new Error('获取学习计划失败');
+                }
+            } catch (error) {
+                addDebugLog(`加载失败: ${error.message}`, 'error');
+                console.error('加载学习计划失败:', error);
+                showLoadError();
+            }
+        }
+
+        function updateCurrentPlan(data) {
+            addDebugLog('开始更新页面显示', 'info');
+            
+            const currentPlan = document.getElementById('currentPlan');
+            const totalTasks = data.total_tasks || 0;
+            const completedTasks = data.completed_tasks || 0;
+            const estimatedTime = data.estimated_time || 0;
+            
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks * 100).toFixed(1) : '0.0';
+            
+            const isCompleted = completedTasks >= totalTasks && totalTasks > 0;
+            const statusClass = isCompleted ? 'status-completed' : 'status-active';
+            const statusText = isCompleted ? '已完成' : '进行中';
+            
+            currentPlan.innerHTML = `
+                <div style="border: 2px solid #4CAF50; border-radius: 8px; padding: 15px; background: #e8f5e8;">
+                    <h3 style="color: #4CAF50; margin: 0 0 15px 0;">✅ 学习计划加载成功</h3>
+                    <div style="margin: 10px 0;"><strong>计划ID:</strong> ${data.plan_id}</div>
+                    <div style="margin: 10px 0;"><strong>标题:</strong> ${data.title}</div>
+                    <div style="margin: 10px 0;"><strong>状态:</strong> <span class="${statusClass}">${statusText}</span></div>
+                    <div style="margin: 10px 0;"><strong>进度:</strong> ${progress}% (${completedTasks}/${totalTasks})</div>
+                    <div style="margin: 10px 0;"><strong>预计时间:</strong> ${Math.floor(estimatedTime / 60)}h${estimatedTime % 60}m</div>
+                    <div style="margin: 10px 0;"><strong>创建时间:</strong> ${data.created_at}</div>
+                    <div style="margin: 10px 0;"><strong>学科:</strong> ${data.subjects?.map(s => s.subject).join(', ') || '无'}</div>
+                    <div style="margin: 10px 0;"><strong>今日任务:</strong> ${data.tasks?.length || 0}个</div>
+                </div>
+            `;
+            
+            addDebugLog('页面显示更新完成', 'success');
+        }
+
+        function showLoadError() {
+            addDebugLog('显示错误页面', 'error');
+            const currentPlan = document.getElementById('currentPlan');
+            currentPlan.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545; border: 2px solid #dc3545; border-radius: 8px; background: #ffe6e6;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">😞</div>
+                    <div style="font-size: 16px; margin-bottom: 8px;">加载学习计划失败</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">请检查网络连接或稍后重试</div>
+                    <button style="padding: 8px 16px; background: #007AFF; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="manualReload()">
+                        重试
+                    </button>
+                </div>
+            `;
+        }
+        
+        function manualReload() {
+            addDebugLog('用户手动重新加载', 'info');
+            
+            // 重置显示为加载状态
+            document.getElementById('currentPlan').innerHTML = `
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在重新加载学习计划...</div>
+                </div>
+            `;
+            
+            // 延迟一点时间再加载，让用户看到加载状态
+            setTimeout(() => {
+                loadStudyPlanData();
+            }, 500);
+        }
+
+        // 捕获所有未处理的错误
+        window.addEventListener('error', function(e) {
+            addDebugLog(`JavaScript错误: ${e.message} at ${e.filename}:${e.lineno}`, 'error');
+        });
+        
+        window.addEventListener('unhandledrejection', function(e) {
+            addDebugLog(`未处理的Promise错误: ${e.reason}`, 'error');
+        });
+    </script>
+</body>
+</html>

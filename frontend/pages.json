@@ -1,0 +1,295 @@
+{
+  "pages": [
+    {
+      "path": "pages/common/login/index",
+      "style": {
+        "navigationBarTitleText": "登录",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/student/index/index",
+      "style": {
+        "navigationBarTitleText": "智能批改",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/student/camera/index",
+      "style": {
+        "navigationBarTitleText": "拍照批改",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/student/result/index",
+      "style": {
+        "navigationBarTitleText": "批改结果",
+        "navigationBarBackgroundColor": "#ffffff",
+        "navigationBarTextStyle": "black"
+      }
+    },
+    {
+      "path": "pages/student/errorbook/index",
+      "style": {
+        "navigationBarTitleText": "错题本",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/student/generator/index",
+      "style": {
+        "navigationBarTitleText": "错题生成",
+        "navigationBarBackgroundColor": "#ffffff"
+      }
+    },
+    {
+      "path": "pages/student/progress/index",
+      "style": {
+        "navigationBarTitleText": "学习进度",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/student/profile/index",
+      "style": {
+        "navigationBarTitleText": "个人中心"
+      }
+    },
+    {
+      "path": "pages/parent/dashboard/index",
+      "style": {
+        "navigationBarTitleText": "家长监控台",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/parent/children/index",
+      "style": {
+        "navigationBarTitleText": "孩子管理",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/parent/reports/index",
+      "style": {
+        "navigationBarTitleText": "学习报告",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/parent/communication/index",
+      "style": {
+        "navigationBarTitleText": "家校沟通"
+      }
+    },
+    {
+      "path": "pages/teacher/classes/index",
+      "style": {
+        "navigationBarTitleText": "班级管理",
+        "navigationStyle": "custom",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/teacher/homework/index",
+      "style": {
+        "navigationBarTitleText": "作业布置",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/teacher/analysis/index",
+      "style": {
+        "navigationBarTitleText": "教学分析",
+        "enablePullDownRefresh": true
+      }
+    },
+    {
+      "path": "pages/teacher/qa/index",
+      "style": {
+        "navigationBarTitleText": "在线答疑"
+      }
+    },
+    {
+      "path": "pages/teacher/profile/index",
+      "style": {
+        "navigationBarTitleText": "教师资料"
+      }
+    },
+    {
+      "path": "pages/common/subject/index",
+      "style": {
+        "navigationBarTitleText": "学科选择",
+        "navigationStyle": "custom"
+      }
+    },
+    {
+      "path": "pages/common/payment/index",
+      "style": {
+        "navigationBarTitleText": "支付中心",
+        "navigationBarBackgroundColor": "#ffffff"
+      }
+    },
+    {
+      "path": "pages/common/feedback/index",
+      "style": {
+        "navigationBarTitleText": "意见反馈"
+      }
+    }
+  ],
+  "globalStyle": {
+    "navigationBarTextStyle": "white",
+    "navigationBarTitleText": "中小学智能批改",
+    "navigationBarBackgroundColor": "#007AFF",
+    "backgroundColor": "#F8F8F8",
+    "backgroundTextStyle": "light",
+    "enablePullDownRefresh": false,
+    "onReachBottomDistance": 50,
+    "backgroundColorTop": "#F8F8F8",
+    "backgroundColorBottom": "#F8F8F8",
+    "app-plus": {
+      "titleNView": false,
+      "bounce": "vertical"
+    },
+    "h5": {
+      "titleNView": true,
+      "pullToRefresh": {
+        "color": "#007AFF"
+      }
+    }
+  },
+  "tabBar": {
+    "color": "#8E8E93",
+    "selectedColor": "#007AFF",
+    "backgroundColor": "#FFFFFF",
+    "borderStyle": "black",
+    "height": "50px",
+    "fontSize": "12px",
+    "iconWidth": "24px",
+    "spacing": "3px",
+    "list": [
+      {
+        "pagePath": "pages/student/index/index",
+        "iconPath": "static/tabbar/home.png",
+        "selectedIconPath": "static/tabbar/home-active.png",
+        "text": "学习"
+      },
+      {
+        "pagePath": "pages/student/errorbook/index",
+        "iconPath": "static/tabbar/errorbook.png",
+        "selectedIconPath": "static/tabbar/errorbook-active.png",
+        "text": "错题本"
+      },
+      {
+        "pagePath": "pages/student/progress/index",
+        "iconPath": "static/tabbar/progress.png",
+        "selectedIconPath": "static/tabbar/progress-active.png",
+        "text": "进度"
+      },
+      {
+        "pagePath": "pages/student/profile/index",
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile-active.png",
+        "text": "我的"
+      }
+    ]
+  },
+  "condition": {
+    "current": 0,
+    "list": [
+      {
+        "name": "登录页",
+        "path": "pages/common/login/index"
+      },
+      {
+        "name": "学生首页",
+        "path": "pages/student/index/index"
+      },
+      {
+        "name": "拍照批改",
+        "path": "pages/student/camera/index"
+      },
+      {
+        "name": "家长监控台",
+        "path": "pages/parent/dashboard/index"
+      },
+      {
+        "name": "教师班级",
+        "path": "pages/teacher/classes/index"
+      }
+    ]
+  },
+  "subPackages": [
+    {
+      "root": "pages/student",
+      "name": "student",
+      "pages": [
+        {
+          "path": "camera/index",
+          "style": {
+            "navigationBarTitleText": "拍照批改"
+          }
+        },
+        {
+          "path": "result/index",
+          "style": {
+            "navigationBarTitleText": "批改结果"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/parent",
+      "name": "parent", 
+      "pages": [
+        {
+          "path": "dashboard/index",
+          "style": {
+            "navigationBarTitleText": "家长监控台"
+          }
+        },
+        {
+          "path": "reports/index",
+          "style": {
+            "navigationBarTitleText": "学习报告"
+          }
+        }
+      ]
+    },
+    {
+      "root": "pages/teacher",
+      "name": "teacher",
+      "pages": [
+        {
+          "path": "classes/index",
+          "style": {
+            "navigationBarTitleText": "班级管理"
+          }
+        },
+        {
+          "path": "analysis/index",
+          "style": {
+            "navigationBarTitleText": "教学分析"
+          }
+        }
+      ]
+    }
+  ],
+  "preloadRule": {
+    "pages/student/index/index": {
+      "network": "all",
+      "packages": ["student"]
+    },
+    "pages/parent/dashboard/index": {
+      "network": "all", 
+      "packages": ["parent"]
+    },
+    "pages/teacher/classes/index": {
+      "network": "all",
+      "packages": ["teacher"]
+    }
+  }
+}

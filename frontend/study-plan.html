@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZYJC智能批改 - 学习计划</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
+        }
+        
+        .back-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            margin-right: 12px;
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .add-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+        }
+        
+        /* 页面内容 */
+        .page-content {
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* 当前计划概览 */
+        .current-plan {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .plan-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+        
+        .plan-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .plan-status {
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+        
+        .status-active {
+            background: #e8f5e8;
+            color: #4CAF50;
+        }
+        
+        .status-completed {
+            background: #e3f2fd;
+            color: #2196F3;
+        }
+        
+        .plan-progress {
+            margin-bottom: 16px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .progress-text {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .progress-percent {
+            font-size: 14px;
+            font-weight: 600;
+            color: #4CAF50;
+        }
+        
+        .progress-bar-container {
+            height: 8px;
+            background: #f0f0f0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+        
+        .progress-bar {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #388E3C 100%);
+            border-radius: 4px;
+            transition: width 0.3s ease;
+        }
+        
+        .plan-stats {
+            display: flex;
+            gap: 16px;
+        }
+        
+        .stat-item {
+            flex: 1;
+            text-align: center;
+            padding: 12px;
+            background: #f8f9fa;
+            border-radius: 8px;
+        }
+        
+        .stat-number {
+            font-size: 18px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 今日任务 */
+        .today-tasks {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .task-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+        
+        .task-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-left: 4px solid transparent;
+        }
+        
+        .task-item:hover {
+            background: #e9ecef;
+        }
+        
+        .task-item.completed {
+            border-left-color: #4CAF50;
+            background: #f1f8e9;
+        }
+        
+        .task-item.urgent {
+            border-left-color: #ff9800;
+            background: #fff3e0;
+        }
+        
+        .task-item.overdue {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        
+        .task-checkbox {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .task-checkbox.checked {
+            background: #4CAF50;
+            border-color: #4CAF50;
+            color: white;
+        }
+        
+        .task-content {
+            flex: 1;
+        }
+        
+        .task-title {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .task-meta {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .task-subject {
+            padding: 2px 6px;
+            background: #e3f2fd;
+            color: #1976D2;
+            border-radius: 3px;
+        }
+        
+        .task-time {
+            color: #999;
+        }
+        
+        .task-priority {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+        
+        .priority-high {
+            background: #f44336;
+        }
+        
+        .priority-medium {
+            background: #ff9800;
+        }
+        
+        .priority-low {
+            background: #4CAF50;
+        }
+        
+        /* 学科计划 */
+        .subject-plans {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .subject-list {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .subject-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 12px;
+            padding: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .subject-item:hover {
+            border-color: #4CAF50;
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.1);
+        }
+        
+        .subject-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+        
+        .subject-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .subject-progress {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .subject-stats {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+        }
+        
+        .subject-stat {
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 14px;
+            font-weight: bold;
+            color: #4CAF50;
+        }
+        
+        .stat-desc {
+            font-size: 11px;
+            color: #666;
+        }
+        
+        .subject-progress-bar {
+            height: 6px;
+            background: #f0f0f0;
+            border-radius: 3px;
+            overflow: hidden;
+        }
+        
+        .subject-progress-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #4CAF50 0%, #388E3C 100%);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+        
+        /* 智能推荐 */
+        .recommendations {
+            background: linear-gradient(135deg, #e8f5e8 0%, #f3e5f5 100%);
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 80px;
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .recommendation-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        
+        .recommendation-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 8px;
+        }
+        
+        .recommendation-icon {
+            font-size: 16px;
+            margin-top: 2px;
+        }
+        
+        .recommendation-text {
+            flex: 1;
+            font-size: 14px;
+            color: #333;
+            line-height: 1.4;
+        }
+        
+        .recommendation-action {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            flex-shrink: 0;
+        }
+        
+        /* 空状态 */
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        
+        .empty-text {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .empty-hint {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        
+        .empty-action {
+            background: #4CAF50;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+        
+        /* 加载状态 */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .loading-spinner {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #4CAF50;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .loading-text {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #4CAF50;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+        
+        /* 移动端适配 */
+        @media (max-width: 480px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .page-content {
+                padding: 16px;
+            }
+            
+            .plan-stats {
+                gap: 12px;
+            }
+            
+            .subject-stats {
+                gap: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 顶部导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <div class="navbar-left">
+                    <button class="back-btn" onclick="goBack()">←</button>
+                    <div class="navbar-title">学习计划</div>
+                </div>
+                <button class="add-btn" onclick="createPlan()">新建</button>
+            </div>
+        </div>
+        
+        <!-- 页面内容 -->
+        <div class="page-content">
+            <!-- 当前计划概览 -->
+            <div class="current-plan" id="currentPlan">
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在加载学习计划...</div>
+                </div>
+            </div>
+            
+            <!-- 今日任务 -->
+            <div class="today-tasks" id="todayTasks">
+                <div class="section-title">
+                    📅 今日任务
+                </div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在加载今日任务...</div>
+                </div>
+            </div>
+            
+            <!-- 学科计划 -->
+            <div class="subject-plans" id="subjectPlans">
+                <div class="section-title">
+                    📚 学科计划
+                </div>
+                <div class="loading">
+                    <div class="loading-spinner"></div>
+                    <div class="loading-text">正在加载学科计划...</div>
+                </div>
+            </div>
+            
+            <!-- 智能推荐 -->
+            <div class="recommendations" id="recommendations">
+                <div class="section-title">
+                    🤖 AI智能推荐
+                </div>
+                <div class="recommendation-list">
+                    <!-- 推荐内容将在这里动态生成 -->
+                </div>
+            </div>
+        </div>
+        
+        <!-- 底部导航 -->
+        <div class="bottom-nav">
+            <div class="nav-item" onclick="goHome()">
+                <div class="nav-icon">🏠</div>
+                <div class="nav-text">首页</div>
+            </div>
+            <div class="nav-item" onclick="goToErrorBook()">
+                <div class="nav-icon">📚</div>
+                <div class="nav-text">错题本</div>
+            </div>
+            <div class="nav-item active">
+                <div class="nav-icon">📋</div>
+                <div class="nav-text">学习计划</div>
+            </div>
+            <div class="nav-item" onclick="goToProfile()">
+                <div class="nav-icon">👤</div>
+                <div class="nav-text">我的</div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = '';
+        let currentPlanData = null;
+        let todayTasksData = [];
+        let allTasksData = []; // 存储完整任务列表
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        function initPage() {
+            // 检查登录状态
+            token = localStorage.getItem('token');
+            if (!token) {
+                console.log('未找到登录token，设置测试token');
+                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
+                localStorage.setItem('token', token);
+            }
+            
+            // 加载数据
+            loadStudyPlanData();
+        }
+
+        async function loadStudyPlanData() {
+            try {
+                // 添加时间戳防止缓存
+                const response = await fetch(`${API_BASE}/student/study-plan?_t=${Date.now()}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Accept': 'application/json',
+                        'Accept-Charset': 'utf-8'
+                    },
+                    cache: 'no-cache'
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentPlanData = data;
+                    allTasksData = data.all_tasks || []; // 保存完整任务列表
+                    
+                    // 调试输出
+                    console.log('API响应数据:', data);
+                    console.log('学科数据:', data.subjects);
+                    if (data.subjects) {
+                        data.subjects.forEach((subject, index) => {
+                            console.log(`学科 ${index + 1}: "${subject.subject}" (${subject.total}个任务)`);
+                        });
+                    }
+                    
+                    updateCurrentPlan(data);
+                    updateTodayTasks(data.tasks || []);
+                    updateSubjectPlans(data.subjects || []);
+                    updateRecommendations(data.recommendations || []);
+                    
+                    // 显示任务筛选信息
+                    if (data.task_summary && data.task_summary.is_truncated) {
+                        console.log(`今日任务已智能筛选：显示${data.task_summary.today_task_count}个，总任务${data.task_summary.all_task_count}个`);
+                    }
+                } else {
+                    throw new Error('获取学习计划失败');
+                }
+            } catch (error) {
+                console.error('加载学习计划失败:', error);
+                
+                // 显示错误信息
+                showLoadError();
+            }
+        }
+
+        function showLoadError() {
+            // 显示加载失败的错误信息
+            const currentPlan = document.getElementById('currentPlan');
+            currentPlan.innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #dc3545;">
+                    <div style="font-size: 48px; margin-bottom: 16px;">😞</div>
+                    <div style="font-size: 16px; margin-bottom: 8px;">加载学习计划失败</div>
+                    <div style="font-size: 14px; color: #666; margin-bottom: 20px;">请检查网络连接或稍后重试</div>
+                    <button style="padding: 8px 16px; background: #007AFF; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="loadStudyPlanData()">
+                        重试
+                    </button>
+                </div>
+            `;
+            
+            const todayTasks = document.getElementById('todayTasks');
+            todayTasks.innerHTML = `
+                <div class="section-title">📅 今日任务</div>
+                <div style="text-align: center; color: #dc3545; padding: 20px;">加载任务失败</div>
+            `;
+            
+            const subjectPlans = document.getElementById('subjectPlans');
+            subjectPlans.innerHTML = `
+                <div class="section-title">📚 学科计划</div>
+                <div style="text-align: center; color: #dc3545; padding: 20px;">加载学科计划失败</div>
+            `;
+            
+            const recommendations = document.getElementById('recommendations');
+            recommendations.innerHTML = `
+                <div class="section-title">💡 学习建议</div>
+                <div style="text-align: center; color: #dc3545; padding: 20px;">加载学习建议失败</div>
+            `;
+        }
+
+        function updateCurrentPlan(data) {
+            const currentPlan = document.getElementById('currentPlan');
+            // 确保数值有效，避免NaN
+            const totalTasks = data.total_tasks || 0;  // 修复：0是有效值，不应该被替换为1
+            const completedTasks = data.completed_tasks || 0;
+            const estimatedTime = data.estimated_time || 0;
+            
+            const progress = totalTasks > 0 ? (completedTasks / totalTasks * 100).toFixed(1) : '0.0';
+            const estimatedHours = Math.floor(estimatedTime / 60);
+            const estimatedMinutes = estimatedTime % 60;
+            
+            // 根据完成情况显示状态
+            const isCompleted = completedTasks >= totalTasks && totalTasks > 0;
+            const statusClass = isCompleted ? 'status-completed' : 'status-active';
+            const statusText = isCompleted ? '已完成' : '进行中';
+            
+            currentPlan.innerHTML = `
+                <div class="plan-header">
+                    <div class="plan-title">${data.title}</div>
+                    <div class="plan-status ${statusClass}">${statusText}</div>
+                </div>
+                <div class="plan-progress">
+                    <div class="progress-info">
+                        <div class="progress-text">总体进度</div>
+                        <div class="progress-percent">${progress}%</div>
+                    </div>
+                    <div class="progress-bar-container">
+                        <div class="progress-bar" style="width: ${progress}%"></div>
+                    </div>
+                </div>
+                <div class="plan-stats">
+                    <div class="stat-item">
+                        <div class="stat-number">${completedTasks}</div>
+                        <div class="stat-label">已完成任务</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${Math.max(0, totalTasks - completedTasks)}</div>
+                        <div class="stat-label">剩余任务</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number">${estimatedHours}h${estimatedMinutes > 0 ? estimatedMinutes + 'm' : ''}</div>
+                        <div class="stat-label">预计时间</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        function updateTodayTasks(tasks) {
+            const todayTasks = document.getElementById('todayTasks');
+            todayTasksData = tasks;
+            
+            if (tasks.length === 0) {
+                todayTasks.innerHTML = `
+                    <div class="section-title">📅 今日任务</div>
+                    <div class="empty-state">
+                        <div class="empty-icon">✅</div>
+                        <div class="empty-text">今日任务已完成</div>
+                        <div class="empty-hint">继续保持，明天也要加油哦！</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const taskItems = tasks.map(task => {
+                const currentTime = new Date();
+                const dueTime = new Date();
+                const [hour, minute] = task.due_time.split(':');
+                dueTime.setHours(parseInt(hour), parseInt(minute));
+                
+                let taskClass = '';
+                if (task.completed) {
+                    taskClass = 'completed';
+                } else if (currentTime > dueTime) {
+                    taskClass = 'overdue';
+                } else if ((dueTime - currentTime) < 60 * 60 * 1000) { // 1小时内
+                    taskClass = 'urgent';
+                }
+                
+                return `
+                    <div class="task-item ${taskClass}" onclick="toggleTask(${task.id})">
+                        <div class="task-checkbox ${task.completed ? 'checked' : ''}" onclick="event.stopPropagation(); toggleTask(${task.id})">
+                            ${task.completed ? '✓' : ''}
+                        </div>
+                        <div class="task-content">
+                            <div class="task-title">${task.title}</div>
+                            <div class="task-meta">
+                                <div class="task-subject">${task.subject}</div>
+                                <div class="task-time">${task.estimated_time}分钟 · ${task.due_time}</div>
+                            </div>
+                        </div>
+                        <div class="task-priority priority-${task.priority}"></div>
+                    </div>
+                `;
+            }).join('');
+            
+            todayTasks.innerHTML = `
+                <div class="section-title">📅 今日任务</div>
+                <div class="task-list">
+                    ${taskItems}
+                </div>
+            `;
+        }
+
+        function updateSubjectPlans(subjects) {
+            const subjectPlans = document.getElementById('subjectPlans');
+            
+            const subjectItems = subjects.map(subject => {
+                // 确保数值有效，避免NaN
+                const progress = subject.progress || 0;
+                const completed = subject.completed || 0;
+                const total = subject.total || 0;
+                const estimatedTime = subject.estimated_time || 0;
+                
+                console.log(`渲染学科: ${subject.subject}, 进度: ${progress}, 任务: ${completed}/${total}`);
+                
+                const progressPercent = Math.max(0, Math.min(100, (progress * 100))).toFixed(0);
+                const estimatedHours = Math.floor(estimatedTime / 60);
+                
+                return `
+                <div class="subject-item" onclick="viewSubjectDetail('${subject.subject}')">
+                    <div class="subject-header">
+                        <div class="subject-name">${subject.subject}</div>
+                        <div class="subject-progress">${progressPercent}% 完成</div>
+                    </div>
+                    <div class="subject-stats">
+                        <div class="subject-stat">
+                            <div class="stat-value">${completed}</div>
+                            <div class="stat-desc">已完成</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="stat-value">${Math.max(0, total - completed)}</div>
+                            <div class="stat-desc">剩余</div>
+                        </div>
+                        <div class="subject-stat">
+                            <div class="stat-value">${estimatedHours}h</div>
+                            <div class="stat-desc">预计时间</div>
+                        </div>
+                    </div>
+                    <div class="subject-progress-bar">
+                        <div class="subject-progress-fill" style="width: ${progressPercent}%"></div>
+                    </div>
+                </div>
+                `;
+            }).join('');
+            
+            subjectPlans.innerHTML = `
+                <div class="section-title">📚 学科计划</div>
+                <div class="subject-list">
+                    ${subjectItems}
+                </div>
+            `;
+        }
+
+        function updateRecommendations(recommendations) {
+            const recommendationsContainer = document.getElementById('recommendations');
+            
+            const recommendationItems = recommendations.map((rec, index) => `
+                <div class="recommendation-item">
+                    <div class="recommendation-icon">💡</div>
+                    <div class="recommendation-text">${rec}</div>
+                    <button class="recommendation-action" onclick="applyRecommendation(${index})">应用</button>
+                </div>
+            `).join('');
+            
+            recommendationsContainer.innerHTML = `
+                <div class="section-title">🤖 AI智能推荐</div>
+                <div class="recommendation-list">
+                    ${recommendationItems}
+                </div>
+            `;
+        }
+
+        async function toggleTask(taskId) {
+            const task = todayTasksData.find(t => t.id === taskId);
+            if (!task) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/student/study-plan/task/${taskId}/toggle`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const result = await response.json();
+                    
+                    // 使用后端返回的正确任务状态（而不是简单取反）
+                    task.completed = result.completed;
+                    
+                    // 同步更新完整任务列表中对应的任务
+                    const allTaskIndex = allTasksData.findIndex(t => t.id === task.id);
+                    if (allTaskIndex !== -1) {
+                        allTasksData[allTaskIndex].completed = task.completed;
+                    }
+                    
+                    // 从API响应中获取准确的进度统计并立即更新汇总显示
+                    if (result.plan_progress && currentPlanData) {
+                        currentPlanData.total_tasks = result.plan_progress.total_tasks;
+                        currentPlanData.completed_tasks = result.plan_progress.completed_tasks;
+                        updateCurrentPlan(currentPlanData);
+                    }
+                    
+                    // 最后更新任务列表显示
+                    updateTodayTasks(todayTasksData);
+                    
+                    showToast(task.completed ? '✅ 任务已完成！' : '↩️ 任务已取消完成');
+                } else {
+                    throw new Error('更新任务状态失败');
+                }
+            } catch (error) {
+                console.error('更新任务失败:', error);
+                
+                // 模拟成功，并更新本地统计
+                task.completed = !task.completed;
+                updateTodayTasks(todayTasksData);
+                
+                // 注意：这里不能基于todayTasksData重新计算总体统计
+                // 因为todayTasksData只是任务的子集，不代表全部任务
+                // 当API失败时，重新加载完整数据以保证一致性
+                console.log('任务状态更新失败，重新加载学习计划数据');
+                setTimeout(() => {
+                    loadStudyPlanData(); // 重新加载完整数据
+                }, 1000);
+                
+                showToast(task.completed ? '✅ 任务已完成！' : '↩️ 任务已取消完成');
+            }
+        }
+
+        function viewSubjectDetail(subject) {
+            // 跳转到学科详情页面，传递学科参数
+            window.location.href = `subject-detail.html?subject=${encodeURIComponent(subject)}`;
+        }
+
+        function applyRecommendation(index) {
+            showToast('推荐已应用到学习计划中');
+        }
+
+        function createPlan() {
+            window.location.href = 'study-plan-create.html';
+        }
+
+        function goBack() {
+            // 学习计划应该返回到学生首页
+            const role = localStorage.getItem('role') || 'student';
+            if (role === 'parent') {
+                window.location.href = 'parent-home.html';
+            } else {
+                window.location.href = 'student-home.html';
+            }
+        }
+
+        function goHome() {
+            const role = localStorage.getItem('role') || 'student';
+            if (role === 'parent') {
+                window.location.href = 'parent-home.html';
+            } else {
+                window.location.href = 'student-home.html';
+            }
+        }
+
+        function goToErrorBook() {
+            window.location.href = 'error-book.html';
+        }
+
+        function goToProfile() {
+            window.location.href = 'profile.html';
+        }
+
+        function showToast(message, duration = 3000) {
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: rgba(0, 0, 0, 0.8);
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                z-index: 1000;
+            `;
+            toast.textContent = message;
+            
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                document.body.removeChild(toast);
+            }, duration);
+        }
+    </script>
+</body>
+</html>
