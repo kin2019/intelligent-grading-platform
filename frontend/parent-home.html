@@ -880,17 +880,11 @@
                 return;
             }
             
-            const childrenHtml = children.map(child => {
-                // 将英文avatar转换为中文显示
-                let avatarDisplay = child.avatar || '🎓';
-                if (avatarDisplay === 'student') {
-                    avatarDisplay = '学生';
-                }
-                
+            const childrenHtml = children.map(child => {                
                 return `
                     <div class="child-item" onclick="goToChildDetail(${child.id})">
                         <div class="child-info">
-                            <div class="child-avatar">${avatarDisplay}</div>
+                            <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
                             <div class="child-details">
                                 <div class="child-name">${child.name}</div>
                                 <div class="child-grade">${child.grade}</div>
@@ -905,6 +899,31 @@
             }).join('');
             
             childrenList.innerHTML = childrenHtml;
+        }
+
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '🎓';
+            }
+            
+            // 如果是emoji格式
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 兼容旧的字符串格式
+            if (avatarUrl === 'student') {
+                return '🎓';
+            }
+            
+            // 如果是图片URL，显示img标签
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='🎓'">`;
+            }
+            
+            // 默认返回学生emoji
+            return '🎓';
         }
 
         function updateReportSummary(report) {
@@ -942,44 +961,44 @@
 
         // 导航函数
         function goToChildDetail(childId) {
-            window.location.href = `child-detail.html?id=${childId}`;
+            window.location.href = `/frontend/child-detail.html?id=${childId}`;
         }
 
         function addChild() {
-            window.location.href = 'manage-children.html';
+            window.location.href = '/frontend/manage-children.html';
         }
         
         // 新增的快速操作函数
         function viewTodayReport() {
-            window.location.href = 'learning-reports.html';
+            window.location.href = '/frontend/learning-reports.html';
         }
         
         function viewWeekReport() {
-            window.location.href = 'learning-reports.html';
+            window.location.href = '/frontend/learning-reports.html';
         }
         
         function manageChildren() {
-            window.location.href = 'manage-children.html';
+            window.location.href = '/frontend/manage-children.html';
         }
 
         function goToAllReports() {
-            window.location.href = 'learning-reports.html';
+            window.location.href = '/frontend/learning-reports.html';
         }
 
         function goToErrorAnalysis() {
-            window.location.href = 'error-analysis.html';
+            window.location.href = '/frontend/error-analysis.html';
         }
 
         function goToProgress() {
-            window.location.href = 'learning-progress.html';
+            window.location.href = '/frontend/learning-progress.html';
         }
 
         function goToSettings() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
         
         // 数据刷新函数

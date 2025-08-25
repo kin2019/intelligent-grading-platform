@@ -105,7 +105,7 @@ class ZYJC {
         this.showToast('登录已过期，请重新登录', 'warning');
         this.logout();
         setTimeout(() => {
-            window.location.href = 'login.html';
+            window.location.href = '/frontend/login.html';
         }, 2000);
     }
     
@@ -285,28 +285,28 @@ class ZYJC {
         
         switch (page) {
             case 'home':
-                window.location.href = role === 'parent' ? 'parent-home.html' : 'student-home.html';
+                window.location.href = role === 'parent' ? '/frontend/parent-home.html' : '/frontend/student-home.html';
                 break;
             case 'profile':
-                window.location.href = 'profile.html' + queryString;
+                window.location.href = '/frontend/profile.html' + queryString;
                 break;
             case 'error-book':
-                window.location.href = 'error-book.html' + queryString;
+                window.location.href = '/frontend/error-book.html' + queryString;
                 break;
             case 'study-plan':
-                window.location.href = 'study-plan.html' + queryString;
+                window.location.href = '/frontend/study-plan.html' + queryString;
                 break;
             case 'vip-center':
-                window.location.href = 'vip-center.html' + queryString;
+                window.location.href = '/frontend/vip-center.html' + queryString;
                 break;
             case 'homework-submit':
-                window.location.href = 'homework-submit.html' + queryString;
+                window.location.href = '/frontend/homework-submit.html' + queryString;
                 break;
             case 'homework-result':
-                window.location.href = 'homework-result.html' + queryString;
+                window.location.href = '/frontend/homework-result.html' + queryString;
                 break;
             case 'login':
-                window.location.href = 'login.html' + queryString;
+                window.location.href = '/frontend/login.html' + queryString;
                 break;
             default:
                 console.warn('未知的导航目标:', page);

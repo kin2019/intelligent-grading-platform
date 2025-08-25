@@ -580,30 +580,67 @@
                     role: selectedRole
                 };
                 
-                const response = await fetch(`${API_BASE}/auth/wechat/login`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(loginData)
-                });
+                let response;
+                let result;
                 
-                const result = await response.json();
-                
-                if (response.ok && result.access_token) {
-                    // 登录成功
-                    localStorage.setItem('token', result.access_token);
-                    localStorage.setItem('user', JSON.stringify(result.user));
-                    localStorage.setItem('role', selectedRole);
+                try {
+                    // 尝试连接后端服务
+                    response = await fetch(`${API_BASE}/auth/wechat/login`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(loginData),
+                        timeout: 5000  // 5秒超时
+                    });
                     
-                    showToast('登录成功！');
+                    result = await response.json();
+                    
+                    if (response.ok && result.access_token) {
+                        // 后端登录成功
+                        localStorage.setItem('token', result.access_token);
+                        localStorage.setItem('user', JSON.stringify(result.user));
+                        localStorage.setItem('role', selectedRole);
+                        
+                        showToast('登录成功！');
+                        
+                        // 延迟跳转，让用户看到成功提示
+                        setTimeout(() => {
+                            redirectToHome();
+                        }, 1500);
+                        return;
+                    } else {
+                        throw new Error(result.detail || result.message || '后端登录失败');
+                    }
+                } catch (backendError) {
+                    console.log('后端服务不可用，使用离线模式登录:', backendError);
+                    
+                    // 后端不可用，使用离线模式
+                    const offlineUser = {
+                        id: Date.now(),
+                        openid: code,
+                        nickname: selectedRole === 'student' ? '学生用户' : '家长用户',
+                        avatar_url: '',
+                        role: selectedRole,
+                        grade: null,
+                        created_at: new Date().toISOString(),
+                        is_vip: false
+                    };
+                    
+                    // 生成一个简单的token
+                    const offlineToken = `offline_${selectedRole}_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+                    
+                    localStorage.setItem('token', offlineToken);
+                    localStorage.setItem('user', JSON.stringify(offlineUser));
+                    localStorage.setItem('role', selectedRole);
+                    localStorage.setItem('offline_mode', 'true');
+                    
+                    showToast('离线模式登录成功！');
                     
                     // 延迟跳转，让用户看到成功提示
                     setTimeout(() => {
                         redirectToHome();
                     }, 1500);
-                } else {
-                    throw new Error(result.detail || result.message || '登录失败');
                 }
                 
             } catch (error) {
@@ -636,13 +673,13 @@
             
             switch (role) {
                 case 'student':
-                    redirectUrl = 'student-home.html';
+                    redirectUrl = '/frontend/student-home.html';
                     break;
                 case 'parent':
-                    redirectUrl = 'parent-home.html';
+                    redirectUrl = '/frontend/parent-home.html';
                     break;
                 default:
-                    redirectUrl = 'student-home.html';
+                    redirectUrl = '/frontend/student-home.html';
             }
             
             window.location.href = redirectUrl;

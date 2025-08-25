@@ -486,7 +486,7 @@
             token = localStorage.getItem('token');
             if (!token) {
                 alert('请先登录');
-                window.location.href = 'login.html';
+                window.location.href = '/frontend/login.html';
                 return;
             }
             
@@ -565,11 +565,7 @@
             
             // 更新头像
             const avatarEl = document.getElementById('childAvatar');
-            if (childInfo.avatar_url && childInfo.avatar_url.startsWith('emoji:')) {
-                avatarEl.textContent = childInfo.avatar_url.replace('emoji:', '');
-            } else {
-                avatarEl.textContent = '👶';
-            }
+            avatarEl.innerHTML = getAvatarDisplay(childInfo.avatar_url);
         }
 
         function updateReport(studyStats) {
@@ -664,7 +660,7 @@
         }
 
         function viewHomeworkDetail(homeworkId) {
-            window.location.href = `homework-result.html?id=${homeworkId}`;
+            window.location.href = `/frontend/homework-result.html?id=${homeworkId}`;
         }
 
         function showChildSettings() {
@@ -681,6 +677,26 @@
                 '<div class="error">加载报告失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
         }
 
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '👶';
+            }
+            
+            // 如果是emoji格式
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 如果是图片URL，显示img标签
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // 默认返回baby emoji
+            return '👶';
+        }
+
         function showHomeworkError() {
             document.getElementById('homeworkList').innerHTML = 
                 '<div class="error">加载作业失败 <button class="retry-btn" onclick="loadChildHomework()">重试</button></div>';
@@ -691,11 +707,11 @@
         }
 
         function goToParentHome() {
-            window.location.href = 'parent-home.html';
+            window.location.href = '/frontend/parent-home.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message) {

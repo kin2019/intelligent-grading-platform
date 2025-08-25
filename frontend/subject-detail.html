@@ -575,24 +575,24 @@
 
         function goBack() {
             // 学科详情应该返回到学习计划
-            window.location.href = 'study-plan.html';
+            window.location.href = '/frontend/study-plan.html';
         }
 
         function goHome() {
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 
         function goToErrorBook() {
-            window.location.href = 'error-book.html';
+            window.location.href = '/frontend/error-book.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message, duration = 3000) {

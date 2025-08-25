@@ -131,7 +131,7 @@ def get_parent_dashboard(
         
         child_dict = {
             "id": child_user.id,
-            "name": relation.nickname or child_user.nickname or child_user.username,
+            "name": relation.nickname or child_user.nickname or f"用户{child_user.id}",
             "grade": child_user.grade or "未设置",
             "school": relation.school or "未设置学校",
             "avatar": child_user.avatar_url or "student",
@@ -321,11 +321,11 @@ def get_child_report(
     
     child_info = {
         "id": child_id,
-        "nickname": parent_child_relation.nickname or child_user.nickname or child_user.username,
+        "nickname": parent_child_relation.nickname or child_user.nickname or f"用户{child_user.id}",
         "avatar_url": child_user.avatar_url,
         "grade": child_user.grade or "未设置",
-        "school": getattr(child_user, 'school', "未设置"),
-        "class_name": getattr(child_user, 'class_name', "未设置"),
+        "school": parent_child_relation.school or "未设置",
+        "class_name": parent_child_relation.class_name or "未设置",
         "is_active": child_user.is_active,
         "created_at": parent_child_relation.created_at.isoformat()
     }
@@ -1075,61 +1075,82 @@ def get_child_detail(
     
     - **child_id**: 孩子ID
     """
-    from app.models.parent_child import ParentChild
-    from app.models.homework import Homework
-    from sqlalchemy import func
+    try:
+        from app.models.parent_child import ParentChild
+        from app.models.homework import Homework
+        from sqlalchemy import func
+        
+        # 验证家长和孩子的关联关系
+        parent_child_relation = db.query(ParentChild).filter(
+            ParentChild.parent_id == current_user.id,
+            ParentChild.child_id == child_id,
+            ParentChild.is_active == True
+        ).first()
+        
+        if not parent_child_relation:
+            raise HTTPException(status_code=404, detail="未找到该孩子或无权访问")
+        
+        # 获取孩子用户记录
+        child_user = db.query(User).filter(User.id == child_id).first()
+        if not child_user:
+            raise HTTPException(status_code=404, detail="孩子用户不存在")
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        error_detail = traceback.format_exc()
+        print(f"获取孩子详细信息时发生错误: {e}")
+        print(f"完整错误堆栈: {error_detail}")
+        raise HTTPException(status_code=500, detail=f"获取孩子信息失败: {str(e)}")
     
-    # 验证家长和孩子的关联关系
-    parent_child_relation = db.query(ParentChild).filter(
-        ParentChild.parent_id == current_user.id,
-        ParentChild.child_id == child_id,
-        ParentChild.is_active == True
-    ).first()
-    
-    if not parent_child_relation:
-        raise HTTPException(status_code=404, detail="未找到该孩子或无权访问")
-    
-    # 获取孩子用户记录
-    child_user = db.query(User).filter(User.id == child_id).first()
-    if not child_user:
-        raise HTTPException(status_code=404, detail="孩子用户不存在")
-    
-    # 获取孩子的作业统计
-    total_homework = db.query(Homework).filter(Homework.user_id == child_id).count()
-    completed_homework = db.query(Homework).filter(
-        Homework.user_id == child_id,
-        Homework.status == 'completed'
-    ).count()
-    
-    # 计算平均分
-    homework_records = db.query(Homework).filter(
-        Homework.user_id == child_id,
-        Homework.accuracy_rate.isnot(None)
-    ).all()
-    
-    if homework_records:
-        average_score = sum([h.accuracy_rate * 100 for h in homework_records]) / len(homework_records)
-    else:
+    try:
+        # 获取孩子的作业统计
+        total_homework = db.query(Homework).filter(Homework.user_id == child_id).count()
+        completed_homework = db.query(Homework).filter(
+            Homework.user_id == child_id,
+            Homework.status == 'completed'
+        ).count()
+        
+        # 计算平均分
+        homework_records = db.query(Homework).filter(
+            Homework.user_id == child_id,
+            Homework.accuracy_rate.isnot(None)
+        ).all()
+        
+        if homework_records:
+            average_score = sum([h.accuracy_rate * 100 for h in homework_records]) / len(homework_records)
+        else:
+            average_score = 0
+        
+        # 估算总学习时间
+        total_study_time = sum([h.total_questions * 2 for h in homework_records if h.total_questions]) if homework_records else 0
+    except Exception as e:
+        print(f"计算作业统计时出错: {e}")
+        # 设置默认值
+        total_homework = 0
+        completed_homework = 0
         average_score = 0
-    
-    # 估算总学习时间
-    total_study_time = sum([h.total_questions * 2 for h in homework_records if h.total_questions]) if homework_records else 0
+        total_study_time = 0
     
     # 计算连续学习天数（简化版）
     from datetime import datetime, timedelta
-    recent_dates = db.query(func.date(Homework.created_at)).filter(
-        Homework.user_id == child_id
-    ).distinct().order_by(func.date(Homework.created_at).desc()).limit(30).all()
-    
     current_streak = 0
-    if recent_dates:
-        current_date = datetime.now().date()
-        for date_tuple in recent_dates:
-            if (current_date - date_tuple[0]).days == current_streak:
-                current_streak += 1
-                current_date = date_tuple[0]
-            else:
-                break
+    try:
+        recent_dates = db.query(func.date(Homework.created_at)).filter(
+            Homework.user_id == child_id
+        ).distinct().order_by(func.date(Homework.created_at).desc()).limit(30).all()
+        
+        if recent_dates:
+            current_date = datetime.now().date()
+            for date_tuple in recent_dates:
+                if (current_date - date_tuple[0]).days == current_streak:
+                    current_streak += 1
+                    current_date = date_tuple[0]
+                else:
+                    break
+    except Exception as e:
+        print(f"计算学习天数时出错: {e}")
+        current_streak = 0
     
     return {
         "id": child_id,

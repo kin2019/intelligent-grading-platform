@@ -340,7 +340,7 @@
             // 测试时先注释掉登录检查
             // if (!token) {
             //     alert('请先登录');
-            //     window.location.href = 'login.html';
+            //     window.location.href = '/frontend/login.html';
             //     return;
             // }
             
@@ -381,7 +381,16 @@
                 
             } catch (error) {
                 console.error('获取错题详情失败:', error);
-                showError(`获取错题详情失败: ${error.message}`);
+                
+                // 如果是404错误（错题已被删除），显示特殊提示并自动返回
+                if (error.message.includes('404')) {
+                    showError('该错题已被删除，即将返回错题列表...');
+                    setTimeout(() => {
+                        window.history.back();
+                    }, 2000);
+                } else {
+                    showError(`获取错题详情失败: ${error.message}`);
+                }
             }
         }
 

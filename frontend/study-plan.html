@@ -966,7 +966,7 @@
 
         function viewSubjectDetail(subject) {
             // 跳转到学科详情页面，传递学科参数
-            window.location.href = `subject-detail.html?subject=${encodeURIComponent(subject)}`;
+            window.location.href = `/frontend/subject-detail.html?subject=${encodeURIComponent(subject)}`;
         }
 
         function applyRecommendation(index) {
@@ -974,34 +974,34 @@
         }
 
         function createPlan() {
-            window.location.href = 'study-plan-create.html';
+            window.location.href = '/frontend/study-plan-create.html';
         }
 
         function goBack() {
             // 学习计划应该返回到学生首页
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 
         function goHome() {
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 
         function goToErrorBook() {
-            window.location.href = 'error-book.html';
+            window.location.href = '/frontend/error-book.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message, duration = 3000) {

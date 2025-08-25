@@ -695,7 +695,7 @@
             if (!token) {
                 showToast('请先登录');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = '/frontend/login.html';
                 }, 2000);
                 return;
             }
@@ -1583,19 +1583,19 @@
         }
 
         function viewErrorBook() {
-            window.location.href = 'error-book.html';
+            window.location.href = '/frontend/error-book.html';
         }
 
         function submitNewHomework() {
-            window.location.href = 'homework-submit.html';
+            window.location.href = '/frontend/homework-submit.html';
         }
 
         function goHome() {
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 

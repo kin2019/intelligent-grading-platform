@@ -39,7 +39,7 @@ def get_current_user(
         )
     
     # 查询用户，如果不存在则创建模拟用户
-    user = db.query(User).filter(User.openid == user_id).first()
+    user = db.query(User).filter(User.id == int(user_id)).first()
     if user is None:
         # 创建模拟用户用于测试
         user = User(

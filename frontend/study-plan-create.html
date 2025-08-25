@@ -1426,7 +1426,7 @@
                     
                     // 延迟跳转到学习计划页面
                     setTimeout(() => {
-                        window.location.href = 'study-plan.html';
+                        window.location.href = '/frontend/study-plan.html';
                     }, 2000);
                 } else {
                     const error = await response.json();
@@ -1520,7 +1520,7 @@
         function goBack() {
             // 如果计划已创建成功，直接返回
             if (isPlanCreated) {
-                window.location.href = 'study-plan.html';
+                window.location.href = '/frontend/study-plan.html';
                 return;
             }
             
@@ -1530,10 +1530,10 @@
             // 只有当有实际内容输入时才提示确认
             if (title || description || tasks.length > 0) {
                 if (confirm('确定要离开吗？未保存的内容将丢失。')) {
-                    window.location.href = 'study-plan.html';
+                    window.location.href = '/frontend/study-plan.html';
                 }
             } else {
-                window.location.href = 'study-plan.html';
+                window.location.href = '/frontend/study-plan.html';
             }
         }
 

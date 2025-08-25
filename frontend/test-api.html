@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>API测试页面</title>
+</head>
+<body>
+    <h1>API测试</h1>
+    <button onclick="testDashboard()">测试Dashboard API</button>
+    <button onclick="testChildReport()">测试Child Report API</button>
+    <button onclick="setToken()">设置Token</button>
+    <div id="result"></div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY0NTk4OTYsInN1YiI6IjIifQ.25NFiBUbJ1iuyoTsanurlC6-73hVyDjXipnqxWh0Qlw';
+
+        function setToken() {
+            localStorage.setItem('token', token);
+            console.log('Token设置成功:', token);
+            document.getElementById('result').innerHTML = '<p>Token已设置到localStorage</p>';
+        }
+
+        async function testDashboard() {
+            try {
+                console.log('开始测试Dashboard API...');
+                console.log('使用Token:', token);
+                console.log('API_BASE:', API_BASE);
+                
+                const response = await fetch(`${API_BASE}/parent/dashboard`, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP错误: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                console.log('Dashboard data:', data);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Dashboard API结果 (状态: ${response.status}):</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Dashboard API错误:', error);
+                document.getElementById('result').innerHTML = `
+                    <p style="color: red;">错误: ${error.message}</p>
+                    <p>请检查浏览器控制台了解更多信息</p>
+                `;
+            }
+        }
+
+        async function testChildReport() {
+            try {
+                console.log('开始测试Child Report API...');
+                const response = await fetch(`${API_BASE}/parent/children/1/report?period=week`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
+                
+                console.log('Response status:', response.status);
+                const data = await response.json();
+                console.log('Child Report data:', data);
+                
+                document.getElementById('result').innerHTML = `
+                    <h3>Child Report API结果:</h3>
+                    <pre>${JSON.stringify(data, null, 2)}</pre>
+                `;
+            } catch (error) {
+                console.error('Child Report API错误:', error);
+                document.getElementById('result').innerHTML = `<p>错误: ${error.message}</p>`;
+            }
+        }
+
+        // 页面加载时自动设置token
+        document.addEventListener('DOMContentLoaded', function() {
+            setToken();
+        });
+    </script>
+</body>
+</html>

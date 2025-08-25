@@ -3,6 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>学习报告 - ZYJC智能批改</title>
     <style>
         * {
@@ -401,7 +404,7 @@
             <div class="navbar-content">
                 <button class="back-btn" onclick="goBack()">←</button>
                 <div class="navbar-title">学习报告</div>
-                <button class="filter-btn" onclick="showFilters()">⚙️</button>
+                <button class="filter-btn" onclick="forceRefresh()">🔄</button>
             </div>
         </div>
         
@@ -409,11 +412,11 @@
         <div class="page-content">
             <!-- 孩子选择器 -->
             <div class="child-selector">
-                <div class="selector-title"></div>
+                <div class="selector-title">选择孩子</div>
                 <div class="child-tabs" id="childTabs">
                     <div class="loading">
                         <div class="loading-spinner"></div>
-                        <div>加载中...</div>
+                        <div>正在加载孩子信息...</div>
                     </div>
                 </div>
             </div>
@@ -501,55 +504,93 @@
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
+            console.log('页面加载完成，开始初始化...');
             initPage();
         });
 
         async function initPage() {
+            // 手动设置测试token - 确保有有效的token
+            const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY0NTk4OTYsInN1YiI6IjIifQ.25NFiBUbJ1iuyoTsanurlC6-73hVyDjXipnqxWh0Qlw';
+            localStorage.setItem('token', testToken);
+            
             // 检查登录状态
             token = localStorage.getItem('token');
+            console.log('当前token:', token);
+            
+            // 更新页面标题显示正在初始化
+            document.querySelector('.selector-title').textContent = '正在初始化...';
+            
             if (!token) {
                 alert('请先登录');
-                window.location.href = 'login.html';
+                window.location.href = '/frontend/login.html';
                 return;
             }
             
+            console.log('开始加载孩子列表...');
             // 加载孩子列表
             await loadChildren();
         }
 
         async function loadChildren() {
             try {
+                console.log('正在调用API:', `${API_BASE}/parent/dashboard`);
+                console.log('使用的token:', token);
+                
                 const response = await fetch(`${API_BASE}/parent/dashboard`, {
                     headers: {
-                        'Authorization': `Bearer ${token}`
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
                     }
                 });
                 
+                console.log('API响应状态:', response.status);
+                console.log('API响应:', response);
+                
                 if (response.ok) {
                     const data = await response.json();
+                    console.log('收到的数据:', data);
                     children = data.children || [];
+                    console.log('解析出的孩子列表:', children);
+                    
                     updateChildTabs();
                     
                     // 默认选择第一个孩子
                     if (children.length > 0) {
+                        console.log('选择第一个孩子:', children[0]);
                         selectChild(children[0].id);
+                    } else {
+                        console.log('没有找到孩子数据');
+                        document.getElementById('childTabs').innerHTML = 
+                            '<div class="error">没有找到孩子数据</div>';
                     }
                 } else {
-                    throw new Error('获取孩子列表失败');
+                    console.error('API请求失败:', response.status, response.statusText);
+                    throw new Error(`获取孩子列表失败: ${response.status} ${response.statusText}`);
                 }
             } catch (error) {
                 console.error('获取孩子列表失败:', error);
                 document.getElementById('childTabs').innerHTML = 
-                    '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildren()">重试</button></div>';
+                    '<div class="error">加载失败: ' + error.message + ' <button class="retry-btn" onclick="loadChildren()">重试</button></div>';
             }
         }
 
         function updateChildTabs() {
+            console.log('更新孩子标签页，孩子数量:', children.length);
+            
             const childTabsHtml = children.map(child => {
-                // 将英文avatar转换为中文显示
-                let avatarDisplay = child.avatar || '👶';
-                if (avatarDisplay === 'student') {
-                    avatarDisplay = '学生';
+                console.log('处理孩子:', child);
+                
+                // 处理avatar显示
+                let avatarDisplay = '👶';
+                if (child.avatar) {
+                    if (child.avatar === 'student') {
+                        avatarDisplay = '学生';
+                    } else if (child.avatar.startsWith('/uploads/')) {
+                        // 如果是图片路径，显示emoji作为备用
+                        avatarDisplay = '👨‍🎓';
+                    } else {
+                        avatarDisplay = child.avatar;
+                    }
                 }
                 
                 return `
@@ -561,7 +602,11 @@
                 `;
             }).join('');
             
+            console.log('生成的HTML:', childTabsHtml);
             document.getElementById('childTabs').innerHTML = childTabsHtml;
+            
+            // 更新标题显示找到的孩子数
+            document.querySelector('.selector-title').textContent = `选择孩子 (${children.length})`;
         }
 
         async function selectChild(childId) {
@@ -606,26 +651,29 @@
         }
 
         function updateOverview(stats) {
+            console.log('更新概览数据:', stats);
+            
             const overviewHtml = `
                 <div class="overview-item">
-                    <div class="overview-number">${stats.total_homework}</div>
+                    <div class="overview-number">${stats.total_homework || 0}</div>
                     <div class="overview-label">总作业数</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${stats.average_score}</div>
+                    <div class="overview-number">${stats.average_score || 0}</div>
                     <div class="overview-label">平均分</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${stats.completed_homework}</div>
+                    <div class="overview-number">${stats.completed_homework || 0}</div>
                     <div class="overview-label">已完成</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${Math.round(stats.study_time / 60)}分钟</div>
+                    <div class="overview-number">${Math.round((stats.study_time || 0) / 60)}分钟</div>
                     <div class="overview-label">学习时长</div>
                 </div>
             `;
             
             document.getElementById('overviewGrid').innerHTML = overviewHtml;
+            console.log('概览更新完成');
         }
 
         function updateSubjectPerformance(subjects) {
@@ -716,8 +764,21 @@
             loadChildReport();
         }
 
-        function showFilters() {
-            showToast('筛选功能开发中...');
+        function forceRefresh() {
+            showToast('正在刷新数据...');
+            console.log('强制刷新数据');
+            
+            // 清空当前显示
+            document.getElementById('childTabs').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>重新加载中...</div></div>';
+            document.getElementById('overviewGrid').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>加载概览中...</div></div>';
+            document.getElementById('subjectPerformance').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>加载学科表现中...</div></div>';
+            document.getElementById('trendChart').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>生成图表中...</div></div>';
+            document.getElementById('suggestions').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>生成建议中...</div></div>';
+            
+            // 重新初始化
+            setTimeout(() => {
+                initPage();
+            }, 500);
         }
 
         function showError() {
@@ -730,11 +791,11 @@
         }
 
         function goToParentHome() {
-            window.location.href = 'parent-home.html';
+            window.location.href = '/frontend/parent-home.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message) {

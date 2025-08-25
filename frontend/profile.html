@@ -1400,7 +1400,7 @@
                 if (error.message.includes('403') || error.message.includes('Not authenticated')) {
                     errorMessage = '登录已过期，请重新登录';
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = '/frontend/login.html';
                     }, 2000);
                 } else if (error.message.includes('401')) {
                     errorMessage = '认证失败，请重新登录';
@@ -1625,23 +1625,23 @@
         }
 
         function goToErrorBook() {
-            window.location.href = 'error-book.html';
+            window.location.href = '/frontend/error-book.html';
         }
 
         function goToStudyPlan() {
-            window.location.href = 'study-plan.html';
+            window.location.href = '/frontend/study-plan.html';
         }
 
         function goToHomeworkHistory() {
-            window.location.href = 'homework-list.html';
+            window.location.href = '/frontend/homework-list.html';
         }
 
         function goToVipCenter() {
-            window.location.href = 'vip-center.html';
+            window.location.href = '/frontend/vip-center.html';
         }
 
         function goToParentBind() {
-            window.location.href = 'parent-bind.html';
+            window.location.href = '/frontend/parent-bind.html';
         }
 
         function toggleNotification() {
@@ -2480,7 +2480,7 @@
                     
                     showToast('已退出登录');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = '/frontend/login.html';
                     }, 1500);
                 }
             );
@@ -2512,9 +2512,9 @@
         function goHome() {
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 

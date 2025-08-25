@@ -609,7 +609,7 @@
 
         // 页面可见性监听 - 当用户从其他页面返回时重新加载数据
         document.addEventListener('visibilitychange', function() {
-            if (!document.hidden && errorData && errorData.length > 0) {
+            if (!document.hidden) {
                 console.log('页面重新可见，重新加载数据');
                 loadErrorBookData();
             }
@@ -617,10 +617,8 @@
 
         // 页面聚焦监听 - 当窗口重新获得焦点时重新加载数据
         window.addEventListener('focus', function() {
-            if (errorData && errorData.length > 0) {
-                console.log('窗口重新聚焦，重新加载数据');
-                loadErrorBookData();
-            }
+            console.log('窗口重新聚焦，重新加载数据');
+            loadErrorBookData();
         });
 
         function initPage() {
@@ -629,7 +627,7 @@
             if (!token) {
                 showToast('请先登录');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = '/frontend/login.html';
                 }, 2000);
                 return;
             }
@@ -1755,7 +1753,7 @@
             }
             
             // 跳转到错题详情页面
-            window.location.href = `error-detail.html?id=${errorId}`;
+            window.location.href = `/frontend/error-detail.html?id=${errorId}`;
         }
 
         async function markAsReviewed(errorId) {
@@ -4328,30 +4326,30 @@
         }
 
         function submitHomework() {
-            window.location.href = 'homework-submit.html';
+            window.location.href = '/frontend/homework-submit.html';
         }
 
         function goBack() {
             // 错题本应该返回到学生首页
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 
         function goHome() {
             const role = localStorage.getItem('role') || 'student';
             if (role === 'parent') {
-                window.location.href = 'parent-home.html';
+                window.location.href = '/frontend/parent-home.html';
             } else {
-                window.location.href = 'student-home.html';
+                window.location.href = '/frontend/student-home.html';
             }
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message, duration = 3000) {

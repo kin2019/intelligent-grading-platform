@@ -665,7 +665,7 @@
             token = localStorage.getItem('token');
             if (!token) {
                 alert('请先登录');
-                window.location.href = 'login.html';
+                window.location.href = '/frontend/login.html';
                 return;
             }
             
@@ -932,7 +932,7 @@
         }
 
         function viewErrorDetail(errorId) {
-            window.location.href = `error-detail.html?id=${errorId}`;
+            window.location.href = `/frontend/error-detail.html?id=${errorId}`;
         }
 
         function showFilters() {
@@ -944,11 +944,11 @@
         }
 
         function goToParentHome() {
-            window.location.href = 'parent-home.html';
+            window.location.href = '/frontend/parent-home.html';
         }
 
         function goToProfile() {
-            window.location.href = 'profile.html';
+            window.location.href = '/frontend/profile.html';
         }
 
         function showToast(message) {

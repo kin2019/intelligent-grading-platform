@@ -1173,9 +1173,9 @@
             const urlParams = new URLSearchParams(window.location.search);
             const errorId = urlParams.get('errorId');
             if (errorId) {
-                window.location.href = `error-detail.html?id=${errorId}`;
+                window.location.href = `/frontend/error-detail.html?id=${errorId}`;
             } else {
-                window.location.href = 'error-book.html';
+                window.location.href = '/frontend/error-book.html';
             }
         }
 

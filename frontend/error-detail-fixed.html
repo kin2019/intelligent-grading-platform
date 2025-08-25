@@ -555,7 +555,7 @@
                 if (!token) {
                     showToast('请先登录', 'error');
                     setTimeout(() => {
-                        window.location.href = 'login.html';
+                        window.location.href = '/frontend/login.html';
                     }, 2000);
                     return;
                 }
@@ -925,7 +925,7 @@
 
         function practiceSimilar() {
             // 跳转到相似题练习页面
-            window.location.href = `similar-practice.html?errorId=${errorId}`;
+            window.location.href = `/frontend/similar-practice.html?errorId=${errorId}`;
         }
 
         function shareError() {

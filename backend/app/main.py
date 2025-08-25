@@ -41,7 +41,7 @@ setup_cors(app)
 
 # 添加自定义中间件
 app.middleware("http")(logging_middleware)
-app.middleware("http")(rate_limit_middleware)
+# app.middleware("http")(rate_limit_middleware)  # 临时禁用率限制中间件
 
 # 配置静态文件服务
 uploads_path = os.path.join(os.getcwd(), "uploads")

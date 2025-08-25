@@ -372,7 +372,7 @@
             if (!token) {
                 showToast('请先登录');
                 setTimeout(() => {
-                    window.location.href = 'login.html';
+                    window.location.href = '/frontend/login.html';
                 }, 2000);
                 return;
             }
@@ -547,11 +547,11 @@
         }
 
         function goToHomeworkDetail(homeworkId) {
-            window.location.href = `homework-result.html?id=${homeworkId}`;
+            window.location.href = `/frontend/homework-result.html?id=${homeworkId}`;
         }
 
         function goToSubmit() {
-            window.location.href = 'homework-submit.html';
+            window.location.href = '/frontend/homework-submit.html';
         }
 
         function goBack() {

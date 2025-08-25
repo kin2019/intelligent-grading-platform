@@ -41,8 +41,12 @@ class Settings(BaseSettings):
     # CORS配置
     BACKEND_CORS_ORIGINS: List[str] = [
         "http://localhost:3000",
+        "http://localhost:8000",  # 添加前端服务地址
+        "http://localhost:8001",  # 添加新的前端服务地址
         "http://localhost:8080",
         "https://localhost:3000",
+        "https://localhost:8000",  # 添加HTTPS版本
+        "https://localhost:8001",  # 添加HTTPS版本
         "https://localhost:8080",
     ]
     
