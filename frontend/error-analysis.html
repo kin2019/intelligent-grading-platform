@@ -667,7 +667,7 @@
     </div>
 
     <!-- 引入认证工具类 -->
-    <script src="/frontend/js/auth-utils.js?v=4"></script>
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
 
     <script>
         let children = [];
@@ -694,12 +694,14 @@
                     method: 'GET'
                 });
                 
-                children = data.children;
+                children = data?.children || [];
                 updateChildTabs();
                 
                 // 默认选择第一个孩子
                 if (children.length > 0) {
                     selectChild(children[0].id);
+                } else {
+                    showNoChildrenState();
                 }
             } catch (error) {
                 console.error('获取孩子列表失败:', error);
@@ -708,19 +710,57 @@
             }
         }
 
+        function showNoChildrenState() {
+            document.getElementById('childTabs').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
+                    <div>还没有绑定孩子</div>
+                    <button style="margin-top: 16px; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
+                        添加孩子
+                    </button>
+                </div>
+            `;
+            
+            // 显示空状态的错题分析内容
+            showEmptyAnalysisState();
+        }
+        
+        function showEmptyAnalysisState() {
+            document.getElementById('errorStats').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+                    <div>请先添加孩子</div>
+                </div>
+            `;
+            document.getElementById('subjectDistribution').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无数据</div>';
+            document.getElementById('errorTypes').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无数据</div>';
+            document.getElementById('recentErrors').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无数据</div>';
+            document.getElementById('suggestions').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无建议</div>';
+        }
+
+        function addChild() {
+            window.location.href = '/frontend/manage-children.html';
+        }
+
         function updateChildTabs() {
+            if (!children || children.length === 0) {
+                document.querySelector('.selector-title').textContent = '选择孩子';
+                return;
+            }
+            
             const childTabsHtml = children.map(child => {
                 return `
                     <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
                             onclick="selectChild(${child.id})"
                             data-child-id="${child.id}">
                         <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
-                        <span>${child.name}</span>
+                        <span>${child.name || '未命名'}</span>
                     </button>
                 `;
             }).join('');
             
             document.getElementById('childTabs').innerHTML = childTabsHtml;
+            document.querySelector('.selector-title').textContent = `选择孩子 (${children.length})`;
         }
 
         async function selectChild(childId) {
@@ -764,21 +804,31 @@
 
 
         function updateErrorStats(stats) {
+            if (!stats) {
+                document.getElementById('errorStats').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+                        <div>暂无错题统计数据</div>
+                    </div>
+                `;
+                return;
+            }
+            
             const statsHtml = `
                 <div class="stat-item">
-                    <div class="stat-number">${stats.totalErrors}</div>
+                    <div class="stat-number">${stats?.totalErrors || 0}</div>
                     <div class="stat-label">总错题数</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.unreviewedErrors}</div>
+                    <div class="stat-number">${stats?.unreviewedErrors || 0}</div>
                     <div class="stat-label">未复习</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.thisWeekErrors}</div>
+                    <div class="stat-number">${stats?.thisWeekErrors || 0}</div>
                     <div class="stat-label">本周新增</div>
                 </div>
                 <div class="stat-item">
-                    <div class="stat-number">${stats.improvedErrors}</div>
+                    <div class="stat-number">${stats?.improvedErrors || 0}</div>
                     <div class="stat-label">已改进</div>
                 </div>
             `;
@@ -787,7 +837,7 @@
         }
 
         function updateSubjectDistribution(subjects) {
-            if (subjects.length === 0) {
+            if (!subjects || subjects.length === 0) {
                 document.getElementById('subjectDistribution').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-bottom: 12px;">📚</div>
@@ -801,11 +851,11 @@
             const subjectsHtml = subjects.map(subject => `
                 <div class="subject-item">
                     <div class="subject-info">
-                        <div class="subject-name">${subject.subject}</div>
-                        <div class="subject-stats">${subject.totalQuestions}题 · 正确率${subject.accuracy}%</div>
+                        <div class="subject-name">${subject?.subject || '未知学科'}</div>
+                        <div class="subject-stats">${subject?.totalQuestions || 0}题 · 正确率${subject?.accuracy || 0}%</div>
                     </div>
                     <div class="subject-count">
-                        <div class="count-number">${subject.errorCount}</div>
+                        <div class="count-number">${subject?.errorCount || 0}</div>
                         <div class="count-label">错题</div>
                     </div>
                 </div>
@@ -815,7 +865,7 @@
         }
 
         function updateErrorTypes(types) {
-            if (types.length === 0) {
+            if (!types || types.length === 0) {
                 document.getElementById('errorTypes').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-bottom: 12px;">🔍</div>
@@ -829,10 +879,10 @@
             const typesHtml = types.map(type => `
                 <div class="type-item">
                     <div class="type-header">
-                        <div class="type-name">${type.type}</div>
-                        <div class="type-percentage">${type.percentage}%</div>
+                        <div class="type-name">${type?.type || '未知类型'}</div>
+                        <div class="type-percentage">${type?.percentage || 0}%</div>
                     </div>
-                    <div class="type-description">${type.description}</div>
+                    <div class="type-description">${type?.description || '暂无描述'}</div>
                 </div>
             `).join('');
             
@@ -840,7 +890,7 @@
         }
 
         function updateRecentErrors(errors) {
-            if (errors.length === 0) {
+            if (!errors || errors.length === 0) {
                 document.getElementById('recentErrors').innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-bottom: 12px;">📝</div>
@@ -852,13 +902,13 @@
             }
             
             const errorsHtml = errors.map(error => `
-                <div class="error-item" onclick="viewErrorDetail(${error.id})">
+                <div class="error-item" onclick="viewErrorDetail(${error?.id || 0})">
                     <div class="error-header">
-                        <div class="error-subject">${error.subject}</div>
-                        <div class="error-date">${error.date}</div>
+                        <div class="error-subject">${error?.subject || '未知学科'}</div>
+                        <div class="error-date">${error?.date || '日期未知'}</div>
                     </div>
-                    <div class="error-question">${error.question}</div>
-                    <div class="error-reason">错因：${error.reason}</div>
+                    <div class="error-question">${error?.question || '题目内容暂无'}</div>
+                    <div class="error-reason">错因：${error?.reason || '待分析'}</div>
                 </div>
             `).join('');
             

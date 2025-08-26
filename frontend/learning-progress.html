@@ -552,6 +552,9 @@
         </div>
     </div>
 
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
+
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
         let token = '';
@@ -565,14 +568,20 @@
         });
 
         async function initPage() {
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            if (!token) {
-                // 为了演示，临时设置一个测试token
-                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJwYXJlbnRfMzEiLCJpYXQiOjE3NTU5NTk0NDEsImV4cCI6MTc1NjA0NTg0MX0.zOS2t-bWHYhGiupkESyg-3RXtAwegcsQ5YMkiEfdoFI';
-                localStorage.setItem('token', token);
-                console.log('使用测试token进行演示');
+            // 检查页面权限 - 只有家长可以访问
+            if (!AuthUtils.initPageAuth('parent')) {
+                return; // 权限检查失败，已自动跳转
             }
+            
+            // 获取token
+            token = AuthUtils.getCurrentToken();
+            if (!token) {
+                console.log('未找到有效token，重定向到登录页');
+                window.location.href = '/frontend/login.html';
+                return;
+            }
+            
+            console.log('以家长身份访问学习进度页面');
             
             // 加载孩子列表
             await loadChildren();
@@ -582,26 +591,18 @@
 
         async function loadChildren() {
             try {
-                const response = await fetch(`${API_BASE}/parent/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    children = data.children;
-                    updateChildTabs();
-                    
-                    // 默认选择有学习数据的孩子（优先选择ID 34）
-                    if (children.length > 0) {
-                        // 优先选择ID为34的孩子，因为它有学习数据
-                        const childWithData = children.find(child => child.id === 34);
-                        const selectedChild = childWithData || children[0];
-                        selectChild(selectedChild.id);
-                    }
+                children = data?.children || [];
+                updateChildTabs();
+                
+                // 默认选择第一个孩子
+                if (children.length > 0) {
+                    selectChild(children[0].id);
                 } else {
-                    throw new Error('获取孩子列表失败');
+                    showNoChildrenState();
                 }
             } catch (error) {
                 console.error('获取孩子列表失败:', error);
@@ -610,19 +611,55 @@
             }
         }
 
+        function showNoChildrenState() {
+            document.getElementById('childTabs').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
+                    <div>还没有绑定孩子</div>
+                    <button style="margin-top: 16px; padding: 8px 16px; background: #9b59b6; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
+                        添加孩子
+                    </button>
+                </div>
+            `;
+            
+            // 显示空状态的进度内容
+            showEmptyProgressState();
+        }
+        
+        function showEmptyProgressState() {
+            document.getElementById('overallProgress').innerHTML = `
+                <div style="text-align: center; padding: 40px; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+                    <div>请先添加孩子</div>
+                </div>
+            `;
+            document.getElementById('subjectProgress').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无数据</div>';
+            document.getElementById('achievementGrid').innerHTML = '<div style="text-align: center; color: #666; padding: 40px;">暂无数据</div>';
+        }
+
+        function addChild() {
+            window.location.href = '/frontend/manage-children.html';
+        }
+
         function updateChildTabs() {
+            if (!children || children.length === 0) {
+                document.querySelector('.selector-title').textContent = '选择孩子';
+                return;
+            }
+            
             const childTabsHtml = children.map(child => {
                 return `
                     <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
                             onclick="selectChild(${child.id})"
                             data-child-id="${child.id}">
                         <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
-                        <span>${child.name}</span>
+                        <span>${child.name || '未命名'}</span>
                     </button>
                 `;
             }).join('');
             
             document.getElementById('childTabs').innerHTML = childTabsHtml;
+            document.querySelector('.selector-title').textContent = `选择孩子 (${children.length})`;
         }
 
         async function selectChild(childId) {
@@ -641,20 +678,13 @@
             if (!currentChildId) return;
             
             try {
-                const response = await fetch(`${API_BASE}/parent/children/${currentChildId}/progress`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest(`children/${currentChildId}/progress`, {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    updateOverallProgress(data.overall);
-                    updateSubjectProgress(data.subjects);
-                    updateAchievements(data.achievements);
-                } else {
-                    throw new Error('获取学习进度失败');
-                }
+                updateOverallProgress(data?.overall);
+                updateSubjectProgress(data?.subjects);
+                updateAchievements(data?.achievements);
             } catch (error) {
                 console.error('获取学习进度失败:', error);
                 showProgressError();
@@ -669,33 +699,43 @@
 
 
         function updateOverallProgress(overall) {
+            if (!overall) {
+                document.getElementById('overallProgress').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📊</div>
+                        <div>暂无进度数据</div>
+                    </div>
+                `;
+                return;
+            }
+            
             const progressHtml = `
                 <div class="progress-item">
-                    <div class="progress-number">${overall.totalProgress}%</div>
+                    <div class="progress-number">${overall?.totalProgress || 0}%</div>
                     <div class="progress-label">总体进度</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${overall.totalProgress}%"></div>
+                        <div class="progress-fill" style="width: ${overall?.totalProgress || 0}%"></div>
                     </div>
                 </div>
                 <div class="progress-item">
-                    <div class="progress-number">${overall.weeklyGoal}%</div>
+                    <div class="progress-number">${overall?.weeklyGoal || 0}%</div>
                     <div class="progress-label">周目标</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${overall.weeklyGoal}%"></div>
+                        <div class="progress-fill" style="width: ${overall?.weeklyGoal || 0}%"></div>
                     </div>
                 </div>
                 <div class="progress-item">
-                    <div class="progress-number">${overall.dailyStreak}</div>
+                    <div class="progress-number">${overall?.dailyStreak || 0}</div>
                     <div class="progress-label">连续学习天数</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${Math.min(overall.dailyStreak * 5, 100)}%"></div>
+                        <div class="progress-fill" style="width: ${Math.min((overall?.dailyStreak || 0) * 5, 100)}%"></div>
                     </div>
                 </div>
                 <div class="progress-item">
-                    <div class="progress-number">${overall.monthlyGoal}%</div>
+                    <div class="progress-number">${overall?.monthlyGoal || 0}%</div>
                     <div class="progress-label">月目标</div>
                     <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${overall.monthlyGoal}%"></div>
+                        <div class="progress-fill" style="width: ${overall?.monthlyGoal || 0}%"></div>
                     </div>
                 </div>
             `;
@@ -704,19 +744,29 @@
         }
 
         function updateSubjectProgress(subjects) {
+            if (!subjects || subjects.length === 0) {
+                document.getElementById('subjectProgress').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">📚</div>
+                        <div>暂无学科进度数据</div>
+                    </div>
+                `;
+                return;
+            }
+            
             const subjectsHtml = subjects.map(subject => `
                 <div class="subject-item">
                     <div class="subject-header">
-                        <div class="subject-name">${subject.name}</div>
-                        <div class="subject-percentage">${subject.progress}%</div>
+                        <div class="subject-name">${subject?.name || '未知学科'}</div>
+                        <div class="subject-percentage">${subject?.progress || 0}%</div>
                     </div>
                     <div class="subject-stats">
-                        <div>已完成 ${subject.completed}/${subject.total}</div>
-                        <div>最近得分: ${subject.recentScore}</div>
+                        <div>已完成 ${subject?.completed || 0}/${subject?.total || 0}</div>
+                        <div>最近得分: ${subject?.recentScore || 0}</div>
                     </div>
                     <div class="progress-bar-container">
                         <div class="progress-bar">
-                            <div class="progress-fill" style="width: ${subject.progress}%"></div>
+                            <div class="progress-fill" style="width: ${subject?.progress || 0}%"></div>
                         </div>
                     </div>
                 </div>
@@ -727,11 +777,21 @@
 
 
         function updateAchievements(achievements) {
+            if (!achievements || achievements.length === 0) {
+                document.getElementById('achievementGrid').innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">🏆</div>
+                        <div>暂无成就数据</div>
+                    </div>
+                `;
+                return;
+            }
+            
             const achievementsHtml = achievements.map(achievement => `
-                <div class="achievement-item ${achievement.unlocked ? 'unlocked' : ''}" 
-                     onclick="viewAchievement('${achievement.title}')">
-                    <div class="achievement-icon">${achievement.icon}</div>
-                    <div class="achievement-title">${achievement.title}</div>
+                <div class="achievement-item ${achievement?.unlocked ? 'unlocked' : ''}" 
+                     onclick="viewAchievement('${achievement?.title || '未知成就'}')">
+                    <div class="achievement-icon">${achievement?.icon || '🏆'}</div>
+                    <div class="achievement-title">${achievement?.title || '未知成就'}</div>
                 </div>
             `).join('');
             
