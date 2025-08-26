@@ -109,6 +109,23 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .child-tab .child-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            flex-shrink: 0;
         }
         
         .child-tab.active {
@@ -649,9 +666,10 @@
         </div>
     </div>
 
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=4"></script>
+
     <script>
-        const API_BASE = 'http://localhost:8000/api/v1';
-        let token = '';
         let children = [];
         let currentChildId = null;
 
@@ -661,12 +679,9 @@
         });
 
         async function initPage() {
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            if (!token) {
-                alert('请先登录');
-                window.location.href = '/frontend/login.html';
-                return;
+            // 检查页面权限 - 只有家长可以访问
+            if (!AuthUtils.initPageAuth('parent')) {
+                return; // 权限检查失败，已自动跳转
             }
             
             // 加载孩子列表
@@ -675,23 +690,16 @@
 
         async function loadChildren() {
             try {
-                const response = await fetch(`${API_BASE}/parent/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    children = data.children;
-                    updateChildTabs();
-                    
-                    // 默认选择第一个孩子
-                    if (children.length > 0) {
-                        selectChild(children[0].id);
-                    }
-                } else {
-                    throw new Error('获取孩子列表失败');
+                children = data.children;
+                updateChildTabs();
+                
+                // 默认选择第一个孩子
+                if (children.length > 0) {
+                    selectChild(children[0].id);
                 }
             } catch (error) {
                 console.error('获取孩子列表失败:', error);
@@ -702,17 +710,12 @@
 
         function updateChildTabs() {
             const childTabsHtml = children.map(child => {
-                // 将英文avatar转换为中文显示
-                let avatarDisplay = child.avatar || '👶';
-                if (avatarDisplay === 'student') {
-                    avatarDisplay = '学生';
-                }
-                
                 return `
                     <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
                             onclick="selectChild(${child.id})"
                             data-child-id="${child.id}">
-                        ${avatarDisplay} ${child.name}
+                        <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
+                        <span>${child.name}</span>
                     </button>
                 `;
             }).join('');
@@ -736,22 +739,15 @@
             if (!currentChildId) return;
             
             try {
-                const response = await fetch(`${API_BASE}/parent/children/${currentChildId}/errors`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest(`children/${currentChildId}/errors`, {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    updateErrorStats(data.stats);
-                    updateSubjectDistribution(data.subjects);
-                    updateErrorTypes(data.types);
-                    updateRecentErrors(data.recentErrors);
-                    updateSuggestions(data.suggestions, data.aiRecommendations);
-                } else {
-                    throw new Error('获取错题分析失败');
-                }
+                updateErrorStats(data.stats);
+                updateSubjectDistribution(data.subjects);
+                updateErrorTypes(data.types);
+                updateRecentErrors(data.recentErrors);
+                updateSuggestions(data.suggestions, data.aiRecommendations);
             } catch (error) {
                 console.error('获取错题分析失败:', error);
                 showErrorAnalysisError();
@@ -937,6 +933,26 @@
 
         function showFilters() {
             showToast('筛选功能开发中...');
+        }
+
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '👶';
+            }
+            
+            // 如果是emoji格式
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 如果是图片URL，显示img标签
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // 默认返回baby emoji
+            return '👶';
         }
 
         function goBack() {

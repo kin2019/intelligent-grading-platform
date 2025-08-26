@@ -109,6 +109,23 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .child-tab .child-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            flex-shrink: 0;
         }
         
         .child-tab.active {
@@ -595,17 +612,12 @@
 
         function updateChildTabs() {
             const childTabsHtml = children.map(child => {
-                // 将英文avatar转换为中文显示
-                let avatarDisplay = child.avatar || '👶';
-                if (avatarDisplay === 'student') {
-                    avatarDisplay = '学生';
-                }
-                
                 return `
                     <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
                             onclick="selectChild(${child.id})"
                             data-child-id="${child.id}">
-                        ${avatarDisplay} ${child.name}
+                        <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
+                        <span>${child.name}</span>
                     </button>
                 `;
             }).join('');
@@ -791,6 +803,26 @@
 
         function showSettings() {
             showToast('进度设置功能开发中...');
+        }
+
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '👶';
+            }
+            
+            // 如果是emoji格式
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 如果是图片URL，显示img标签
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // 默认返回baby emoji
+            return '👶';
         }
 
         function goBack() {

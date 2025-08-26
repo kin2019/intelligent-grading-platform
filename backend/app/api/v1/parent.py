@@ -290,7 +290,7 @@ def get_parent_dashboard(
 @router.get("/children/{child_id}/report", response_model=ChildReportResponse, summary="获取孩子学习报告")
 def get_child_report(
     child_id: int,
-    period: str = Query(default="week", description="报告周期: week/month/semester"),
+    period: str = Query(default="today", description="报告周期: today/week/month/semester"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -298,7 +298,7 @@ def get_child_report(
     获取指定孩子的详细学习报告
     
     - **child_id**: 孩子ID
-    - **period**: 报告周期 (week/month/semester)
+    - **period**: 报告周期 (today/week/month/semester)
     """
     from app.models.parent_child import ParentChild
     from app.models.homework import Homework, ErrorQuestion
@@ -332,14 +332,16 @@ def get_child_report(
     
     # 根据时间段获取作业数据
     now = datetime.now()
-    if period == "week":
+    if period == "today":
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)  # 今天0点
+    elif period == "week":
         start_date = now - timedelta(days=7)
     elif period == "month":
         start_date = now - timedelta(days=30)
     elif period == "semester":
         start_date = now - timedelta(days=120)  # 4个月
     else:
-        start_date = now - timedelta(days=7)
+        start_date = now.replace(hour=0, minute=0, second=0, microsecond=0)  # 默认今天
     
     # 获取时间段内的作业
     period_homework = db.query(Homework).filter(

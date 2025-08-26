@@ -154,14 +154,14 @@
         }
         
         .child-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 20px;
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 16px;
+            font-size: 20px;
             color: white;
             margin-right: 12px;
         }
@@ -675,9 +675,10 @@
         </div>
     </div>
 
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
+
     <script>
-        const API_BASE = 'http://localhost:8000/api/v1';
-        let token = '';
         let userInfo = null;
 
         // 页面加载时初始化
@@ -689,8 +690,6 @@
         document.addEventListener('visibilitychange', async function() {
             if (!document.hidden) {
                 console.log('页面变为可见，重新加载用户信息');
-                // 清除localStorage中的用户缓存，强制重新获取
-                localStorage.removeItem('user');
                 // 重新加载用户数据
                 await loadParentData();
             }
@@ -699,26 +698,20 @@
         // 页面获得焦点时也刷新数据
         window.addEventListener('focus', async function() {
             console.log('页面获得焦点，重新加载用户信息');
-            // 清除localStorage中的用户缓存，强制重新获取
-            localStorage.removeItem('user');
             // 重新加载用户数据
             await loadParentData();
         });
 
         async function initPage() {
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            const user = localStorage.getItem('user');
-            
-            if (!token) {
-                // 为了演示，临时设置一个有头像的测试token
-                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiI0NCIsImlhdCI6MTc1NTk2MDExNywiZXhwIjoxNzU2MDQ2NTE3fQ.XIf8ozG8fkqcRNv4EbAz0oFNp6BNd_uxHNkY0q4rMVg';
-                localStorage.setItem('token', token);
-                console.log('使用有头像的测试token进行演示');
+            // 检查页面权限 - 只有家长可以访问
+            if (!AuthUtils.initPageAuth('parent')) {
+                return; // 权限检查失败，已自动跳转
             }
             
+            // 获取用户信息
+            const user = AuthUtils.getCurrentUser();
             if (user) {
-                userInfo = JSON.parse(user);
+                userInfo = user;
                 updateParentInfo(userInfo);
             }
             
@@ -729,18 +722,12 @@
 
         async function loadParentData() {
             try {
-                const response = await fetch(`${API_BASE}/auth/me`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const user = await AuthUtils.apiRequest('auth/me', {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const user = await response.json();
-                    userInfo = user;
-                    updateParentInfo(user);
-                    localStorage.setItem('user', JSON.stringify(user));
-                }
+                userInfo = user;
+                updateParentInfo(user);
             } catch (error) {
                 console.error('获取用户信息失败:', error);
             }
@@ -767,26 +754,30 @@
 
         async function loadParentDashboard() {
             try {
-                const response = await fetch(`${API_BASE}/parent/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    updateTodayStats(data.today_stats);
-                    updateChildrenList(data.children);
-                    updateNotificationList(data.notifications);
-                    updateReportSummary(data.weekly_report);
-                    updateStudyChart(data.study_time_data);
-                    updateActivityList(data.recent_activities);
-                } else {
-                    throw new Error('获取仪表板数据失败');
-                }
+                console.log('家长仪表板数据:', data);
+                
+                // 确保即使数据为空也能正常显示
+                updateTodayStats(data?.today_stats);
+                updateChildrenList(data?.children);
+                updateNotificationList(data?.notifications);
+                updateReportSummary(data?.weekly_report);
+                updateStudyChart(data?.study_time_data);
+                updateActivityList(data?.recent_activities);
             } catch (error) {
                 console.error('获取家长仪表板数据失败:', error);
-                showErrorForSections();
+                // 显示空数据而不是错误状态，让页面正常可用
+                updateTodayStats(null);
+                updateChildrenList(null);
+                updateNotificationList(null);
+                updateReportSummary(null);
+                updateStudyChart(null);
+                updateActivityList(null);
+                
+                showToast('数据加载失败，显示空白状态');
             }
         }
         
@@ -821,26 +812,26 @@
         }
         
         function updateTodayStats(stats) {
-            document.getElementById('todayHomework').textContent = stats.homeworkCount;
-            document.getElementById('todayAccuracy').textContent = stats.accuracy + '%';
+            document.getElementById('todayHomework').textContent = stats?.homeworkCount || 0;
+            document.getElementById('todayAccuracy').textContent = (stats?.accuracy || 0) + '%';
         }
         
         function updateNotificationList(notifications) {
             const notificationList = document.getElementById('notificationList');
             
-            if (notifications.length === 0) {
+            if (!notifications || notifications.length === 0) {
                 notificationList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无通知</div>';
                 return;
             }
             
             const notificationsHtml = notifications.map(notification => `
-                <div class="notification-item ${notification.unread ? 'unread' : ''}">
-                    <div class="notification-icon">${notification.icon}</div>
+                <div class="notification-item ${notification?.unread ? 'unread' : ''}">
+                    <div class="notification-icon">${notification?.icon || '📝'}</div>
                     <div class="notification-content">
-                        <div class="notification-text">${notification.text}</div>
-                        <div class="notification-time">${notification.time}</div>
+                        <div class="notification-text">${notification?.text || '无内容'}</div>
+                        <div class="notification-time">${notification?.time || '未知时间'}</div>
                     </div>
-                    ${notification.unread ? '<div class="notification-badge"></div>' : ''}
+                    ${notification?.unread ? '<div class="notification-badge"></div>' : ''}
                 </div>
             `).join('');
             
@@ -850,13 +841,24 @@
         function updateStudyChart(data) {
             const chartBars = document.getElementById('chartBars');
             const days = ['一', '二', '三', '四', '五', '六', '日'];
-            const maxTime = Math.max(...data);
+            
+            if (!data || !Array.isArray(data) || data.length === 0) {
+                // 显示空状态
+                chartBars.innerHTML = days.map((day, index) => `
+                    <div class="chart-bar" style="height: 10%">
+                        <div class="chart-day">${day}</div>
+                    </div>
+                `).join('');
+                return;
+            }
+            
+            const maxTime = Math.max(...data, 1); // 避免除以0
             
             const barsHtml = data.map((time, index) => {
                 const height = Math.max((time / maxTime) * 100, 10); // 最小高度10%
                 return `
                     <div class="chart-bar" style="height: ${height}%">
-                        <div class="chart-day">${days[index]}</div>
+                        <div class="chart-day">${days[index] || ''}</div>
                     </div>
                 `;
             }).join('');
@@ -867,7 +869,7 @@
         function updateChildrenList(children) {
             const childrenList = document.getElementById('childrenList');
             
-            if (children.length === 0) {
+            if (!children || children.length === 0) {
                 childrenList.innerHTML = `
                     <div style="text-align: center; padding: 40px; color: #666;">
                         <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
@@ -880,19 +882,19 @@
                 return;
             }
             
-            const childrenHtml = children.map(child => {                
+            const childrenHtml = children.map(child => {
                 return `
-                    <div class="child-item" onclick="goToChildDetail(${child.id})">
+                    <div class="child-item" onclick="goToChildDetail(${child?.id || 0})">
                         <div class="child-info">
-                            <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
+                            <div class="child-avatar">${getAvatarDisplay(child?.avatar)}</div>
                             <div class="child-details">
-                                <div class="child-name">${child.name}</div>
-                                <div class="child-grade">${child.grade}</div>
+                                <div class="child-name">${child?.name || '未命名'}</div>
+                                <div class="child-grade">${child?.grade || '未设置'}</div>
                             </div>
                         </div>
                         <div class="child-stats">
-                            <div class="today-score">${child.todayScore}分</div>
-                            <div class="status">${child.status}</div>
+                            <div class="today-score">${child?.todayScore || 0}分</div>
+                            <div class="status">${child?.status || '未开始'}</div>
                         </div>
                     </div>
                 `;
@@ -903,7 +905,7 @@
 
         function getAvatarDisplay(avatarUrl) {
             if (!avatarUrl) {
-                return '🎓';
+                return '👶';
             }
             
             // 如果是emoji格式
@@ -911,34 +913,49 @@
                 return avatarUrl.replace('emoji:', '');
             }
             
-            // 兼容旧的字符串格式
-            if (avatarUrl === 'student') {
-                return '🎓';
-            }
-            
             // 如果是图片URL，显示img标签
             if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
                 const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
-                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='🎓'">`;
+                const fullUrl = `${baseUrl}${avatarUrl}`;
+                return `<img src="${fullUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶';">`;
             }
             
-            // 默认返回学生emoji
-            return '🎓';
+            // 默认返回baby emoji
+            return '👶';
         }
 
         function updateReportSummary(report) {
             const reportSummary = document.getElementById('reportSummary');
+            
+            if (!report) {
+                reportSummary.innerHTML = `
+                    <div class="summary-item">
+                        <div class="summary-number">0</div>
+                        <div class="summary-label">本周作业</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">0%</div>
+                        <div class="summary-label">平均正确率</div>
+                    </div>
+                    <div class="summary-item">
+                        <div class="summary-number">0</div>
+                        <div class="summary-label">学习天数</div>
+                    </div>
+                `;
+                return;
+            }
+            
             reportSummary.innerHTML = `
                 <div class="summary-item">
-                    <div class="summary-number">${report.totalHomework}</div>
+                    <div class="summary-number">${report?.totalHomework || 0}</div>
                     <div class="summary-label">本周作业</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-number">${report.avgAccuracy}%</div>
+                    <div class="summary-number">${report?.avgAccuracy || 0}%</div>
                     <div class="summary-label">平均正确率</div>
                 </div>
                 <div class="summary-item">
-                    <div class="summary-number">${report.studyDays}</div>
+                    <div class="summary-number">${report?.studyDays || 0}</div>
                     <div class="summary-label">学习天数</div>
                 </div>
             `;
@@ -946,12 +963,18 @@
 
         function updateActivityList(activities) {
             const activityList = document.getElementById('activityList');
+            
+            if (!activities || activities.length === 0) {
+                activityList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无最新动态</div>';
+                return;
+            }
+            
             const activitiesHtml = activities.map(activity => `
                 <div class="activity-item">
-                    <div class="activity-icon">${activity.icon}</div>
+                    <div class="activity-icon">${activity?.icon || '📚'}</div>
                     <div class="activity-content">
-                        <div class="activity-text">${activity.text}</div>
-                        <div class="activity-time">${activity.time}</div>
+                        <div class="activity-text">${activity?.text || '无内容'}</div>
+                        <div class="activity-time">${activity?.time || '未知时间'}</div>
                     </div>
                 </div>
             `).join('');
@@ -1005,7 +1028,7 @@
         async function refreshData() {
             showToast('正在刷新数据...');
             await loadParentData();
-            loadMockData();
+            await loadParentDashboard();
         }
         
         // 定时刷新（每5分钟）

@@ -112,6 +112,23 @@
             cursor: pointer;
             transition: all 0.2s ease;
             font-size: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .child-tab .child-avatar {
+            width: 24px;
+            height: 24px;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            color: white;
+            flex-shrink: 0;
         }
         
         .child-tab.active {
@@ -424,9 +441,9 @@
             <!-- 时间范围选择 -->
             <div class="time-selector">
                 <div class="time-tabs">
-                    <button class="time-tab active" onclick="changeTimePeriod('week')">本周</button>
-                    <button class="time-tab" onclick="changeTimePeriod('month')">本月</button>
-                    <button class="time-tab" onclick="changeTimePeriod('semester')">本学期</button>
+                    <button class="time-tab active" onclick="changeTimePeriod('today')">📊 今日报告</button>
+                    <button class="time-tab" onclick="changeTimePeriod('week')">📈 本周报告</button>
+                    <button class="time-tab" onclick="changeTimePeriod('semester')">📚 本学期</button>
                 </div>
             </div>
             
@@ -495,77 +512,47 @@
         </div>
     </div>
 
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
+
     <script>
-        const API_BASE = 'http://localhost:8000/api/v1';
-        let token = '';
         let children = [];
         let currentChildId = null;
-        let currentPeriod = 'week';
+        let currentPeriod = 'today';
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('页面加载完成，开始初始化...');
             initPage();
         });
 
         async function initPage() {
-            // 手动设置测试token - 确保有有效的token
-            const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY0NTk4OTYsInN1YiI6IjIifQ.25NFiBUbJ1iuyoTsanurlC6-73hVyDjXipnqxWh0Qlw';
-            localStorage.setItem('token', testToken);
-            
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            console.log('当前token:', token);
+            // 检查页面权限 - 只有家长可以访问
+            if (!AuthUtils.initPageAuth('parent')) {
+                return; // 权限检查失败，已自动跳转
+            }
             
             // 更新页面标题显示正在初始化
             document.querySelector('.selector-title').textContent = '正在初始化...';
             
-            if (!token) {
-                alert('请先登录');
-                window.location.href = '/frontend/login.html';
-                return;
-            }
-            
-            console.log('开始加载孩子列表...');
             // 加载孩子列表
             await loadChildren();
         }
 
         async function loadChildren() {
             try {
-                console.log('正在调用API:', `${API_BASE}/parent/dashboard`);
-                console.log('使用的token:', token);
-                
-                const response = await fetch(`${API_BASE}/parent/dashboard`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
-                    }
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
                 });
                 
-                console.log('API响应状态:', response.status);
-                console.log('API响应:', response);
+                children = data?.children || [];
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('收到的数据:', data);
-                    children = data.children || [];
-                    console.log('解析出的孩子列表:', children);
-                    
-                    updateChildTabs();
-                    
-                    // 默认选择第一个孩子
-                    if (children.length > 0) {
-                        console.log('选择第一个孩子:', children[0]);
-                        selectChild(children[0].id);
-                    } else {
-                        console.log('没有找到孩子数据');
-                        document.getElementById('childTabs').innerHTML = 
-                            '<div class="error">没有找到孩子数据</div>';
-                    }
+                updateChildTabs();
+                
+                // 默认选择第一个孩子
+                if (children.length > 0) {
+                    selectChild(children[0].id);
                 } else {
-                    console.error('API请求失败:', response.status, response.statusText);
-                    throw new Error(`获取孩子列表失败: ${response.status} ${response.statusText}`);
+                    showNoChildrenState();
                 }
             } catch (error) {
                 console.error('获取孩子列表失败:', error);
@@ -575,34 +562,17 @@
         }
 
         function updateChildTabs() {
-            console.log('更新孩子标签页，孩子数量:', children.length);
-            
             const childTabsHtml = children.map(child => {
-                console.log('处理孩子:', child);
-                
-                // 处理avatar显示
-                let avatarDisplay = '👶';
-                if (child.avatar) {
-                    if (child.avatar === 'student') {
-                        avatarDisplay = '学生';
-                    } else if (child.avatar.startsWith('/uploads/')) {
-                        // 如果是图片路径，显示emoji作为备用
-                        avatarDisplay = '👨‍🎓';
-                    } else {
-                        avatarDisplay = child.avatar;
-                    }
-                }
-                
                 return `
                     <button class="child-tab ${child.id === currentChildId ? 'active' : ''}" 
                             onclick="selectChild(${child.id})"
                             data-child-id="${child.id}">
-                        ${avatarDisplay} ${child.name}
+                        <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
+                        <span>${child.name}</span>
                     </button>
                 `;
             }).join('');
             
-            console.log('生成的HTML:', childTabsHtml);
             document.getElementById('childTabs').innerHTML = childTabsHtml;
             
             // 更新标题显示找到的孩子数
@@ -627,53 +597,91 @@
             }
             
             try {
-                const url = `${API_BASE}/parent/children/${currentChildId}/report?period=${currentPeriod}`;
-                
-                const response = await fetch(url, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                const data = await AuthUtils.apiRequest(`children/${currentChildId}/report?period=${currentPeriod}`, {
+                    method: 'GET'
                 });
                 
-                if (response.ok) {
-                    const data = await response.json();
-                    updateOverview(data.study_stats);
-                    updateSubjectPerformance(data.subject_analysis);
-                    updateTrendChart(data.learning_trends);
-                    updateSuggestions(data.recommendations);
-                } else {
-                    throw new Error('获取学习报告失败');
-                }
+                updateOverview(data.study_stats);
+                updateSubjectPerformance(data.subject_analysis);
+                updateTrendChart(data.learning_trends);
+                updateSuggestions(data.recommendations);
             } catch (error) {
                 console.error('获取学习报告失败:', error);
                 showError();
             }
         }
 
-        function updateOverview(stats) {
-            console.log('更新概览数据:', stats);
+        function showNoChildrenState() {
+            // 显示没有孩子时的状态
+            document.getElementById('childTabs').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #666;">
+                    <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
+                    <div>还没有绑定孩子</div>
+                    <button style="margin-top: 16px; padding: 8px 16px; background: #ff6b6b; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
+                        添加孩子
+                    </button>
+                </div>
+            `;
             
-            const overviewHtml = `
+            // 显示空状态的报告内容
+            showEmptyReportState();
+        }
+        
+        function showEmptyReportState() {
+            document.getElementById('overviewGrid').innerHTML = `
                 <div class="overview-item">
-                    <div class="overview-number">${stats.total_homework || 0}</div>
+                    <div class="overview-number">0</div>
                     <div class="overview-label">总作业数</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${stats.average_score || 0}</div>
+                    <div class="overview-number">0</div>
                     <div class="overview-label">平均分</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${stats.completed_homework || 0}</div>
+                    <div class="overview-number">0</div>
                     <div class="overview-label">已完成</div>
                 </div>
                 <div class="overview-item">
-                    <div class="overview-number">${Math.round((stats.study_time || 0) / 60)}分钟</div>
+                    <div class="overview-number">0分钟</div>
+                    <div class="overview-label">学习时长</div>
+                </div>
+            `;
+            
+            document.getElementById('subjectPerformance').innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无学科数据</div>';
+            document.getElementById('trendChart').innerHTML = '<div style="text-align: center; color: #666;">暂无学习数据</div>';
+            document.getElementById('suggestions').innerHTML = `
+                <div class="suggestion-item">• 请先添加孩子，然后开始学习之旅</div>
+                <div class="suggestion-item">• 建立良好的学习习惯，每天坚持练习</div>
+                <div class="suggestion-item">• 及时复习错题，巩固知识点</div>
+            `;
+        }
+
+        function updateOverview(stats) {
+            if (!stats) {
+                showEmptyReportState();
+                return;
+            }
+            
+            const overviewHtml = `
+                <div class="overview-item">
+                    <div class="overview-number">${stats?.total_homework || 0}</div>
+                    <div class="overview-label">总作业数</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-number">${stats?.average_score || 0}</div>
+                    <div class="overview-label">平均分</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-number">${stats?.completed_homework || 0}</div>
+                    <div class="overview-label">已完成</div>
+                </div>
+                <div class="overview-item">
+                    <div class="overview-number">${Math.round((stats?.study_time || 0) / 60)}分钟</div>
                     <div class="overview-label">学习时长</div>
                 </div>
             `;
             
             document.getElementById('overviewGrid').innerHTML = overviewHtml;
-            console.log('概览更新完成');
         }
 
         function updateSubjectPerformance(subjects) {
@@ -688,15 +696,15 @@
                 let trendIcon = '→';
                 let trendText = '保持';
                 
-                if (subject.progress === 'excellent') {
+                if (subject?.progress === 'excellent') {
                     trendClass = '';
                     trendIcon = '↑';
                     trendText = '优秀';
-                } else if (subject.progress === 'good') {
+                } else if (subject?.progress === 'good') {
                     trendClass = '';
                     trendIcon = '↑';
                     trendText = '良好';
-                } else if (subject.progress === 'needs_improvement') {
+                } else if (subject?.progress === 'needs_improvement') {
                     trendClass = 'down';
                     trendIcon = '↓';
                     trendText = '需提升';
@@ -705,11 +713,11 @@
                 return `
                     <div class="subject-row">
                         <div class="subject-info">
-                            <div class="subject-name">${subject.subject}</div>
-                            <div class="subject-stats">${subject.homework_count}份作业 · 准确率${Math.round((subject.accuracy_rate || 0) * 100)}%</div>
+                            <div class="subject-name">${subject?.subject || '未知学科'}</div>
+                            <div class="subject-stats">${subject?.homework_count || 0}份作业 · 准确率${Math.round((subject?.accuracy_rate || 0) * 100)}%</div>
                         </div>
                         <div class="subject-score">
-                            <div class="score-number">${subject.average_score || 0}</div>
+                            <div class="score-number">${subject?.average_score || 0}</div>
                             <div class="score-trend ${trendClass}">${trendIcon} ${trendText}</div>
                         </div>
                     </div>
@@ -725,14 +733,24 @@
                 return;
             }
             
-            const scores = trends.map(t => t.accuracy_rate * 100);
+            const scores = trends.map(t => (t?.accuracy_rate || 0) * 100);
             const maxScore = Math.max(...scores, 1); // 确保至少为1，避免除零错误
             
             const chartHtml = trends.map((trend, index) => {
-                const accuracyPercent = Math.round(trend.accuracy_rate * 100);
+                const accuracyPercent = Math.round((trend?.accuracy_rate || 0) * 100);
                 const height = maxScore > 0 ? (accuracyPercent / maxScore) * 100 : 20;
-                const date = new Date(trend.date);
-                const dayLabel = `${date.getMonth() + 1}/${date.getDate()}`;
+                
+                let dayLabel = '未知';
+                if (trend?.date) {
+                    try {
+                        const date = new Date(trend.date);
+                        dayLabel = `${date.getMonth() + 1}/${date.getDate()}`;
+                    } catch (e) {
+                        dayLabel = `第${index + 1}天`;
+                    }
+                } else {
+                    dayLabel = `第${index + 1}天`;
+                }
                 
                 return `
                     <div class="chart-bar" style="height: ${Math.max(height, 20)}%">
@@ -746,8 +764,17 @@
         }
 
         function updateSuggestions(recommendations) {
+            if (!recommendations || recommendations.length === 0) {
+                document.getElementById('suggestions').innerHTML = `
+                    <div class="suggestion-item">• 暂无个性化建议</div>
+                    <div class="suggestion-item">• 建议保持良好的学习习惯</div>
+                    <div class="suggestion-item">• 及时复习错题，巩固知识点</div>
+                `;
+                return;
+            }
+            
             const suggestionsHtml = recommendations.map(recommendation => `
-                <div class="suggestion-item">• ${recommendation}</div>
+                <div class="suggestion-item">• ${recommendation || '无建议内容'}</div>
             `).join('');
             
             document.getElementById('suggestions').innerHTML = suggestionsHtml;
@@ -766,7 +793,6 @@
 
         function forceRefresh() {
             showToast('正在刷新数据...');
-            console.log('强制刷新数据');
             
             // 清空当前显示
             document.getElementById('childTabs').innerHTML = '<div class="loading"><div class="loading-spinner"></div><div>重新加载中...</div></div>';
@@ -780,9 +806,40 @@
                 initPage();
             }, 500);
         }
+        
+        // 头像显示函数 - 与管理孩子页面保持一致
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '👶';
+            }
+            
+            // 如果是emoji格式
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 如果是图片URL，显示img标签
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // 默认返回baby emoji
+            return '👶';
+        }
+
+        function addChild() {
+            window.location.href = '/frontend/manage-children.html';
+        }
 
         function showError() {
             document.getElementById('overviewGrid').innerHTML = 
+                '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
+            document.getElementById('subjectPerformance').innerHTML = 
+                '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
+            document.getElementById('trendChart').innerHTML = 
+                '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
+            document.getElementById('suggestions').innerHTML = 
                 '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
         }
 

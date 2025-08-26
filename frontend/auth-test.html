@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>认证系统测试页面</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .test-section {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 16px;
+            color: #333;
+        }
+        
+        .test-content {
+            margin-bottom: 16px;
+        }
+        
+        .button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-right: 8px;
+            margin-bottom: 8px;
+        }
+        
+        .button:hover {
+            background: #0056CC;
+        }
+        
+        .info {
+            background: #e3f2fd;
+            padding: 12px;
+            border-radius: 4px;
+            margin: 8px 0;
+        }
+        
+        .success {
+            background: #e8f5e8;
+            color: #2e7d2e;
+        }
+        
+        .error {
+            background: #ffebee;
+            color: #c62828;
+        }
+        
+        .code {
+            background: #f5f5f5;
+            padding: 8px;
+            border-radius: 4px;
+            font-family: monospace;
+            margin: 8px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>ZYJC 认证系统测试页面</h1>
+    
+    <div class="test-section">
+        <div class="test-title">1. 当前认证状态</div>
+        <div class="test-content">
+            <div class="info" id="currentStatus">正在检查认证状态...</div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">2. 角色切换测试</div>
+        <div class="test-content">
+            <p>测试不同角色的登录和权限验证：</p>
+            <button class="button" onclick="setRole('student')">设置为学生</button>
+            <button class="button" onclick="setRole('parent')">设置为家长</button>
+            <button class="button" onclick="setRole('teacher')">设置为教师</button>
+            <button class="button" onclick="clearRole()">清除角色</button>
+            <div class="info" id="roleStatus"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">3. API请求测试</div>
+        <div class="test-content">
+            <p>测试不同角色的API访问权限：</p>
+            <button class="button" onclick="testStudentAPI()">测试学生API</button>
+            <button class="button" onclick="testParentAPI()">测试家长API</button>
+            <button class="button" onclick="testCommonAPI()">测试公共API</button>
+            <div class="info" id="apiResults"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">4. 页面跳转测试</div>
+        <div class="test-content">
+            <p>测试角色权限控制的页面跳转：</p>
+            <button class="button" onclick="testPageAccess('/frontend/student-home.html')">访问学生首页</button>
+            <button class="button" onclick="testPageAccess('/frontend/parent-home.html')">访问家长首页</button>
+            <button class="button" onclick="testPageAccess('/frontend/homework-list.html')">访问作业列表</button>
+            <div class="info" id="pageResults"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <div class="test-title">5. 快速导航</div>
+        <div class="test-content">
+            <p>选择角色并跳转到对应首页：</p>
+            <button class="button" onclick="goToHome('student')">学生首页</button>
+            <button class="button" onclick="goToHome('parent')">家长首页</button>
+            <button class="button" onclick="window.location.href='/frontend/login.html'">返回登录</button>
+        </div>
+    </div>
+    
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js"></script>
+    
+    <script>
+        // 页面加载时检查当前状态
+        document.addEventListener('DOMContentLoaded', function() {
+            updateCurrentStatus();
+            updateRoleStatus();
+        });
+        
+        function updateCurrentStatus() {
+            const currentRole = AuthUtils.getCurrentUserRole();
+            const currentToken = AuthUtils.getCurrentToken();
+            
+            const statusEl = document.getElementById('currentStatus');
+            if (currentRole) {
+                statusEl.innerHTML = `
+                    <strong>当前角色:</strong> ${AuthUtils.getRoleDisplayName(currentRole)}<br>
+                    <strong>Token:</strong> <span class="code">${currentToken ? currentToken.substring(0, 50) + '...' : '无'}</span>
+                `;
+                statusEl.className = 'info success';
+            } else {
+                statusEl.innerHTML = '<strong>未登录状态</strong> - 没有设置用户角色';
+                statusEl.className = 'info error';
+            }
+        }
+        
+        function updateRoleStatus() {
+            const roleEl = document.getElementById('roleStatus');
+            const currentRole = AuthUtils.getCurrentUserRole();
+            
+            if (currentRole) {
+                roleEl.innerHTML = `已设置角色: ${AuthUtils.getRoleDisplayName(currentRole)}`;
+                roleEl.className = 'info success';
+            } else {
+                roleEl.innerHTML = '当前未设置角色';
+                roleEl.className = 'info';
+            }
+        }
+        
+        function setRole(role) {
+            const success = AuthUtils.setUserRole(role);
+            if (success) {
+                updateCurrentStatus();
+                updateRoleStatus();
+                alert(`已设置角色为: ${AuthUtils.getRoleDisplayName(role)}`);
+            } else {
+                alert('设置角色失败');
+            }
+        }
+        
+        function clearRole() {
+            localStorage.removeItem('userRole');
+            localStorage.removeItem('token');
+            updateCurrentStatus();
+            updateRoleStatus();
+            alert('已清除角色设置');
+        }
+        
+        async function testStudentAPI() {
+            const resultsEl = document.getElementById('apiResults');
+            resultsEl.innerHTML = '正在测试学生API...';
+            
+            try {
+                // 需要先设置学生角色才能访问学生API
+                if (AuthUtils.getCurrentUserRole() !== 'student') {
+                    AuthUtils.setUserRole('student');
+                }
+                
+                // 测试学生专用API
+                const result = await AuthUtils.apiRequest('dashboard', { method: 'GET' });
+                resultsEl.innerHTML = `
+                    <strong>学生API测试成功:</strong><br>
+                    <div class="code">${JSON.stringify(result, null, 2).substring(0, 200)}...</div>
+                `;
+                resultsEl.className = 'info success';
+            } catch (error) {
+                resultsEl.innerHTML = `<strong>学生API测试失败:</strong> ${error.message}`;
+                resultsEl.className = 'info error';
+            }
+        }
+        
+        async function testParentAPI() {
+            const resultsEl = document.getElementById('apiResults');
+            resultsEl.innerHTML = '正在测试家长API...';
+            
+            try {
+                // 需要先设置家长角色才能访问家长API
+                if (AuthUtils.getCurrentUserRole() !== 'parent') {
+                    AuthUtils.setUserRole('parent');
+                }
+                
+                // 测试家长专用API
+                const result = await AuthUtils.apiRequest('dashboard', { method: 'GET' });
+                resultsEl.innerHTML = `
+                    <strong>家长API测试成功:</strong><br>
+                    <div class="code">${JSON.stringify(result, null, 2).substring(0, 200)}...</div>
+                `;
+                resultsEl.className = 'info success';
+            } catch (error) {
+                resultsEl.innerHTML = `<strong>家长API测试失败:</strong> ${error.message}`;
+                resultsEl.className = 'info error';
+            }
+        }
+        
+        async function testCommonAPI() {
+            const resultsEl = document.getElementById('apiResults');
+            resultsEl.innerHTML = '正在测试公共API...';
+            
+            try {
+                // 测试不需要特定角色的API
+                const response = await fetch('http://localhost:8000/health');
+                const result = await response.json();
+                
+                resultsEl.innerHTML = `
+                    <strong>公共API测试成功:</strong><br>
+                    <div class="code">${JSON.stringify(result, null, 2)}</div>
+                `;
+                resultsEl.className = 'info success';
+            } catch (error) {
+                resultsEl.innerHTML = `<strong>公共API测试失败:</strong> ${error.message}`;
+                resultsEl.className = 'info error';
+            }
+        }
+        
+        function testPageAccess(pagePath) {
+            const resultsEl = document.getElementById('pageResults');
+            resultsEl.innerHTML = `正在测试页面访问: ${pagePath}`;
+            
+            // 在新窗口中打开页面进行测试
+            const testWindow = window.open(pagePath, '_blank', 'width=400,height=600');
+            
+            setTimeout(() => {
+                if (testWindow && !testWindow.closed) {
+                    resultsEl.innerHTML = `页面 ${pagePath} 可以正常访问`;
+                    resultsEl.className = 'info success';
+                } else {
+                    resultsEl.innerHTML = `页面 ${pagePath} 访问可能被拒绝或已关闭`;
+                    resultsEl.className = 'info error';
+                }
+            }, 2000);
+        }
+        
+        function goToHome(role) {
+            AuthUtils.setUserRole(role);
+            const homePage = AuthUtils.getRoleHomePage(role);
+            window.location.href = homePage;
+        }
+    </script>
+</body>
+</html>
