@@ -20,14 +20,35 @@ def get_current_user(
     # 临时测试：直接返回ID=1的用户，跳过token验证 
     if token == "test-token-123":
         print("DEBUG: Using test token bypass")
-        # 创建临时用户对象用于测试
-        class MockUser:
-            id = 1
-            openid = "test_user_1"
-            nickname = "测试用户"
-            role = "student"
-            is_active = True
-        return MockUser()
+        # 从数据库获取真实的用户记录
+        user = db.query(User).filter(User.id == 1).first()
+        if user:
+            print(f"DEBUG: Found real user ID=1: {user.nickname}")
+            return user
+        else:
+            print("DEBUG: User ID=1 not found, creating new user")
+            # 如果找不到用户，创建一个新的用户记录
+            user = User(
+                openid="test_user_1",
+                unionid="test_user_1",
+                nickname="测试用户",
+                role="student",
+                is_active=True,
+                avatar_url=None,
+                grade="五年级",
+                phone=None,
+                email=None,
+                is_vip=False,
+                vip_expire_time=None,
+                daily_quota=5,
+                daily_used=0,
+                total_used=0,
+                settings=None
+            )
+            db.add(user)
+            db.commit()
+            db.refresh(user)
+            return user
     
     user_id = verify_token(token)
     
