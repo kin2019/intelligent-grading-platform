@@ -689,17 +689,19 @@
         // 页面可见性变化监听器 - 当用户返回页面时刷新数据
         document.addEventListener('visibilitychange', async function() {
             if (!document.hidden) {
-                console.log('页面变为可见，重新加载用户信息');
-                // 重新加载用户数据
+                console.log('页面变为可见，重新加载所有数据');
+                // 重新加载所有数据
                 await loadParentData();
+                await loadParentDashboard();
             }
         });
 
         // 页面获得焦点时也刷新数据
         window.addEventListener('focus', async function() {
-            console.log('页面获得焦点，重新加载用户信息');
-            // 重新加载用户数据
+            console.log('页面获得焦点，重新加载所有数据');
+            // 重新加载所有数据
             await loadParentData();
+            await loadParentDashboard();
         });
 
         async function initPage() {

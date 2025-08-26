@@ -631,6 +631,9 @@
         </div>
     </div>
 
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
+
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
         let token = '';
@@ -644,13 +647,23 @@
         });
 
         function initPage() {
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            if (!token) {
-                console.log('未找到登录token，设置测试token');
-                token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTYxMDAwMjMsInN1YiI6IjEifQ.R_dHdA1lUTRzyBIGxCPk6UrO7kiucBwSl3R_PHieRn8';
-                localStorage.setItem('token', token);
+            // 检查页面权限 - 学生和家长都可以访问
+            const role = AuthUtils.getCurrentUserRole();
+            if (!role) {
+                console.log('未设置用户角色，重定向到登录页');
+                window.location.href = '/frontend/login.html';
+                return;
             }
+            
+            // 获取token
+            token = AuthUtils.getCurrentToken();
+            if (!token) {
+                console.log('未找到有效token，重定向到登录页');
+                window.location.href = '/frontend/login.html';
+                return;
+            }
+            
+            console.log(`以${AuthUtils.getRoleDisplayName(role)}身份访问学习计划页面`);
             
             // 加载数据
             loadStudyPlanData();
@@ -978,22 +991,13 @@
         }
 
         function goBack() {
-            // 学习计划应该返回到学生首页
-            const role = localStorage.getItem('role') || 'student';
-            if (role === 'parent') {
-                window.location.href = '/frontend/parent-home.html';
-            } else {
-                window.location.href = '/frontend/student-home.html';
-            }
+            const role = AuthUtils.getCurrentUserRole();
+            window.location.href = AuthUtils.getRoleHomePage(role);
         }
 
         function goHome() {
-            const role = localStorage.getItem('role') || 'student';
-            if (role === 'parent') {
-                window.location.href = '/frontend/parent-home.html';
-            } else {
-                window.location.href = '/frontend/student-home.html';
-            }
+            const role = AuthUtils.getCurrentUserRole();
+            window.location.href = AuthUtils.getRoleHomePage(role);
         }
 
         function goToErrorBook() {
