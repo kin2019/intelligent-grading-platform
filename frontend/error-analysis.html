@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>错题分析 - ZYJC智能批改</title>
+    <link rel="stylesheet" href="/frontend/css/theme.css">
     <style>
         * {
             margin: 0;
@@ -21,13 +22,13 @@
         .container {
             max-width: 400px;
             margin: 0 auto;
-            background: #f5f5f5;
+            background: var(--bg-app);
             min-height: 100vh;
         }
         
         /* 顶部导航栏 */
         .navbar {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
             padding: 10px 20px 20px;
             color: white;
             position: relative;
@@ -570,79 +571,79 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="theme-container">
         <!-- 顶部导航栏 -->
-        <div class="navbar">
-            <div class="navbar-content">
-                <button class="back-btn" onclick="goBack()">←</button>
-                <div class="navbar-title">错题分析</div>
-                <button class="filter-btn" onclick="showFilters()">🔍</button>
+        <div class="theme-navbar">
+            <div class="theme-navbar-content">
+                <button class="theme-btn-nav" onclick="goBack()">←</button>
+                <div class="theme-navbar-title">错题分析</div>
+                <button class="theme-btn-nav" onclick="showFilters()">🔍</button>
             </div>
         </div>
         
         <!-- 页面内容 -->
-        <div class="page-content">
+        <div class="theme-page-content">
             <!-- 孩子选择器 -->
-            <div class="child-selector">
-                <div class="selector-title"></div>
+            <div class="theme-card">
+                <div class="theme-section-title selector-title"></div>
                 <div class="child-tabs" id="childTabs">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 错题统计 -->
-            <div class="error-stats">
-                <div class="section-title">📊 错题统计</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📊 错题统计</div>
                 <div class="stats-grid" id="errorStats">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载统计中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 学科分布 -->
-            <div class="subject-distribution">
-                <div class="section-title">📚 学科分布</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📚 学科分布</div>
                 <div class="subject-list" id="subjectDistribution">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载学科分布中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 错题类型 -->
-            <div class="error-types">
-                <div class="section-title">🔍 错题类型分析</div>
+            <div class="theme-card">
+                <div class="theme-section-title">🔍 错题类型分析</div>
                 <div class="type-list" id="errorTypes">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>分析错题类型中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 最近错题 -->
-            <div class="recent-errors">
-                <div class="section-title">📝 最近错题</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📝 最近错题</div>
                 <div class="error-list" id="recentErrors">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载错题记录中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 学习建议 -->
-            <div class="suggestions">
-                <div class="section-title">💡 学习建议</div>
+            <div class="theme-card">
+                <div class="theme-section-title">💡 学习建议</div>
                 <div class="suggestion-content" id="suggestions">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>生成建议中...</div>
                     </div>
                 </div>
@@ -650,18 +651,18 @@
         </div>
         
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="goToParentHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item" onclick="goToParentHome()">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
             </div>
-            <div class="nav-item active">
-                <div class="nav-icon">🔍</div>
-                <div class="nav-text">错题</div>
+            <div class="theme-nav-item active">
+                <div class="theme-nav-icon">🔍</div>
+                <div class="theme-nav-text">错题</div>
             </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
+            <div class="theme-nav-item" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
             </div>
         </div>
     </div>

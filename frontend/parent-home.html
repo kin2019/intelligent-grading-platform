@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 家长端</title>
+    <link rel="stylesheet" href="/frontend/css/theme.css">
     <style>
         * {
             margin: 0;
@@ -18,44 +19,17 @@
             min-height: 100vh;
         }
         
-        .container {
-            max-width: 400px;
-            margin: 0 auto;
-            background: #f5f5f5;
-            min-height: 100vh;
-        }
-        
-        /* 顶部导航栏 */
-        .navbar {
-            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a24 100%);
-            padding: 10px 20px 20px;
-            color: white;
-            position: relative;
-        }
-        
-        .navbar-content {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            margin-top: 20px;
-        }
-        
-        .navbar-title {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        
+        /* 页面特定样式覆盖 */
         .user-avatar {
-            width: 32px;
-            height: 32px;
-            border-radius: 16px;
-            background: rgba(255, 255, 255, 0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 16px;
-            cursor: pointer;
+            background: var(--primary-gradient);
             border: 2px solid rgba(255, 255, 255, 0.3);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        
+        .user-avatar:hover {
+            transform: scale(1.05);
+            border-color: rgba(255, 255, 255, 0.5);
         }
         
         /* 页面内容 */
@@ -541,105 +515,105 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="theme-container">
         <!-- 顶部导航栏 -->
-        <div class="navbar">
-            <div class="navbar-content">
-                <div class="navbar-title">家长端</div>
-                <div class="user-avatar" id="userAvatar" onclick="goToProfile()">👤</div>
+        <div class="theme-navbar">
+            <div class="theme-navbar-content">
+                <div class="theme-navbar-title">🏠 家长端</div>
+                <div class="user-avatar theme-avatar theme-avatar-sm" id="userAvatar" onclick="goToProfile()">👤</div>
             </div>
         </div>
         
         <!-- 页面内容 -->
-        <div class="page-content">
+        <div class="theme-page-content">
             <!-- 用户信息卡片 -->
-            <div class="user-card">
+            <div class="theme-card">
                 <div class="parent-info">
-                    <div class="avatar">👨‍👩‍👧‍👦</div>
+                    <div class="theme-avatar theme-avatar-lg" style="background: var(--primary-gradient);">👨‍👩‍👧‍👦</div>
                     <div class="info">
-                        <div class="name" id="parentName">正在加载...</div>
-                        <div class="role">家长</div>
+                        <div class="name" id="parentName" style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">正在加载...</div>
+                        <div class="role" style="font-size: 12px; color: var(--text-muted);">家长</div>
                     </div>
                 </div>
                 
                 <!-- 今日统计 -->
-                <div class="today-stats">
-                    <div class="stat-card">
-                        <div class="stat-number" id="todayHomework">0</div>
-                        <div class="stat-label">今日作业</div>
+                <div class="today-stats" style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-3); margin: var(--space-4) 0;">
+                    <div class="theme-stat" style="padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div class="theme-stat-number" id="todayHomework">0</div>
+                        <div class="theme-stat-label">今日作业</div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-number" id="todayAccuracy">0%</div>
-                        <div class="stat-label">今日正确率</div>
+                    <div class="theme-stat" style="padding: var(--space-4); background: var(--bg-secondary); border-radius: var(--radius-md);">
+                        <div class="theme-stat-number" id="todayAccuracy">0%</div>
+                        <div class="theme-stat-label">今日正确率</div>
                     </div>
                 </div>
                 
                 <!-- 快速操作 -->
-                <div class="quick-actions">
-                    <div class="quick-btn" onclick="viewTodayReport()">📊 今日报告</div>
-                    <div class="quick-btn" onclick="viewWeekReport()">📈 本周报告</div>
-                    <div class="quick-btn" onclick="manageChildren()">👶 管理孩子</div>
+                <div class="quick-actions" style="display: flex; gap: var(--space-2); margin: var(--space-4) 0;">
+                    <button class="theme-btn theme-btn-secondary" onclick="viewTodayReport()" style="flex: 1; font-size: 12px;">📊 今日报告</button>
+                    <button class="theme-btn theme-btn-secondary" onclick="viewWeekReport()" style="flex: 1; font-size: 12px;">📈 本周报告</button>
+                    <button class="theme-btn theme-btn-secondary" onclick="manageChildren()" style="flex: 1; font-size: 12px;">👶 管理孩子</button>
                 </div>
             </div>
             
             <!-- 孩子列表 -->
-            <div class="children-section">
-                <div class="section-title">我的孩子</div>
+            <div class="theme-card">
+                <div class="theme-section-title">👶 我的孩子</div>
                 <div class="children-list" id="childrenList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>正在加载孩子信息...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 功能入口 -->
-            <div class="function-grid">
-                <div class="function-item" onclick="goToAllReports()">
-                    <div class="function-icon">📊</div>
-                    <div class="function-text">学习报告</div>
+            <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); margin-bottom: var(--space-6);">
+                <div class="theme-card" onclick="goToAllReports()" style="text-align: center; cursor: pointer; padding: var(--space-6) var(--space-4);">
+                    <div style="font-size: 32px; margin-bottom: var(--space-3);">📊</div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">学习报告</div>
                 </div>
                 
-                <div class="function-item" onclick="goToErrorAnalysis()">
-                    <div class="function-icon">🔍</div>
-                    <div class="function-text">错题分析</div>
+                <div class="theme-card" onclick="goToErrorAnalysis()" style="text-align: center; cursor: pointer; padding: var(--space-6) var(--space-4);">
+                    <div style="font-size: 32px; margin-bottom: var(--space-3);">🔍</div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">错题分析</div>
                 </div>
                 
-                <div class="function-item" onclick="goToProgress()">
-                    <div class="function-icon">📈</div>
-                    <div class="function-text">学习进度</div>
+                <div class="theme-card" onclick="goToProgress()" style="text-align: center; cursor: pointer; padding: var(--space-6) var(--space-4);">
+                    <div style="font-size: 32px; margin-bottom: var(--space-3);">📈</div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">学习进度</div>
                 </div>
                 
-                <div class="function-item" onclick="goToSettings()">
-                    <div class="function-icon">⚙️</div>
-                    <div class="function-text">设置管理</div>
+                <div class="theme-card" onclick="goToSettings()" style="text-align: center; cursor: pointer; padding: var(--space-6) var(--space-4);">
+                    <div style="font-size: 32px; margin-bottom: var(--space-3);">⚙️</div>
+                    <div style="font-size: 14px; font-weight: 500; color: var(--text-primary);">设置管理</div>
                 </div>
             </div>
             
             <!-- 通知消息 -->
-            <div class="notification-section">
-                <div class="section-title">消息通知</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📨 消息通知</div>
                 <div id="notificationList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>正在加载通知...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 家庭学习报告 -->
-            <div class="report-section">
-                <div class="section-title">本周学习概况</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📊 本周学习概况</div>
                 <div class="report-summary" id="reportSummary">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>正在加载报告...</div>
                     </div>
                 </div>
                 
                 <!-- 学习时长图表 -->
-                <div class="study-chart" id="studyChart">
-                    <div class="chart-title">本周学习时长（分钟）</div>
+                <div class="study-chart" id="studyChart" style="background: var(--bg-secondary); border-radius: var(--radius-md); padding: var(--space-4); margin: var(--space-4) 0;">
+                    <div class="chart-title" style="font-size: 14px; color: var(--text-primary); margin-bottom: var(--space-3);">本周学习时长（分钟）</div>
                     <div class="chart-bars" id="chartBars">
                         <!-- 图表将动态生成 -->
                     </div>
@@ -647,11 +621,11 @@
             </div>
             
             <!-- 最新动态 -->
-            <div class="activity-section">
-                <div class="section-title">最新动态</div>
+            <div class="theme-card" style="margin-bottom: var(--space-20);">
+                <div class="theme-section-title">📈 最新动态</div>
                 <div class="activity-list" id="activityList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>正在加载动态...</div>
                     </div>
                 </div>
@@ -659,18 +633,18 @@
         </div>
         
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item active">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item active">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
             </div>
-            <div class="nav-item" onclick="goToAllReports()">
-                <div class="nav-icon">📊</div>
-                <div class="nav-text">报告</div>
+            <div class="theme-nav-item" onclick="goToAllReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">报告</div>
             </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
+            <div class="theme-nav-item" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
             </div>
         </div>
     </div>

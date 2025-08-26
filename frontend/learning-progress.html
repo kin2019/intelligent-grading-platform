@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学习进度 - ZYJC智能批改</title>
+    <link rel="stylesheet" href="/frontend/css/theme.css">
     <style>
         * {
             margin: 0;
@@ -21,13 +22,13 @@
         .container {
             max-width: 400px;
             margin: 0 auto;
-            background: #f5f5f5;
+            background: var(--bg-app);
             min-height: 100vh;
         }
         
         /* 顶部导航栏 */
         .navbar {
-            background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
+            background: var(--primary-gradient);
             padding: 10px 20px 20px;
             color: white;
             position: relative;
@@ -460,54 +461,54 @@
     </style>
 </head>
 <body>
-    <div class="container">
+    <div class="theme-container">
         <!-- 顶部导航栏 -->
-        <div class="navbar">
-            <div class="navbar-content">
-                <button class="back-btn" onclick="goBack()">←</button>
-                <div class="navbar-title">学习进度</div>
-                <button class="settings-btn" onclick="showSettings()">⚙️</button>
+        <div class="theme-navbar">
+            <div class="theme-navbar-content">
+                <button class="theme-btn-nav" onclick="goBack()">←</button>
+                <div class="theme-navbar-title">学习进度</div>
+                <button class="theme-btn-nav" onclick="showSettings()">⚙️</button>
             </div>
         </div>
         
         <!-- 页面内容 -->
-        <div class="page-content">
+        <div class="theme-page-content">
             <!-- 孩子选择器 -->
-            <div class="child-selector">
-                <div class="selector-title"></div>
+            <div class="theme-card">
+                <div class="theme-section-title selector-title"></div>
                 <div class="child-tabs" id="childTabs">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 总体进度 -->
-            <div class="overall-progress">
-                <div class="section-title">📈 总体进度</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📈 总体进度</div>
                 <div class="progress-overview" id="overallProgress">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载进度中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 学科进度 -->
-            <div class="subject-progress">
-                <div class="section-title">📚 学科进度</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📚 学科进度</div>
                 <div class="subject-list" id="subjectProgress">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载学科进度中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 学习日历 -->
-            <div class="learning-calendar">
-                <div class="section-title">📅 学习日历</div>
+            <div class="theme-card">
+                <div class="theme-section-title">📅 学习日历</div>
                 <div class="calendar-header">
                     <div class="calendar-title" id="calendarTitle">2025年8月</div>
                     <div class="calendar-nav">
@@ -516,19 +517,19 @@
                     </div>
                 </div>
                 <div class="calendar-grid" id="calendarGrid">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>生成日历中...</div>
                     </div>
                 </div>
             </div>
             
             <!-- 成就徽章 -->
-            <div class="achievements">
-                <div class="section-title">🏆 成就徽章</div>
+            <div class="theme-card">
+                <div class="theme-section-title">🏆 成就徽章</div>
                 <div class="achievement-grid" id="achievementGrid">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
+                    <div class="theme-loading">
+                        <div class="theme-loading-spinner"></div>
                         <div>加载成就中...</div>
                     </div>
                 </div>
@@ -536,18 +537,18 @@
         </div>
         
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="goToParentHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item" onclick="goToParentHome()">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
             </div>
-            <div class="nav-item active">
-                <div class="nav-icon">📈</div>
-                <div class="nav-text">进度</div>
+            <div class="theme-nav-item active">
+                <div class="theme-nav-icon">📈</div>
+                <div class="theme-nav-text">进度</div>
             </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
+            <div class="theme-nav-item" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
             </div>
         </div>
     </div>
