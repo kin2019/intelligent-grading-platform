@@ -242,3 +242,127 @@ const API_BASE = 'http://localhost:8000/api/v1';
 ---
 
 *文档最后更新: 2025-08-20*
+
+# ZYJC智能批改系统
+
+## 启动说明
+
+1. 安装依赖
+   
+首先安装必要的依赖包：
+```bash
+npm install http-server -g
+```
+
+2. 启动服务
+
+在项目根目录(frontend)下运行：
+```bash
+http-server -p 3000
+```
+
+服务将在 http://localhost:3000 启动
+
+3. 配置后端API
+
+确保后端API服务运行在 http://localhost:8000
+
+## 项目结构
+
+```
+frontend/
+  ├── js/
+  │   └── auth-utils.js    # 认证相关工具
+  ├── profile.html         # 个人中心
+  ├── login.html          # 登录页面
+  └── ...其他页面
+```
+
+## 开发说明
+
+- 本项目是纯前端项目，使用原生HTML、CSS和JavaScript开发
+- 使用http-server作为开发服务器
+- API基地址默认为 http://localhost:8000/api/v1
+
+# ZYJC Frontend Server
+
+## 命令行启动说明
+
+1. 进入项目根目录：
+```bash
+cd d:\work\project\zyjc
+```
+
+2. 安装http-server（如果未安装）：
+```bash
+npm install http-server -g
+```
+
+3. 直接启动服务器：
+```bash
+# 在项目根目录启动，这样可以正确访问frontend目录
+http-server . -p 8080
+```
+
+4. 使用start.bat启动（推荐）：
+```bash
+cd frontend
+start.bat
+```
+
+## 快速启动指南
+
+如果你当前在 `D:\work\project\zyjc\frontend` 目录下：
+
+1. 安装http-server（如果未安装）：
+```bash
+npm install http-server -g
+```
+
+2. 使用以下任一命令启动服务：
+```bash
+# 方式1：直接启动（推荐）
+http-server ..
+
+# 方式2：指定端口启动
+http-server .. -p 8080
+
+# 方式3：使用批处理文件启动
+start.bat
+```
+
+3. 访问页面：
+- http://localhost:8080/frontend/login.html
+- http://localhost:8080/frontend/student-home.html
+- http://localhost:8080/frontend/parent-home.html
+- http://localhost:8080/frontend/profile.html
+
+注意：
+- 使用 `http-server ..` 是因为需要将服务器根目录设置为项目根目录
+- 确保URL中包含 `/frontend/` 路径
+- 默认端口为8080，可以通过 `-p` 参数修改
+
+## 访问说明
+
+服务器启动后，通过以下URL访问：
+
+- 登录页面：http://localhost:8080/frontend/login.html
+- 学生首页：http://localhost:8080/frontend/student-home.html
+- 家长首页：http://localhost:8080/frontend/parent-home.html
+- 个人中心：http://localhost:8080/frontend/profile.html
+
+注意：
+- 确保在项目根目录（zyjc）下启动服务器
+- 所有页面URL都需要包含 `/frontend/` 路径
+- 后端API默认运行在 http://localhost:8000
+
+## 目录结构
+```
+zyjc/                      # 项目根目录
+├── frontend/             # 前端代码目录
+│   ├── js/
+│   ├── css/
+│   ├── login.html
+│   └── ...
+└── backend/             # 后端代码目录
+```

@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 学科计划详情</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -312,6 +313,7 @@
             font-size: 10px;
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -319,7 +321,6 @@
         <div class="navbar">
             <div class="navbar-content">
                 <div class="navbar-left">
-                    <button class="back-btn" onclick="goBack()">←</button>
                     <div class="navbar-title" id="navbarTitle">学科计划详情</div>
                 </div>
             </div>
@@ -618,5 +619,29 @@
             }, duration);
         }
     </script>
+    
+    <!-- 全局底部导航 -->
+    <div class="global-bottom-nav">
+        <div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
+            <div class="global-nav-icon">🏠</div>
+            <div class="global-nav-text">首页</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
+            <div class="global-nav-icon">📷</div>
+            <div class="global-nav-text">拍照批改</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+            <div class="global-nav-icon">📚</div>
+            <div class="global-nav-text">错题本</div>
+        </div>
+        <div class="global-nav-item active" onclick="window.location.href='/frontend/study-plan.html'">
+            <div class="global-nav-icon">📋</div>
+            <div class="global-nav-text">学习计划</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+            <div class="global-nav-icon">👤</div>
+            <div class="global-nav-text">我的</div>
+        </div>
+    </div>
 </body>
 </html>

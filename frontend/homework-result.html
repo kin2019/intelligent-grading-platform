@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 批改结果 v2.1</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -438,12 +439,12 @@
         }
         
         .btn-primary {
-            background: #007AFF;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
         
         .btn-primary:hover {
-            background: #0056CC;
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
         }
         
         .btn-secondary {
@@ -519,6 +520,7 @@
             }
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -526,7 +528,6 @@
         <div class="navbar">
             <div class="navbar-content">
                 <div class="navbar-left">
-                    <button class="back-btn" onclick="goBack()">←</button>
                     <div class="navbar-title">批改结果</div>
                 </div>
             </div>
@@ -619,15 +620,33 @@
             
             <!-- 操作按钮 -->
             <div class="action-section" id="actionSection" style="display: none;">
-                <button class="action-btn btn-secondary" onclick="viewErrorBook()">
-                    📚 查看错题本
-                </button>
                 <button class="action-btn btn-primary" onclick="submitNewHomework()">
                     📷 继续批改
                 </button>
-                <button class="action-btn btn-success" onclick="goHome()">
-                    🏠 返回首页
-                </button>
+            </div>
+        </div>
+        
+        <!-- 全局底部导航 -->
+        <div class="global-bottom-nav">
+            <div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
+                <div class="global-nav-icon">🏠</div>
+                <div class="global-nav-text">首页</div>
+            </div>
+            <div class="global-nav-item active" onclick="window.location.href='/frontend/homework-submit.html'">
+                <div class="global-nav-icon">📷</div>
+                <div class="global-nav-text">拍照批改</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+                <div class="global-nav-icon">📚</div>
+                <div class="global-nav-text">错题本</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
+                <div class="global-nav-icon">📋</div>
+                <div class="global-nav-text">学习计划</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+                <div class="global-nav-icon">👤</div>
+                <div class="global-nav-text">我的</div>
             </div>
         </div>
     </div>
@@ -1269,6 +1288,10 @@
         }
 
         function showResult(data) {
+            // 保存homework数据到全局变量，供重新上传时使用
+            homeworkData = data;
+            console.log('保存作业数据到全局变量:', homeworkData);
+            
             // 隐藏加载界面
             document.getElementById('loadingSection').style.display = 'none';
             
@@ -1420,7 +1443,7 @@
                                     ${msg.suggestions.map(suggestion => `<div style="font-size: 12px; color: #666; margin-bottom: 4px; text-align: left;">• ${suggestion}</div>`).join('')}
                                 </div>
                                 <div style="margin-top: 16px;">
-                                    <button onclick="submitNewHomework()" style="background: #007AFF; color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;">重新上传作业</button>
+                                    <button onclick="submitNewHomework()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; padding: 12px 24px; border-radius: 8px; cursor: pointer;">重新上传作业</button>
                                 </div>
                             </div>
                         </div>
@@ -1517,7 +1540,56 @@
         }
 
         function submitNewHomework() {
-            window.location.href = '/frontend/homework-submit.html';
+            // 尝试获取当前作业的学科信息，传递给新的作业提交页面
+            let subject = '';
+            
+            console.log('重新上传作业 - 检查全局homeworkData:', homeworkData);
+            
+            // 方法1：从全局的homeworkData中获取学科信息
+            if (homeworkData && homeworkData.subject && homeworkData.subject !== 'unknown') {
+                subject = homeworkData.subject;
+                console.log('从homeworkData获取学科:', subject);
+            }
+            
+            // 方法2：如果homeworkData没有有效学科，尝试从DOM中获取
+            if (!subject || subject === 'unknown') {
+                const homeworkTitle = document.getElementById('homeworkTitle');
+                if (homeworkTitle) {
+                    const titleText = homeworkTitle.textContent;
+                    console.log('从DOM标题提取学科，标题文本:', titleText);
+                    // 从标题中提取学科，例如 "语文作业" -> "chinese"
+                    if (titleText.includes('语文')) subject = 'chinese';
+                    else if (titleText.includes('数学')) subject = 'math';
+                    else if (titleText.includes('英语')) subject = 'english';
+                    else if (titleText.includes('物理')) subject = 'physics';
+                    else if (titleText.includes('化学')) subject = 'chemistry';
+                    else if (titleText.includes('生物')) subject = 'biology';
+                    
+                    if (subject) {
+                        console.log('从DOM标题成功提取学科:', subject);
+                    }
+                }
+            }
+            
+            // 方法3：尝试从URL或者localStorage中获取之前的选择
+            if (!subject || subject === 'unknown') {
+                const lastSubject = localStorage.getItem('lastSelectedSubject');
+                if (lastSubject) {
+                    subject = lastSubject;
+                    console.log('从localStorage获取上次选择的学科:', subject);
+                }
+            }
+            
+            // 构建URL，如果有学科信息则传递
+            let url = '/frontend/homework-submit.html';
+            if (subject && subject !== 'unknown') {
+                url += '?subject=' + encodeURIComponent(subject);
+                console.log('重新上传作业，记住之前的学科:', subject);
+            } else {
+                console.log('未能获取到有效的学科信息，将使用默认选择');
+            }
+            
+            window.location.href = url;
         }
 
         function goHome() {

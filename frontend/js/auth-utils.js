@@ -6,7 +6,7 @@
 // 测试token定义
 const TEST_TOKENS = {
     student: 'test-token-123',  // 后端支持的测试token
-    parent: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU2Mjc1NjM0fQ.Bbd1EZ6hRFtql0xaF_KcxGujzlbZvo5JejN6S2SysS0',   // 真实的家长token
+    parent: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU2MzQ2NDMxfQ.nGwwuWIppQR3Jsh3n6g_JCTS3ckXqRBjSY5Fo_EBWxc',   // 更新的家长token
     teacher: 'test-token-123'   // 使用相同的测试token
 };
 

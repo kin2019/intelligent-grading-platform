@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 学习计划</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -629,6 +630,7 @@
             }
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -636,7 +638,6 @@
         <div class="navbar">
             <div class="navbar-content">
                 <div class="navbar-left">
-                    <button class="back-btn" onclick="goBack()">←</button>
                     <div class="navbar-title">学习计划</div>
                 </div>
                 <button class="add-btn" onclick="createPlan()">新建</button>
@@ -646,7 +647,7 @@
         <!-- 页面内容 -->
         <div class="page-content">
             <!-- 当前计划概览 -->
-            <div class="current-plan" id="currentPlan">
+            <div class="card" id="currentPlan">
                 <div class="loading">
                     <div class="loading-spinner"></div>
                     <div class="loading-text">正在加载学习计划...</div>
@@ -654,7 +655,7 @@
             </div>
             
             <!-- 今日任务 -->
-            <div class="today-tasks" id="todayTasks">
+            <div class="card" id="todayTasks">
                 <div class="section-title">
                     📅 今日任务
                 </div>
@@ -665,7 +666,7 @@
             </div>
             
             <!-- 学科计划 -->
-            <div class="subject-plans" id="subjectPlans">
+            <div class="card" id="subjectPlans">
                 <div class="section-title">
                     📚 学科计划
                 </div>
@@ -676,7 +677,7 @@
             </div>
             
             <!-- 智能推荐 -->
-            <div class="recommendations" id="recommendations">
+            <div class="card" id="recommendations">
                 <div class="section-title">
                     🤖 AI智能推荐
                 </div>
@@ -687,27 +688,31 @@
         </div>
         
         <!-- 浮动新建按钮 -->
-        <button class="floating-add-btn" onclick="createPlan()" title="新建学习计划">
+        <button class="btn btn-primary floating-add-btn" onclick="createPlan()" title="新建学习计划">
             ➕
         </button>
         
-        <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="goHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
+        <!-- 全局底部导航 -->
+        <div class="global-bottom-nav">
+            <div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
+                <div class="global-nav-icon">🏠</div>
+                <div class="global-nav-text">首页</div>
             </div>
-            <div class="nav-item" onclick="goToErrorBook()">
-                <div class="nav-icon">📚</div>
-                <div class="nav-text">错题本</div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
+                <div class="global-nav-icon">📷</div>
+                <div class="global-nav-text">拍照批改</div>
             </div>
-            <div class="nav-item active">
-                <div class="nav-icon">📋</div>
-                <div class="nav-text">学习计划</div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+                <div class="global-nav-icon">📚</div>
+                <div class="global-nav-text">错题本</div>
             </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
+            <div class="global-nav-item active" onclick="window.location.href='/frontend/study-plan.html'">
+                <div class="global-nav-icon">📋</div>
+                <div class="global-nav-text">学习计划</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+                <div class="global-nav-icon">👤</div>
+                <div class="global-nav-text">我的</div>
             </div>
         </div>
     </div>

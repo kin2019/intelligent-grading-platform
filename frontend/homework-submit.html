@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 拍照批改</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -36,7 +37,13 @@
         .navbar-content {
             display: flex;
             align-items: center;
+            justify-content: space-between;
             margin-top: 20px;
+        }
+        
+        .navbar-left {
+            display: flex;
+            align-items: center;
         }
         
         .back-btn {
@@ -54,6 +61,22 @@
             font-weight: bold;
         }
         
+        .help-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 14px;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .help-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+        }
+        
         /* 页面内容 */
         .page-content {
             padding: 20px;
@@ -66,7 +89,7 @@
         }
         
         /* 科目选择 */
-        .subject-section {
+        .card {
             background: #ffffff;
             border-radius: 16px;
             padding: 20px;
@@ -91,10 +114,10 @@
             padding: 16px 8px;
             background: #f8f9fa;
             border: 2px solid transparent;
-            border-radius: 12px;
+            border-radius: 8px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             font-size: 14px;
         }
         
@@ -103,27 +126,22 @@
         }
         
         .subject-item.selected {
-            border-color: #007AFF;
+            border-color: #667eea;
             background: #e3f2fd;
-            color: #007AFF;
+            color: #667eea;
         }
         
         /* 拍照区域 */
         .photo-section {
-            background: #ffffff;
-            border-radius: 16px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             text-align: center;
         }
         
         .photo-upload {
             border: 2px dashed #ddd;
-            border-radius: 12px;
+            border-radius: 8px;
             padding: 40px 20px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
             position: relative;
             min-height: 200px;
             display: flex;
@@ -133,12 +151,12 @@
         }
         
         .photo-upload:hover {
-            border-color: #007AFF;
-            background: #f8f9ff;
+            border-color: #667eea;
+            background: #f0f8ff;
         }
         
         .photo-upload.drag-over {
-            border-color: #007AFF;
+            border-color: #667eea;
             background: #e3f2fd;
         }
         
@@ -178,19 +196,19 @@
             flex: 1;
             padding: 12px;
             border: none;
-            border-radius: 8px;
+            border-radius: 6px;
             font-size: 14px;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.2s ease;
         }
         
         .btn-camera {
-            background: #007AFF;
+            background: #667eea;
             color: white;
         }
         
         .btn-camera:hover {
-            background: #0056CC;
+            background: #5a6fd8;
         }
         
         .btn-gallery {
@@ -217,34 +235,38 @@
             padding: 20px 0;
         }
         
-        .submit-btn {
+        .btn {
             width: 100%;
-            height: 56px;
-            background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+            height: 48px;
             border: none;
-            border-radius: 16px;
-            color: white;
-            font-size: 18px;
-            font-weight: bold;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s ease;
-            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+            transition: all 0.2s ease;
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
         }
         
-        .submit-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 25px rgba(102, 126, 234, 0.4);
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            box-shadow: 0 2px 8px rgba(102, 126, 234, 0.2);
         }
         
-        .submit-btn:active {
+        .btn-primary:hover {
+            background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+        
+        .btn-primary:active {
             transform: translateY(0);
         }
         
-        .submit-btn:disabled {
+        .btn-primary:disabled {
             opacity: 0.6;
             cursor: not-allowed;
             transform: none;
@@ -267,17 +289,17 @@
         
         /* 提示信息 */
         .tip-section {
-            background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-            border-radius: 16px;
-            padding: 20px;
+            background: #e3f2fd;
+            border-radius: 8px;
+            padding: 16px;
             margin-bottom: 20px;
-            border-left: 4px solid #007AFF;
+            border-left: 4px solid #667eea;
         }
         
         .tip-title {
             font-size: 14px;
             font-weight: 600;
-            color: #007AFF;
+            color: #667eea;
             margin-bottom: 8px;
             display: flex;
             align-items: center;
@@ -305,7 +327,7 @@
             content: '•';
             position: absolute;
             left: 0;
-            color: #007AFF;
+            color: #667eea;
         }
         
         /* 隐藏的文件输入 */
@@ -428,21 +450,23 @@
             }
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
     <div class="container">
         <!-- 顶部导航栏 -->
         <div class="navbar">
             <div class="navbar-content">
-                <button class="back-btn" onclick="goBack()">←</button>
-                <div class="navbar-title">拍照批改</div>
+                <div class="navbar-left">
+                    <div class="navbar-title">拍照批改</div>
+                </div>
             </div>
         </div>
         
         <!-- 页面内容 -->
         <div class="page-content">
             <!-- 科目选择 -->
-            <div class="subject-section">
+            <div class="card">
                 <div class="section-title">选择科目</div>
                 <div class="subject-grid">
                     <div class="subject-item" data-subject="chinese">语文</div>
@@ -455,7 +479,7 @@
             </div>
             
             <!-- 拍照上传区域 -->
-            <div class="photo-section">
+            <div class="card">
                 <div class="section-title">作业照片</div>
                 
                 <div class="photo-upload" id="photoUpload">
@@ -483,8 +507,8 @@
             
             
             <!-- 拍照提示 -->
-            <div class="tip-section">
-                <div class="tip-title">
+            <div class="card">
+                <div class="section-title">
                     💡 拍照小贴士
                 </div>
                 <div class="tip-content">
@@ -500,10 +524,33 @@
             
             <!-- 提交按钮 -->
             <div class="submit-section">
-                <button class="submit-btn" id="submitBtn" onclick="submitHomework()">
+                <button class="btn btn-primary" id="submitBtn" onclick="submitHomework()">
                     <span id="submitText">🚀 开始智能批改</span>
                     <div class="loading-spinner" id="loadingSpinner" style="display: none;"></div>
                 </button>
+            </div>
+        </div>
+        <!-- 全局底部导航 -->
+        <div class="global-bottom-nav">
+            <div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
+                <div class="global-nav-icon">🏠</div>
+                <div class="global-nav-text">首页</div>
+            </div>
+            <div class="global-nav-item active" onclick="window.location.href='/frontend/homework-submit.html'">
+                <div class="global-nav-icon">📷</div>
+                <div class="global-nav-text">拍照批改</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+                <div class="global-nav-icon">📚</div>
+                <div class="global-nav-text">错题本</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
+                <div class="global-nav-icon">📋</div>
+                <div class="global-nav-text">学习计划</div>
+            </div>
+            <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+                <div class="global-nav-icon">👤</div>
+                <div class="global-nav-text">我的</div>
             </div>
         </div>
     </div>
@@ -550,17 +597,63 @@
                     // 添加选中状态
                     this.classList.add('selected');
                     selectedSubject = this.dataset.subject;
-                    console.log('选择科目:', selectedSubject);
+                    
+                    // 保存到localStorage供下次使用
+                    localStorage.setItem('lastSelectedSubject', selectedSubject);
+                    
+                    console.log('选择科目:', selectedSubject, '并保存到localStorage');
                 });
             });
             
-            // 默认选择语文
-            const chineseItem = document.querySelector('[data-subject="chinese"]');
-            if (chineseItem) {
-                chineseItem.click();
-                console.log('默认选择语文');
+            // 检查URL参数中是否有预选的学科
+            const urlParams = new URLSearchParams(window.location.search);
+            const preselectedSubject = urlParams.get('subject');
+            console.log('当前URL:', window.location.href);
+            console.log('URL参数:', urlParams.toString());
+            console.log('提取的学科参数:', preselectedSubject);
+            
+            if (preselectedSubject) {
+                console.log('从URL参数预选学科:', preselectedSubject);
+                const subjectItem = document.querySelector(`[data-subject="${preselectedSubject}"]`);
+                if (subjectItem) {
+                    subjectItem.click();
+                    console.log('成功预选学科:', preselectedSubject);
+                } else {
+                    console.warn('❌ 找不到预选学科，使用默认语文');
+                    // 如果找不到预选学科，默认选择语文
+                    const chineseItem = document.querySelector('[data-subject="chinese"]');
+                    if (chineseItem) {
+                        chineseItem.click();
+                    }
+                }
             } else {
-                console.error('❌ 找不到语文科目');
+                // 没有URL参数时，尝试使用localStorage中的上次选择
+                const lastSubject = localStorage.getItem('lastSelectedSubject');
+                console.log('localStorage中的上次选择:', lastSubject);
+                
+                if (lastSubject) {
+                    const lastSubjectItem = document.querySelector(`[data-subject="${lastSubject}"]`);
+                    if (lastSubjectItem) {
+                        lastSubjectItem.click();
+                        console.log('使用localStorage中的上次选择:', lastSubject);
+                    } else {
+                        console.warn('❌ 找不到localStorage中的学科，使用默认语文');
+                        fallbackToDefaultSubject();
+                    }
+                } else {
+                    console.log('localStorage中没有上次选择，使用默认语文');
+                    fallbackToDefaultSubject();
+                }
+            }
+            
+            function fallbackToDefaultSubject() {
+                const chineseItem = document.querySelector('[data-subject="chinese"]');
+                if (chineseItem) {
+                    chineseItem.click();
+                    console.log('默认选择语文');
+                } else {
+                    console.error('❌ 找不到语文科目');
+                }
             }
             
             // 检查文件输入元素
@@ -847,11 +940,11 @@
                     transition: background-color 0.3s;
                 }
                 .capture-photo-btn {
-                    background: #007AFF;
+                    background: #667eea;
                     color: white;
                 }
                 .capture-photo-btn:hover {
-                    background: #0056CC;
+                    background: #5a6fd8;
                 }
                 .switch-camera-btn {
                     background: #ff9500;
@@ -861,11 +954,11 @@
                     background: #e6850e;
                 }
                 .finish-btn {
-                    background: #34c759;
+                    background: #667eea;
                     color: white;
                 }
                 .finish-btn:hover {
-                    background: #30d158;
+                    background: #5a6fd8;
                 }
                 .cancel-btn {
                     background: #f0f0f0;
@@ -887,7 +980,7 @@
                     height: 60px;
                     object-fit: cover;
                     border-radius: 6px;
-                    border: 2px solid #007AFF;
+                    border: 2px solid #667eea;
                     cursor: pointer;
                 }
                 .captured-photo-thumb:hover {
@@ -1059,10 +1152,10 @@
                 
                 // 添加拍照提示效果
                 const captureBtn = document.querySelector('.capture-photo-btn');
-                captureBtn.style.background = '#34c759';
+                captureBtn.style.background = '#5a6fd8';
                 captureBtn.textContent = '✅ 拍摄成功';
                 setTimeout(() => {
-                    captureBtn.style.background = '#007AFF';
+                    captureBtn.style.background = '#667eea';
                     captureBtn.textContent = '📷 拍照';
                 }, 1000);
                 
@@ -1535,6 +1628,24 @@
             } else {
                 window.history.back();
             }
+        }
+
+        function showHelp() {
+            const helpText = `📷 拍照批改使用帮助：
+
+1. 选择科目：请先选择要批改的科目
+2. 上传作业：可以拍照或从相册选择
+3. 多张上传：支持同时上传多张作业图片
+4. 图片要求：清晰、完整、光线充足
+5. 提交批改：点击"开始智能批改"完成提交
+
+💡 小贴士：
+• 确保作业内容完整可见
+• 避免手指遮挡重要内容
+• 光线充足，避免阴影
+• 支持JPG、PNG格式，最大10MB`;
+
+            alert(helpText);
         }
 
         // 键盘快捷键

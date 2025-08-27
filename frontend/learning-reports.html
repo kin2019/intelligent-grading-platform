@@ -7,7 +7,7 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <title>学习报告 - ZYJC智能批改</title>
-    <link rel="stylesheet" href="/frontend/css/theme.css">
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -426,6 +426,7 @@
             font-size: 10px;
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
     <div class="theme-container">
@@ -921,5 +922,29 @@
             }, 2000);
         }
     </script>
+    
+    <!-- 全局底部导航 -->
+    <div class="global-bottom-nav">
+        <div class="global-nav-item" onclick="window.location.href='/frontend/parent-home.html'">
+            <div class="global-nav-icon">🏠</div>
+            <div class="global-nav-text">首页</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
+            <div class="global-nav-icon">📷</div>
+            <div class="global-nav-text">拍照批改</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+            <div class="global-nav-icon">📚</div>
+            <div class="global-nav-text">错题本</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
+            <div class="global-nav-icon">📋</div>
+            <div class="global-nav-text">学习计划</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+            <div class="global-nav-icon">👤</div>
+            <div class="global-nav-text">我的</div>
+        </div>
+    </div>
 </body>
 </html>
