@@ -1901,6 +1901,103 @@ def toggle_task_status(
         logger.error(f"切换任务状态失败: {str(e)}")
         raise HTTPException(status_code=500, detail=f"更新任务状态失败: {str(e)}")
 
+@router.delete("/study-plan/task/{task_id}", summary="删除学习任务")
+def delete_study_task(
+    task_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    删除指定的学习任务
+    
+    - **task_id**: 任务ID
+    """
+    try:
+        # 导入数据库模型
+        from app.models.study_plan import StudyTask, StudyPlan
+        
+        # 查询任务
+        task = db.query(StudyTask).filter(
+            StudyTask.id == task_id
+        ).first()
+        
+        if not task:
+            raise HTTPException(status_code=404, detail="任务不存在")
+        
+        # 验证任务是否属于当前用户
+        study_plan = db.query(StudyPlan).filter(
+            StudyPlan.id == task.study_plan_id,
+            StudyPlan.user_id == current_user.id
+        ).first()
+        
+        if not study_plan:
+            raise HTTPException(status_code=403, detail="无权限操作此任务")
+        
+        # 删除任务
+        db.delete(task)
+        
+        # 更新该任务所属学习计划的进度统计
+        plan_tasks = db.query(StudyTask).filter(
+            StudyTask.study_plan_id == study_plan.id,
+            StudyTask.id != task_id  # 排除即将删除的任务
+        ).all()
+        
+        plan_total_tasks = len(plan_tasks)
+        plan_completed_tasks = sum(1 for t in plan_tasks if t.completed)
+        
+        study_plan.total_tasks = plan_total_tasks
+        study_plan.completed_tasks = plan_completed_tasks
+        
+        # 如果没有任务了，更新计划状态
+        if plan_total_tasks == 0:
+            study_plan.status = "active"  # 保持活跃状态，等待添加新任务
+            study_plan.end_date = None
+        elif plan_total_tasks > 0 and plan_completed_tasks == plan_total_tasks:
+            study_plan.status = "completed"
+            study_plan.end_date = datetime.now()
+        elif study_plan.status == "completed" and plan_completed_tasks < plan_total_tasks:
+            study_plan.status = "active"
+            study_plan.end_date = None
+        
+        # 计算用户所有活跃计划的汇总统计
+        all_active_plans = db.query(StudyPlan).filter(
+            StudyPlan.user_id == current_user.id,
+            StudyPlan.is_active == True,
+            StudyPlan.status == "active"
+        ).all()
+        
+        # 获取所有活跃计划的任务进行汇总（排除即将删除的任务）
+        all_plan_ids = [plan.id for plan in all_active_plans]
+        all_user_tasks = db.query(StudyTask).filter(
+            StudyTask.study_plan_id.in_(all_plan_ids),
+            StudyTask.id != task_id  # 排除即将删除的任务
+        ).all()
+        
+        total_user_tasks = len(all_user_tasks)
+        completed_user_tasks = sum(1 for t in all_user_tasks if t.completed)
+        
+        # 提交更改
+        db.commit()
+        db.refresh(study_plan)
+        
+        return {
+            "task_id": task_id,
+            "message": "任务已删除",
+            "deleted_at": datetime.now().isoformat(),
+            "plan_progress": {
+                "total_tasks": total_user_tasks,
+                "completed_tasks": completed_user_tasks,
+                "progress": (completed_user_tasks / total_user_tasks * 100) if total_user_tasks > 0 else 0
+            }
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"删除任务失败: {str(e)}")
+        raise HTTPException(status_code=500, detail=f"删除任务失败: {str(e)}")
+
 @router.get("/subject-detail/{subject}", summary="获取学科详情")
 def get_subject_detail(
     subject: str,

@@ -58,15 +58,6 @@
             text-align: center;
         }
         
-        .settings-btn {
-            background: rgba(255, 255, 255, 0.2);
-            border: none;
-            color: white;
-            font-size: 18px;
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 6px;
-        }
         
         /* 页面内容 */
         .page-content {
@@ -464,10 +455,9 @@
     <div class="theme-container">
         <!-- 顶部导航栏 -->
         <div class="theme-navbar">
-            <div class="theme-navbar-content">
-                <button class="theme-btn-nav" onclick="goBack()">←</button>
+            <div class="theme-navbar-content" style="display: flex; align-items: center; justify-content: center; position: relative;">
+                <button class="theme-btn-nav" onclick="goBack()" style="position: absolute; left: 0;">←</button>
                 <div class="theme-navbar-title">学习进度</div>
-                <button class="theme-btn-nav" onclick="showSettings()">⚙️</button>
             </div>
         </div>
         
@@ -862,9 +852,6 @@
             showToast(`查看成就: ${title}`);
         }
 
-        function showSettings() {
-            showToast('进度设置功能开发中...');
-        }
 
         function getAvatarDisplay(avatarUrl) {
             if (!avatarUrl) {

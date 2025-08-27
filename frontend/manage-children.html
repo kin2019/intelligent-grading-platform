@@ -647,6 +647,7 @@
                     showToast('添加孩子成功');
                     closeAddChildModal();
                     await loadChildren();
+                    notifyParentPageUpdate();
                 } else {
                     const error = await response.json();
                     throw new Error(error.detail || '添加孩子失败');
@@ -703,6 +704,7 @@
                     showToast('编辑孩子成功');
                     closeEditChildModal();
                     await loadChildren();
+                    notifyParentPageUpdate();
                 } else {
                     const error = await response.json();
                     console.error('编辑失败响应:', error);
@@ -842,6 +844,7 @@
                 if (response.ok) {
                     showToast('删除成功');
                     await loadChildren();
+                    notifyParentPageUpdate();
                 } else {
                     const error = await response.json();
                     throw new Error(error.detail || '删除失败');
@@ -878,6 +881,8 @@
         }
 
         function goBack() {
+            // 设置返回页面标记，以防返回到profile页面
+            localStorage.setItem('returnFromPage', 'manage-children');
             window.history.back();
         }
 
@@ -886,7 +891,24 @@
         }
 
         function goToProfile() {
+            // 设置返回页面标记，让profile页面知道从这里返回
+            localStorage.setItem('returnFromPage', 'manage-children');
             window.location.href = '/frontend/profile.html';
+        }
+
+        // 通知profile页面数据更新
+        function notifyParentPageUpdate() {
+            // 使用localStorage作为跨页面通信机制
+            localStorage.setItem('childDataUpdated', Date.now().toString());
+            
+            // 如果profile页面在其他标签页中打开，通过storage事件通知
+            window.dispatchEvent(new StorageEvent('storage', {
+                key: 'childDataUpdated',
+                newValue: Date.now().toString(),
+                storageArea: localStorage
+            }));
+            
+            console.log('已通知profile页面数据更新');
         }
 
         function showToast(message) {

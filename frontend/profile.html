@@ -47,6 +47,33 @@
             border-radius: 6px;
         }
         
+        .refresh-btn {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 6px;
+            transition: transform 0.3s ease;
+        }
+        
+        .refresh-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .refresh-btn.spinning {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
         .avatar-container {
             position: relative;
             display: inline-block;
@@ -531,6 +558,112 @@
             font-size: 12px;
             color: #666;
         }
+        
+        /* 孩子卡片样式 */
+        .child-item {
+            display: flex;
+            align-items: center;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+            border-bottom: 1px solid #f0f0f0;
+            position: relative;
+        }
+        
+        .child-item:last-child {
+            border-bottom: none;
+        }
+        
+        .child-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .child-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-right: 16px;
+            flex-shrink: 0;
+        }
+        
+        .child-info {
+            flex: 1;
+        }
+        
+        .child-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .child-details {
+            font-size: 12px;
+            color: #666;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .child-grade {
+            background: #e3f2fd;
+            color: #1976D2;
+            padding: 2px 6px;
+            border-radius: 3px;
+        }
+        
+        .child-status {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            border-radius: 3px;
+            background: #4CAF50;
+        }
+        
+        .status-dot.inactive {
+            background: #ff9800;
+        }
+        
+        .child-stats {
+            text-align: right;
+            flex-shrink: 0;
+        }
+        
+        .child-score {
+            font-size: 14px;
+            font-weight: bold;
+            color: #4CAF50;
+            margin-bottom: 2px;
+        }
+        
+        .child-score.low {
+            color: #ff9800;
+        }
+        
+        .child-time {
+            font-size: 11px;
+            color: #999;
+        }
+        
+        .section-header {
+            position: sticky;
+            top: 0;
+            background: #ffffff;
+            z-index: 2;
+            padding: 16px 0 8px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
 
         /* 移动端适配 */
         @media (max-width: 480px) {
@@ -563,6 +696,7 @@
         <!-- 用户头部信息 -->
         <div class="user-header">
             <button class="back-btn" onclick="goBack()">←</button>
+            <button class="refresh-btn" onclick="refreshUserData()" title="刷新数据">🔄</button>
             
             <div class="avatar-container">
                 <div class="user-avatar" id="userAvatar">👤</div>
@@ -573,17 +707,36 @@
             <div class="user-info" id="userInfo">学生 · 五年级</div>
             
             <div class="user-stats">
-                <div class="stat-item">
-                    <div class="stat-number" id="totalHomework">0</div>
-                    <div class="stat-label">总作业</div>
+                <!-- 学生统计信息 -->
+                <div class="student-stats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-number" id="totalHomework">0</div>
+                        <div class="stat-label">总作业</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="accuracyRate">0%</div>
+                        <div class="stat-label">正确率</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="studyDays">0</div>
+                        <div class="stat-label">学习天数</div>
+                    </div>
                 </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="accuracyRate">0%</div>
-                    <div class="stat-label">正确率</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number" id="studyDays">0</div>
-                    <div class="stat-label">学习天数</div>
+                
+                <!-- 家长统计信息 -->
+                <div class="parent-stats" style="display: none;">
+                    <div class="stat-item">
+                        <div class="stat-number" id="childrenCount">0</div>
+                        <div class="stat-label">孩子数量</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="todayHomeworkCount">0</div>
+                        <div class="stat-label">今日作业</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-number" id="averageAccuracy">0%</div>
+                        <div class="stat-label">平均正确率</div>
+                    </div>
                 </div>
             </div>
         </div>
@@ -602,34 +755,76 @@
                 <div class="vip-benefits">有效期至: <span id="vipExpireDate">2025-12-31</span></div>
             </div>
             
-            <!-- 学习管理 -->
-            <div class="menu-section">
-                <div class="menu-item" onclick="goToErrorBook()">
-                    <div class="menu-icon">📚</div>
-                    <div class="menu-content">
-                        <div class="menu-title">我的错题本</div>
-                        <div class="menu-desc">查看和复习错题</div>
+            <!-- 学习管理 / 孩子管理 -->
+            <div class="menu-section" id="mainFunctionSection">
+                <!-- 学生功能 -->
+                <div class="student-functions" style="display: none;">
+                    <div class="menu-item" onclick="goToErrorBook()">
+                        <div class="menu-icon">📚</div>
+                        <div class="menu-content">
+                            <div class="menu-title">我的错题本</div>
+                            <div class="menu-desc">查看和复习错题</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
                     </div>
-                    <!-- 错题本数量badge已移除 -->
-                    <div class="menu-arrow">›</div>
+                    
+                    <div class="menu-item" onclick="goToStudyPlan()">
+                        <div class="menu-icon">📋</div>
+                        <div class="menu-content">
+                            <div class="menu-title">学习计划</div>
+                            <div class="menu-desc">制定和管理学习计划</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="goToHomeworkHistory()">
+                        <div class="menu-icon">📝</div>
+                        <div class="menu-content">
+                            <div class="menu-title">作业记录</div>
+                            <div class="menu-desc">查看历史批改记录</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
                 </div>
                 
-                <div class="menu-item" onclick="goToStudyPlan()">
-                    <div class="menu-icon">📋</div>
-                    <div class="menu-content">
-                        <div class="menu-title">学习计划</div>
-                        <div class="menu-desc">制定和管理学习计划</div>
+                <!-- 家长功能 -->
+                <div class="parent-functions" style="display: none;">
+                    <div class="menu-item" onclick="goToChildrenManagement()">
+                        <div class="menu-icon">👨‍👩‍👧‍👦</div>
+                        <div class="menu-content">
+                            <div class="menu-title">孩子管理</div>
+                            <div class="menu-desc">查看和管理孩子信息</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
                     </div>
-                    <div class="menu-arrow">›</div>
+                    
+                    <div class="menu-item" onclick="goToLearningReports()">
+                        <div class="menu-icon">📊</div>
+                        <div class="menu-content">
+                            <div class="menu-title">学习报告</div>
+                            <div class="menu-desc">查看孩子的学习分析报告</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
+                    
+                    <div class="menu-item" onclick="goToParentBind()">
+                        <div class="menu-icon">🔗</div>
+                        <div class="menu-content">
+                            <div class="menu-title">账号绑定</div>
+                            <div class="menu-desc">绑定或管理孩子账号</div>
+                        </div>
+                        <div class="menu-arrow">›</div>
+                    </div>
                 </div>
-                
-                <div class="menu-item" onclick="goToHomeworkHistory()">
-                    <div class="menu-icon">📝</div>
-                    <div class="menu-content">
-                        <div class="menu-title">作业记录</div>
-                        <div class="menu-desc">查看历史批改记录</div>
-                    </div>
-                    <div class="menu-arrow">›</div>
+            </div>
+            
+            <!-- 孩子列表（仅家长可见） -->
+            <div class="menu-section" id="childrenSection" style="display: none;">
+                <div class="section-header">
+                    <h3 style="font-size: 16px; font-weight: 600; color: #333; margin-bottom: 16px; padding: 0 20px;">👶 我的孩子</h3>
+                </div>
+                <div id="childrenList">
+                    <!-- 孩子列表将通过JavaScript动态生成 -->
                 </div>
             </div>
             
@@ -798,6 +993,9 @@
         </div>
     </div>
 
+    <!-- 认证工具类 -->
+    <script src="/frontend/js/auth-utils.js"></script>
+    
     <script>
         console.log('=== SCRIPT LOADING ===');
         
@@ -831,44 +1029,152 @@
                 }
             }
         });
+        
+        // 页面获得焦点时刷新数据
+        window.addEventListener('focus', function() {
+            console.log('页面获得焦点，刷新用户数据');
+            const role = AuthUtils.getCurrentUserRole();
+            if (role) {
+                setTimeout(() => {
+                    loadUserProfile(role);
+                }, 100);
+            }
+        });
+        
+        // 页面可见性变化时刷新数据
+        document.addEventListener('visibilitychange', function() {
+            if (!document.hidden) {
+                console.log('页面变为可见，刷新用户数据');
+                const role = AuthUtils.getCurrentUserRole();
+                if (role) {
+                    setTimeout(() => {
+                        loadUserProfile(role);
+                    }, 100);
+                }
+            }
+        });
+        
+        // 监听用户信息更新事件
+        window.addEventListener('userInfoUpdated', function(event) {
+            console.log('收到用户信息更新事件:', event.detail);
+            const role = AuthUtils.getCurrentUserRole();
+            if (role) {
+                loadUserProfile(role);
+            }
+        });
+        
+        // 监听localStorage中的子女数据更新事件
+        window.addEventListener('storage', function(event) {
+            if (event.key === 'childDataUpdated') {
+                console.log('收到子女数据更新通知，刷新页面数据');
+                const role = AuthUtils.getCurrentUserRole();
+                if (role === 'parent') {
+                    setTimeout(() => {
+                        loadUserProfile(role);
+                    }, 200);
+                }
+            }
+        });
+        
+        // 监听manage-children页面的直接通知
+        window.addEventListener('childDataChanged', function(event) {
+            console.log('收到子女数据变更事件');
+            const role = AuthUtils.getCurrentUserRole();
+            if (role === 'parent') {
+                setTimeout(() => {
+                    loadUserProfile(role);
+                }, 200);
+            }
+        });
 
         function initPage() {
-            // 检查登录状态
-            token = localStorage.getItem('token');
-            console.log('初始化页面，token:', token ? `存在(${token.substring(0, 20)}...)` : '不存在');
+            console.log('=== 初始化页面 ===');
             
-            if (!token) {
-                // 使用测试token（开发环境）
-                console.log('未找到token，使用测试token');
-                token = 'test-token-123';
-                localStorage.setItem('token', token);
-                console.log('测试token已设置');
+            // 检查用户角色和权限
+            const role = AuthUtils.getCurrentUserRole();
+            if (!role) {
+                console.log('未设置用户角色，重定向到登录页');
+                window.location.href = '/frontend/login.html';
+                return;
             }
+            
+            // 获取token
+            token = AuthUtils.getCurrentToken();
+            if (!token) {
+                console.log('未找到有效token，重定向到登录页');
+                window.location.href = '/frontend/login.html';
+                return;
+            }
+            
+            console.log(`以${AuthUtils.getRoleDisplayName(role)}身份访问个人中心页面`);
+            
+            // 根据角色显示不同内容
+            setupRoleBasedUI(role);
             
             console.log('API_BASE设置为:', API_BASE);
             
             // 加载用户数据
-            loadUserProfile();
+            loadUserProfile(role);
             
-            // 设置头像文件选择监听器 - 确保在DOM完全加载后执行
+            // 检查是否从其他页面返回，如果是则强制刷新
+            const returnFromPage = localStorage.getItem('returnFromPage');
+            const childDataUpdated = localStorage.getItem('childDataUpdated');
+            
+            if (returnFromPage) {
+                console.log('从页面返回:', returnFromPage);
+                localStorage.removeItem('returnFromPage');
+            }
+            
+            // 检查是否有子女数据更新通知
+            if (childDataUpdated && role === 'parent') {
+                console.log('检测到子女数据更新标记，清除并刷新数据');
+                localStorage.removeItem('childDataUpdated');
+            }
+            
+            if (returnFromPage || childDataUpdated) {
+                // 延迟一点刷新，确保页面加载完成
+                setTimeout(() => {
+                    console.log('从其他页面返回，刷新数据');
+                    loadUserProfile(role);
+                }, 500);
+            }
+            
+            // 设置头像文件选择监听器
             setTimeout(() => {
                 console.log('设置文件选择监听器');
                 const avatarFileInput = document.getElementById('avatarFileInput');
-                console.log('文件输入元素:', avatarFileInput);
                 
                 if (avatarFileInput) {
-                    // 移除可能存在的旧监听器
                     avatarFileInput.removeEventListener('change', handleFileSelect);
-                    // 添加新监听器
                     avatarFileInput.addEventListener('change', handleFileSelect);
                     console.log('文件选择监听器已设置');
                 } else {
                     console.error('找不到文件输入元素 avatarFileInput');
                 }
-            }, 100); // 延时100ms确保DOM完全加载
+            }, 100);
+        }
+        
+        function setupRoleBasedUI(role) {
+            console.log('设置基于角色的UI:', role);
+            
+            if (role === 'student') {
+                // 显示学生相关内容
+                document.querySelector('.student-stats').style.display = 'flex';
+                document.querySelector('.student-functions').style.display = 'block';
+                document.querySelector('.parent-stats').style.display = 'none';
+                document.querySelector('.parent-functions').style.display = 'none';
+                document.getElementById('childrenSection').style.display = 'none';
+            } else if (role === 'parent') {
+                // 显示家长相关内容
+                document.querySelector('.parent-stats').style.display = 'flex';
+                document.querySelector('.parent-functions').style.display = 'block';
+                document.querySelector('.student-stats').style.display = 'none';
+                document.querySelector('.student-functions').style.display = 'none';
+                document.getElementById('childrenSection').style.display = 'block';
+            }
         }
 
-        async function loadUserProfile() {
+        async function loadUserProfile(role) {
             try {
                 console.log('开始加载用户资料...');
                 
@@ -889,6 +1195,8 @@
                     localStorage.setItem('user', JSON.stringify(userInfo));
                     // 触发用户信息更新事件
                     window.dispatchEvent(new CustomEvent('userInfoUpdated', { detail: userInfo }));
+                    // 在console中输出更新时间供调试
+                    console.log('用户信息已更新于:', new Date().toLocaleTimeString());
                 } else {
                     console.error('用户信息API调用失败:', userResponse.status, userResponse.statusText);
                     // 显示默认用户数据
@@ -896,39 +1204,39 @@
                     return;
                 }
                 
-                // 获取用户统计 - 独立处理，不影响用户基本信息显示
-                try {
-                    const statsResponse = await fetch(`${API_BASE}/student/dashboard`, {
-                        headers: {
-                            'Authorization': `Bearer ${token}`
-                        }
-                    });
-                    
-                    console.log('用户统计API响应状态:', statsResponse.status);
-                    
-                    if (statsResponse.ok) {
-                        const statsData = await statsResponse.json();
-                        console.log('获取到用户统计:', statsData);
-                        updateUserStats(statsData);
-                    } else {
-                        console.error('用户统计API调用失败:', statsResponse.status, statsResponse.statusText);
-                        // 统计数据失败时，只更新统计数据为默认值，不影响用户基本信息
-                        updateUserStats({
-                            daily_stats: {
-                                today_corrections: 0,
-                                accuracy_rate: 0,
-                                study_time: 0
-                            },
-                            recent_homework: [],
-                            error_summary: {
-                                unreviewed_count: 0
-                            }
-                        });
+                // 根据角色加载不同的统计数据
+                if (role === 'student') {
+                    await loadStudentStats();
+                } else if (role === 'parent') {
+                    await loadParentStats();
+                }
+                
+            } catch (error) {
+                console.error('加载用户资料失败:', error);
+                showToast('加载用户资料失败，请检查网络连接');
+                
+                // 显示默认用户数据
+                showDefaultUserData();
+            }
+        }
+        
+        async function loadStudentStats() {
+            try {
+                const statsResponse = await fetch(`${API_BASE}/student/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
                     }
-                } catch (statsError) {
-                    console.error('获取用户统计异常:', statsError);
-                    // 统计数据异常时，设置默认统计数据
-                    updateUserStats({
+                });
+                
+                console.log('学生统计API响应状态:', statsResponse.status);
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    console.log('获取到学生统计:', statsData);
+                    updateStudentStats(statsData);
+                } else {
+                    console.error('学生统计API调用失败:', statsResponse.status, statsResponse.statusText);
+                    updateStudentStats({
                         daily_stats: {
                             today_corrections: 0,
                             accuracy_rate: 0,
@@ -940,13 +1248,37 @@
                         }
                     });
                 }
-                
             } catch (error) {
-                console.error('加载用户资料失败:', error);
-                showToast('加载用户资料失败，请检查网络连接');
+                console.error('获取学生统计异常:', error);
+                updateStudentStats({});
+            }
+        }
+        
+        async function loadParentStats() {
+            try {
+                const statsResponse = await fetch(`${API_BASE}/parent/dashboard`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    }
+                });
                 
-                // 显示默认用户数据
-                showDefaultUserData();
+                console.log('家长统计API响应状态:', statsResponse.status);
+                
+                if (statsResponse.ok) {
+                    const statsData = await statsResponse.json();
+                    console.log('获取到家长统计:', statsData);
+                    updateParentStats(statsData);
+                } else {
+                    console.error('家长统计API调用失败:', statsResponse.status, statsResponse.statusText);
+                    updateParentStats({
+                        today_stats: { homeworkCount: 0, accuracy: 0 },
+                        children: [],
+                        weekly_report: { totalHomework: 0, avgAccuracy: 0, studyDays: 0 }
+                    });
+                }
+            } catch (error) {
+                console.error('获取家长统计异常:', error);
+                updateParentStats({});
             }
         }
 
@@ -1054,9 +1386,9 @@
             }
         }
 
-        function updateUserStats(stats) {
-            console.log('=== 更新用户统计数据 ===');
-            console.log('收到的统计数据:', stats);
+        function updateStudentStats(stats) {
+            console.log('=== 更新学生统计数据 ===');
+            console.log('收到的学生统计数据:', stats);
             
             // 总作业数：使用最近作业数量，这代表了近期的学习活动
             const totalHomework = stats.recent_homework ? stats.recent_homework.length : 0;
@@ -1080,7 +1412,7 @@
                 }
             }
             
-            console.log('计算结果:', {
+            console.log('学生统计计算结果:', {
                 totalHomework,
                 accuracyRate,
                 studyTimeMinutes,
@@ -1107,7 +1439,110 @@
                 console.log('学习天数已更新为:', studyDays);
             }
             
-            console.log('=== 统计数据更新完成 ===');
+            console.log('=== 学生统计数据更新完成 ===');
+        }
+        
+        function updateParentStats(stats) {
+            console.log('=== 更新家长统计数据 ===');
+            console.log('收到的家长统计数据:', stats);
+            
+            // 孩子数量
+            const childrenCount = stats.children ? stats.children.length : 0;
+            
+            // 今日作业数（所有孩子的总和）
+            const todayHomeworkCount = stats.today_stats ? stats.today_stats.homeworkCount : 0;
+            
+            // 平均正确率（所有孩子的平均值）
+            const averageAccuracy = stats.today_stats ? stats.today_stats.accuracy : 0;
+            
+            console.log('家长统计计算结果:', {
+                childrenCount,
+                todayHomeworkCount,
+                averageAccuracy
+            });
+            
+            // 更新DOM元素
+            const childrenCountEl = document.getElementById('childrenCount');
+            const todayHomeworkCountEl = document.getElementById('todayHomeworkCount');
+            const averageAccuracyEl = document.getElementById('averageAccuracy');
+            
+            if (childrenCountEl) {
+                childrenCountEl.textContent = childrenCount;
+                console.log('孩子数量已更新为:', childrenCount);
+            }
+            
+            if (todayHomeworkCountEl) {
+                todayHomeworkCountEl.textContent = todayHomeworkCount;
+                console.log('今日作业数已更新为:', todayHomeworkCount);
+            }
+            
+            if (averageAccuracyEl) {
+                averageAccuracyEl.textContent = averageAccuracy + '%';
+                console.log('平均正确率已更新为:', averageAccuracy + '%');
+            }
+            
+            // 更新孩子列表
+            if (stats.children) {
+                updateChildrenList(stats.children);
+            }
+            
+            console.log('=== 家长统计数据更新完成 ===');
+        }
+        
+        function updateChildrenList(children) {
+            console.log('=== 更新孩子列表 ===');
+            console.log('孩子数据:', children);
+            
+            const childrenListEl = document.getElementById('childrenList');
+            const childrenSectionEl = document.getElementById('childrenSection');
+            
+            if (!childrenListEl) {
+                console.log('未找到孩子列表容器');
+                return;
+            }
+            
+            // 清空现有内容
+            childrenListEl.innerHTML = '';
+            
+            if (!children || children.length === 0) {
+                childrenListEl.innerHTML = '<div class="menu-item"><div class="menu-content"><div class="menu-title">暂无孩子信息</div><div class="menu-desc">请先绑定孩子账号</div></div></div>';
+                return;
+            }
+            
+            // 生成孩子卡片
+            children.forEach(child => {
+                const avatarDisplay = child.avatar === 'student' ? '🎓' : (child.avatar || '👶');
+                const statusClass = child.status === '已完成' ? '' : (child.status === '进行中' ? 'inactive' : 'inactive');
+                const scoreClass = child.todayScore >= 80 ? '' : 'low';
+                
+                const childHtml = `
+                    <div class="child-item" onclick="goToChildDetail(${child.id})">
+                        <div class="child-avatar">${avatarDisplay}</div>
+                        <div class="child-info">
+                            <div class="child-name">${child.name}</div>
+                            <div class="child-details">
+                                <span class="child-grade">${child.grade}</span>
+                                <span class="child-status">
+                                    <span class="status-dot ${statusClass}"></span>
+                                    ${child.status}
+                                </span>
+                            </div>
+                        </div>
+                        <div class="child-stats">
+                            <div class="child-score ${scoreClass}">${child.todayScore}分</div>
+                            <div class="child-time">今日</div>
+                        </div>
+                    </div>
+                `;
+                childrenListEl.innerHTML += childHtml;
+            });
+            
+            // 显示孩子列表部分
+            if (childrenSectionEl) {
+                childrenSectionEl.style.display = 'block';
+            }
+            
+            console.log('=== 孩子列表更新完成 ===');
         }
         
         // 错题本数量相关函数已移除
@@ -1381,7 +1816,10 @@
                     
                     // 重新加载用户资料以更新头像显示
                     console.log('重新加载用户资料');
-                    setTimeout(loadUserProfile, 100);
+                    const role = AuthUtils.getCurrentUserRole();
+                    if (role) {
+                        setTimeout(() => loadUserProfile(role), 100);
+                    }
                 } else {
                     let errorMessage = '头像更新失败';
                     try {
@@ -1602,7 +2040,10 @@
                     closeProfileModal();
                     
                     // 重新加载用户资料以更新显示
-                    setTimeout(loadUserProfile, 500);
+                    const role = AuthUtils.getCurrentUserRole();
+                    if (role) {
+                        setTimeout(() => loadUserProfile(role), 500);
+                    }
                 } else {
                     const errorText = await response.text();
                     console.error('API错误响应:', errorText);
@@ -2517,6 +2958,41 @@
                 window.location.href = '/frontend/student-home.html';
             }
         }
+        
+        // 手动刷新用户数据
+        async function refreshUserData() {
+            const refreshBtn = document.querySelector('.refresh-btn');
+            const role = AuthUtils.getCurrentUserRole();
+            
+            if (!role) {
+                showToast('请先登录');
+                return;
+            }
+            
+            try {
+                // 添加旋转动画
+                refreshBtn.classList.add('spinning');
+                
+                console.log('=== 手动刷新用户数据 ===');
+                
+                // 获取最新token
+                token = AuthUtils.getCurrentToken();
+                
+                // 重新加载用户数据
+                await loadUserProfile(role);
+                
+                showToast('数据已更新');
+                
+            } catch (error) {
+                console.error('刷新数据失败:', error);
+                showToast('刷新失败，请检查网络连接');
+            } finally {
+                // 移除旋转动画
+                setTimeout(() => {
+                    refreshBtn.classList.remove('spinning');
+                }, 500);
+            }
+        }
 
         function showToast(message, duration = 3000) {
             const toast = document.createElement('div');
@@ -2539,6 +3015,23 @@
             setTimeout(() => {
                 document.body.removeChild(toast);
             }, duration);
+        }
+
+        // 家长专用导航函数
+        function goToChildrenManagement() {
+            // 记录返回来源，以便返回时刷新数据
+            localStorage.setItem('returnFromPage', 'manage-children');
+            window.location.href = '/frontend/manage-children.html';
+        }
+
+        function goToLearningReports() {
+            localStorage.setItem('returnFromPage', 'learning-reports');
+            window.location.href = '/frontend/learning-reports.html';
+        }
+
+        function goToChildDetail(childId) {
+            localStorage.setItem('returnFromPage', 'child-detail');
+            window.location.href = `/frontend/child-detail.html?id=${childId}`;
         }
 
         // 点击模态框背景关闭
