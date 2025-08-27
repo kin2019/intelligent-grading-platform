@@ -1903,21 +1903,28 @@
         }
         
         async function saveAvatar() {
-            console.log('saveAvatar 被调用');
+            console.log('=== saveAvatar 开始执行 ===');
             
             // 确保获取最新的token
             token = AuthUtils.getCurrentToken();
             
-            console.log('当前状态:', { 
+            console.log('当前状态检查:', { 
                 selectedAvatarType, 
                 selectedFile: selectedFile?.name, 
                 selectedDefaultAvatar,
-                token: token ? 'exists' : 'missing'
+                token: token ? `存在(${token.substring(0, 20)}...)` : '缺失'
             });
             
             if (!selectedAvatarType) {
-                console.log('没有选择头像类型');
+                console.log('❌ 没有选择头像类型');
                 showToast('请先选择头像');
+                return;
+            }
+            
+            if (!token) {
+                console.log('❌ Token缺失');
+                showToast('登录状态已失效，请重新登录');
+                setTimeout(() => window.location.href = '/frontend/login.html', 2000);
                 return;
             }
             
@@ -1925,29 +1932,32 @@
             const originalText = saveBtn.textContent;
             
             try {
+                // 更新按钮状态
                 saveBtn.textContent = '保存中...';
                 saveBtn.disabled = true;
                 
-                console.log('开始保存头像，类型:', selectedAvatarType);
+                console.log('✅ 开始保存头像，类型:', selectedAvatarType);
                 
                 let response;
                 
                 if (selectedAvatarType === 'file') {
-                    console.log('准备上传文件');
-                    console.log('selectedFile 详情:', selectedFile);
+                    console.log('📁 处理文件上传');
                     
                     if (!selectedFile) {
-                        console.error('selectedFile 为空');
                         throw new Error('没有选择文件');
                     }
                     
-                    // 上传文件
+                    console.log('文件信息:', {
+                        name: selectedFile.name,
+                        size: selectedFile.size,
+                        type: selectedFile.type
+                    });
+                    
+                    // 创建FormData
                     const formData = new FormData();
                     formData.append('avatar_file', selectedFile);
                     
-                    console.log('FormData 创建完成');
-                    console.log('准备发送请求到:', `${API_BASE}/user/upload-avatar`);
-                    
+                    console.log('🚀 发送文件上传请求...');
                     response = await fetch(`${API_BASE}/user/upload-avatar`, {
                         method: 'POST',
                         headers: {
@@ -1956,11 +1966,15 @@
                         body: formData
                     });
                     
-                    console.log('文件上传请求已发送，响应状态:', response.status);
                 } else if (selectedAvatarType === 'default') {
-                    console.log('准备设置默认头像:', selectedDefaultAvatar);
+                    console.log('😊 处理默认头像设置');
+                    console.log('选中的表情:', selectedDefaultAvatar);
                     
-                    // 设置默认头像
+                    if (!selectedDefaultAvatar) {
+                        throw new Error('没有选择默认头像');
+                    }
+                    
+                    console.log('🚀 发送默认头像设置请求...');
                     response = await fetch(`${API_BASE}/user/set-default-avatar`, {
                         method: 'POST',
                         headers: {
@@ -1971,62 +1985,90 @@
                             avatar_emoji: selectedDefaultAvatar
                         })
                     });
-                    
-                    console.log('默认头像设置请求已发送，响应状态:', response.status);
                 }
+                
+                console.log('📡 服务器响应:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    ok: response.ok
+                });
                 
                 if (response.ok) {
                     const result = await response.json();
-                    console.log('头像更新结果:', result);
+                    console.log('✅ 头像更新成功:', result);
                     
                     showToast('头像更新成功');
                     closeAvatarModal();
                     
                     // 重新加载用户资料以更新头像显示
-                    console.log('重新加载用户资料');
+                    console.log('🔄 重新加载用户资料');
                     const role = AuthUtils.getCurrentUserRole();
                     if (role) {
-                        setTimeout(() => loadUserProfile(role), 100);
+                        setTimeout(() => loadUserProfile(role), 500);
                     }
                 } else {
-                    console.error('API响应失败, status:', response.status);
+                    // 处理HTTP错误
                     const responseText = await response.text();
-                    console.error('响应内容:', responseText);
+                    console.error('❌ API响应失败:', {
+                        status: response.status,
+                        statusText: response.statusText,
+                        responseText
+                    });
                     
                     let errorMessage = '头像更新失败';
+                    
                     try {
-                        const error = JSON.parse(responseText);
-                        errorMessage = error.detail || error.message || `HTTP ${response.status}: ${response.statusText}`;
-                    } catch (jsonError) {
+                        const errorData = JSON.parse(responseText);
+                        errorMessage = errorData.detail || errorData.message || errorMessage;
+                    } catch (parseError) {
+                        console.log('响应不是JSON格式:', responseText);
                         errorMessage = responseText || `HTTP ${response.status}: ${response.statusText}`;
                     }
                     
-                    console.error('解析的错误消息:', errorMessage);
+                    // 特殊状态码处理
+                    if (response.status === 401) {
+                        errorMessage = '登录已过期，请重新登录';
+                        setTimeout(() => window.location.href = '/frontend/login.html', 2000);
+                    } else if (response.status === 403) {
+                        errorMessage = '没有权限执行此操作';
+                    } else if (response.status === 413) {
+                        errorMessage = '文件过大，请选择小于5MB的图片';
+                    } else if (response.status === 400) {
+                        errorMessage = errorMessage || '请求参数错误，请检查文件格式';
+                    }
+                    
                     throw new Error(errorMessage);
                 }
                 
             } catch (error) {
-                console.error('更新头像失败:', error);
-                let errorMessage = '头像更新失败，请重试';
+                console.error('❌ 保存头像异常:', {
+                    message: error.message,
+                    stack: error.stack,
+                    name: error.name
+                });
                 
-                if (error.message.includes('403') || error.message.includes('Not authenticated')) {
-                    errorMessage = '登录已过期，请重新登录';
-                    setTimeout(() => {
-                        window.location.href = '/frontend/login.html';
-                    }, 2000);
-                } else if (error.message.includes('401')) {
-                    errorMessage = '认证失败，请重新登录';
-                } else if (error.message.includes('413')) {
-                    errorMessage = '文件过大，请选择小于5MB的图片';
-                } else if (error.message.includes('400')) {
-                    errorMessage = '请求参数错误，请检查文件格式';
+                let userMessage = '头像更新失败，请重试';
+                
+                // 网络错误处理
+                if (error.name === 'NetworkError' || error.message.includes('fetch')) {
+                    userMessage = '网络连接失败，请检查网络后重试';
+                } else if (error.message.includes('登录') || error.message.includes('401')) {
+                    userMessage = '登录已过期，请重新登录';
+                    setTimeout(() => window.location.href = '/frontend/login.html', 2000);
+                } else if (error.message) {
+                    userMessage = error.message;
                 }
                 
-                showToast(errorMessage);
+                showToast(userMessage);
+                
             } finally {
+                // 恢复按钮状态
                 saveBtn.textContent = originalText;
                 saveBtn.disabled = false;
+                console.log('🔄 按钮状态已恢复');
             }
+            
+            console.log('=== saveAvatar 执行完成 ===');
         }
 
         function editProfile() {
@@ -3109,26 +3151,66 @@
         }
 
         function showToast(message, duration = 3000) {
+            // 记录消息到控制台
+            console.log('🔔 显示Toast消息:', message);
+            
             const toast = document.createElement('div');
+            
+            // 检查是否为错误消息
+            const isError = message.includes('失败') || message.includes('错误') || message.includes('异常') || message.includes('过期');
+            
             toast.style.cssText = `
                 position: fixed;
                 top: 50%;
                 left: 50%;
                 transform: translate(-50%, -50%);
-                background: rgba(0, 0, 0, 0.8);
+                background: ${isError ? 'rgba(244, 67, 54, 0.9)' : 'rgba(76, 175, 80, 0.9)'};
                 color: white;
-                padding: 12px 20px;
-                border-radius: 8px;
-                font-size: 14px;
-                z-index: 1001;
+                padding: 16px 24px;
+                border-radius: 12px;
+                font-size: 15px;
+                font-weight: 500;
+                z-index: 10001;
+                box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+                border: 2px solid ${isError ? '#f44336' : '#4CAF50'};
+                max-width: 80%;
+                text-align: center;
+                word-wrap: break-word;
+                animation: fadeInScale 0.3s ease-out;
             `;
+            
+            // 添加动画样式
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeInScale {
+                    0% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                    100% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                }
+                @keyframes fadeOutScale {
+                    0% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+                    100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+                }
+            `;
+            if (!document.getElementById('toast-styles')) {
+                style.id = 'toast-styles';
+                document.head.appendChild(style);
+            }
+            
             toast.textContent = message;
             
             document.body.appendChild(toast);
             
+            // 错误消息显示更长时间
+            const showDuration = isError ? Math.max(duration, 5000) : duration;
+            
             setTimeout(() => {
-                document.body.removeChild(toast);
-            }, duration);
+                toast.style.animation = 'fadeOutScale 0.3s ease-out';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 300);
+            }, showDuration);
         }
 
         // 家长专用导航函数
