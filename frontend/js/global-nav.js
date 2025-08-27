@@ -20,6 +20,14 @@
         
         const navHTML = `
             <div class="global-bottom-nav">
+                <div class="global-nav-item ${isActive('student-home', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/student-home.html')">
+                    <div class="global-nav-icon">🏠</div>
+                    <div class="global-nav-text">首页</div>
+                </div>
+                <div class="global-nav-item ${isActive('homework-submit', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/homework-submit.html')">
+                    <div class="global-nav-icon">📷</div>
+                    <div class="global-nav-text">拍照批改</div>
+                </div>
                 <div class="global-nav-item ${isActive('error-book', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/error-book.html')">
                     <div class="global-nav-icon">📚</div>
                     <div class="global-nav-text">错题本</div>
@@ -27,10 +35,6 @@
                 <div class="global-nav-item ${isActive('study-plan', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/study-plan.html')">
                     <div class="global-nav-icon">📋</div>
                     <div class="global-nav-text">学习计划</div>
-                </div>
-                <div class="global-nav-item ${isActive('homework-submit', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/homework-submit.html')">
-                    <div class="global-nav-icon">📷</div>
-                    <div class="global-nav-text">拍照批改</div>
                 </div>
                 <div class="global-nav-item ${isActive('profile', currentPage) ? 'active' : ''}" onclick="navigateTo('/frontend/profile.html')">
                     <div class="global-nav-icon">👤</div>
@@ -65,7 +69,6 @@
         
         // 页面映射关系
         const pageMapping = {
-            'student-home': 'homework-submit',
             'parent-home': 'profile',
             'homework-result': 'homework-submit',
             'homework-result-fixed': 'homework-submit',

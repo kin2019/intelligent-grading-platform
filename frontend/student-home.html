@@ -768,6 +768,31 @@
             </div>
         </div>
 
+    <!-- 全局底部导航 -->
+    <div class="global-bottom-nav">
+        <div class="global-nav-item active" onclick="window.location.href='/frontend/student-home.html'">
+            <div class="global-nav-icon">🏠</div>
+            <div class="global-nav-text">首页</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
+            <div class="global-nav-icon">📷</div>
+            <div class="global-nav-text">拍照批改</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
+            <div class="global-nav-icon">📚</div>
+            <div class="global-nav-text">错题本</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
+            <div class="global-nav-icon">📋</div>
+            <div class="global-nav-text">学习计划</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+            <div class="global-nav-icon">👤</div>
+            <div class="global-nav-text">我的</div>
+        </div>
+    </div>
+    </div>
+
     <script src="/frontend/js/auth-utils.js"></script>
     <script>
         let API_BASE = 'http://localhost:8000/api/v1';
@@ -1274,31 +1299,53 @@
             loadAllDataAsync();
         });
 
+        // 确保底部导航样式正确
+        function ensureNavigationStyles() {
+            console.log('设置student-home底部导航样式...');
+            const nav = document.querySelector('.global-bottom-nav');
+            if (nav) {
+                nav.style.cssText = `
+                    display: flex !important;
+                    position: fixed !important;
+                    bottom: 0 !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    width: 100% !important;
+                    max-width: 400px !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-top: 1px solid rgba(102, 126, 234, 0.1) !important;
+                    padding: 8px 0 !important;
+                    z-index: 9999 !important;
+                `;
+                
+                const buttons = nav.querySelectorAll('.global-nav-item');
+                buttons.forEach((button) => {
+                    const isActive = button.classList.contains('active');
+                    button.style.cssText = `
+                        flex: 1 !important;
+                        text-align: center !important;
+                        padding: 8px 4px 4px !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        border-radius: 12px !important;
+                        margin: 0 2px !important;
+                        ${isActive ? 'background: rgba(102, 126, 234, 0.1) !important; color: #667eea !important;' : ''}
+                    `;
+                    
+                    const icon = button.querySelector('.global-nav-icon');
+                    const text = button.querySelector('.global-nav-text');
+                    if (icon) icon.style.cssText = 'font-size: 20px !important; margin-bottom: 2px !important; display: block !important;';
+                    if (text) text.style.cssText = 'font-size: 10px !important; line-height: 1 !important; font-weight: 500 !important;';
+                });
+                document.body.style.paddingBottom = '80px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', ensureNavigationStyles);
+        setTimeout(ensureNavigationStyles, 500);
+        
         // 页面初始化（已在上面定义，这里不重复）
     </script>
-    
-    <!-- 全局底部导航 -->
-    <div class="global-bottom-nav">
-        <div class="global-nav-item active" onclick="window.location.href='/frontend/student-home.html'">
-            <div class="global-nav-icon">🏠</div>
-            <div class="global-nav-text">首页</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-            <div class="global-nav-icon">📷</div>
-            <div class="global-nav-text">拍照批改</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-            <div class="global-nav-icon">📚</div>
-            <div class="global-nav-text">错题本</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-            <div class="global-nav-icon">📋</div>
-            <div class="global-nav-text">学习计划</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
-            <div class="global-nav-icon">👤</div>
-            <div class="global-nav-text">我的</div>
-        </div>
-    </div>
 </body>
 </html>

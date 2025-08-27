@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错题本测试 - 底部导航</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 20px;
+            padding-bottom: 80px; /* 为底部导航留空间 */
+            background: #f5f5f5;
+        }
+        
+        .test-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .global-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: white;
+            border-top: 1px solid #ddd;
+            display: flex;
+            padding: 8px;
+            z-index: 1000;
+        }
+        
+        .global-nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px 4px;
+            cursor: pointer;
+            border-radius: 4px;
+            transition: background 0.3s;
+        }
+        
+        .global-nav-item:hover {
+            background: #f0f0f0;
+        }
+        
+        .global-nav-item.active {
+            background: #e3f2fd;
+            color: #1976d2;
+        }
+        
+        .global-nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+        }
+        
+        .global-nav-text {
+            font-size: 12px;
+        }
+        
+        .home-button {
+            background: #4CAF50 !important;
+            color: white !important;
+            border: 2px solid #2E7D32 !important;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-content">
+        <h1>错题本测试页面</h1>
+        <p>这是一个测试页面，用来验证底部导航的首页按钮是否正常显示。</p>
+        <p>请查看页面底部是否有绿色的"首页"按钮。</p>
+    </div>
+    
+    <div class="test-content">
+        <h2>测试说明</h2>
+        <ul>
+            <li>页面底部应该有一个固定的导航栏</li>
+            <li>第一个按钮应该是绿色的"首页"按钮</li>
+            <li>点击首页按钮应该跳转到学生首页</li>
+        </ul>
+    </div>
+    
+    <!-- 底部导航 -->
+    <div class="global-bottom-nav">
+        <div class="global-nav-item home-button" onclick="window.location.href='/frontend/student-home.html'">
+            <div class="global-nav-icon">🏠</div>
+            <div class="global-nav-text">首页</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
+            <div class="global-nav-icon">📷</div>
+            <div class="global-nav-text">拍照批改</div>
+        </div>
+        <div class="global-nav-item active" onclick="window.location.href='/frontend/error-book.html'">
+            <div class="global-nav-icon">📚</div>
+            <div class="global-nav-text">错题本</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
+            <div class="global-nav-icon">📋</div>
+            <div class="global-nav-text">学习计划</div>
+        </div>
+        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
+            <div class="global-nav-icon">👤</div>
+            <div class="global-nav-text">我的</div>
+        </div>
+    </div>
+
+    <script>
+        console.log('测试页面已加载，底部导航应该可见');
+        
+        // 确保页面完全加载后检查导航
+        document.addEventListener('DOMContentLoaded', function() {
+            const nav = document.querySelector('.global-bottom-nav');
+            if (nav) {
+                console.log('✅ 底部导航元素找到了');
+                console.log('导航高度:', nav.offsetHeight);
+                console.log('导航位置:', nav.getBoundingClientRect());
+            } else {
+                console.log('❌ 底部导航元素未找到');
+            }
+        });
+    </script>
+</body>
+</html>

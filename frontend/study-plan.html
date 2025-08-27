@@ -1309,6 +1309,61 @@
                 document.body.removeChild(toast);
             }, duration);
         }
+
+        // 确保底部导航样式正确
+        function ensureNavigationStyles() {
+            console.log('设置study-plan底部导航样式...');
+            const nav = document.querySelector('.global-bottom-nav');
+            if (nav) {
+                // 清理重复的首页按钮
+                const homeButtons = nav.querySelectorAll('[onclick*="student-home"]');
+                if (homeButtons.length > 1) {
+                    console.log('发现重复的首页按钮，清理中...');
+                    for (let i = 1; i < homeButtons.length; i++) {
+                        homeButtons[i].remove();
+                    }
+                }
+
+                nav.style.cssText = `
+                    display: flex !important;
+                    position: fixed !important;
+                    bottom: 0 !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    width: 100% !important;
+                    max-width: 400px !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+                    padding: 8px 0 !important;
+                    z-index: 9999 !important;
+                `;
+                
+                const buttons = nav.querySelectorAll('.global-nav-item');
+                buttons.forEach((button, index) => {
+                    const isActive = button.classList.contains('active');
+                    button.style.cssText = `
+                        flex: 1 !important;
+                        text-align: center !important;
+                        padding: 8px 4px 4px !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        border-radius: 12px !important;
+                        margin: 0 2px !important;
+                        ${isActive ? 'background: rgba(76, 175, 80, 0.1) !important; color: #4CAF50 !important;' : 'background: transparent !important; color: #666 !important;'}
+                    `;
+                    
+                    const icon = button.querySelector('.global-nav-icon');
+                    const text = button.querySelector('.global-nav-text');
+                    if (icon) icon.style.cssText = 'font-size: 20px !important; margin-bottom: 2px !important; display: block !important;';
+                    if (text) text.style.cssText = 'font-size: 10px !important; line-height: 1 !important; font-weight: 500 !important;';
+                });
+                document.body.style.paddingBottom = '80px';
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', ensureNavigationStyles);
+        setTimeout(ensureNavigationStyles, 500);
     </script>
 </body>
 </html>

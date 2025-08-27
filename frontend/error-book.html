@@ -4389,9 +4389,166 @@
                 document.body.removeChild(toast);
             }, duration);
         }
+        
+        // 确保底部导航样式正确
+        function ensureNavigationStyles() {
+            console.log('开始设置底部导航样式...');
+            
+            const nav = document.querySelector('.global-bottom-nav');
+            if (nav) {
+                // 清理所有重复的首页按钮
+                const homeButtons = nav.querySelectorAll('[onclick*="student-home"]');
+                console.log('找到首页按钮数量:', homeButtons.length);
+                
+                // 移除所有首页按钮
+                homeButtons.forEach(button => button.remove());
+                
+                // 重新创建一个首页按钮
+                const homeButton = document.createElement('div');
+                homeButton.className = 'global-nav-item';
+                homeButton.onclick = function() { window.location.href = '/frontend/student-home.html'; };
+                homeButton.innerHTML = '<div class="global-nav-icon">🏠</div><div class="global-nav-text">首页</div>';
+                nav.insertBefore(homeButton, nav.firstChild);
+                console.log('✅ 已重新创建唯一的首页按钮');
+                // 设置导航容器样式
+                nav.style.cssText = `
+                    display: flex !important;
+                    position: fixed !important;
+                    bottom: 0 !important;
+                    left: 50% !important;
+                    transform: translateX(-50%) !important;
+                    width: 100% !important;
+                    max-width: 400px !important;
+                    background: rgba(255, 255, 255, 0.95) !important;
+                    backdrop-filter: blur(20px) !important;
+                    border-top: 1px solid rgba(102, 126, 234, 0.1) !important;
+                    padding: 8px 0 !important;
+                    z-index: 9999 !important;
+                `;
+                
+                // 为所有导航按钮应用统一样式
+                const buttons = nav.querySelectorAll('.global-nav-item');
+                buttons.forEach((button, index) => {
+                    const isActive = button.classList.contains('active');
+                    
+                    // 统一的按钮样式
+                    button.style.cssText = `
+                        flex: 1 !important;
+                        text-align: center !important;
+                        padding: 8px 4px 4px !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        position: relative !important;
+                        z-index: 1 !important;
+                        border-radius: 12px !important;
+                        margin: 0 2px !important;
+                        ${isActive ? 
+                            'background: rgba(102, 126, 234, 0.1) !important; color: #667eea !important;' : 
+                            'background: transparent !important; color: inherit !important;'}
+                    `;
+                    
+                    // 设置图标样式
+                    const icon = button.querySelector('.global-nav-icon');
+                    if (icon) {
+                        icon.style.cssText = `
+                            font-size: 20px !important;
+                            margin-bottom: 2px !important;
+                            transition: all 0.3s ease !important;
+                            display: block !important;
+                            ${isActive ? 'transform: scale(1.05) !important; filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3)) !important;' : ''}
+                        `;
+                    }
+                    
+                    // 设置文字样式
+                    const text = button.querySelector('.global-nav-text');
+                    if (text) {
+                        text.style.cssText = `
+                            font-size: 10px !important;
+                            line-height: 1 !important;
+                            font-weight: 500 !important;
+                            transition: all 0.3s ease !important;
+                        `;
+                    }
+                });
+                
+                console.log('✅ 导航样式设置完成，按钮数量:', buttons.length);
+            }
+            
+            // 确保页面底部有足够的空间
+            document.body.style.paddingBottom = '80px';
+        }
+        
+        // 确保只执行一次
+        let navigationStylesApplied = false;
+        
+        function applyNavigationStylesOnce() {
+            if (!navigationStylesApplied) {
+                navigationStylesApplied = true;
+                ensureNavigationStyles();
+            }
+        }
+        
+        // 页面加载时执行一次
+        document.addEventListener('DOMContentLoaded', applyNavigationStylesOnce);
+        setTimeout(applyNavigationStylesOnce, 500);
+        
+        // 移除任何测试按钮
+        function removeTestButton() {
+            const existingTestButton = document.getElementById('test-home-button');
+            if (existingTestButton) {
+                existingTestButton.remove();
+                console.log('✅ 测试按钮已移除');
+            }
+        }
+        
+        // 移除测试按钮
+        setTimeout(removeTestButton, 1000);
+        
+        // 详细调试代码：检查底部导航
+        document.addEventListener('DOMContentLoaded', function() {
+            setTimeout(function() {
+                console.log('=== 底部导航调试信息 ===');
+                const nav = document.querySelector('.global-bottom-nav');
+                if (nav) {
+                    console.log('✅ 底部导航容器找到了');
+                    console.log('导航容器HTML:', nav.outerHTML.substring(0, 200) + '...');
+                    
+                    const navItems = nav.querySelectorAll('.global-nav-item');
+                    console.log('导航按钮数量:', navItems.length);
+                    
+                    navItems.forEach((button, index) => {
+                        const icon = button.querySelector('.global-nav-icon');
+                        const text = button.querySelector('.global-nav-text');
+                        const iconText = icon ? icon.textContent : 'NO_ICON';
+                        const buttonText = text ? text.textContent : 'NO_TEXT';
+                        const isActive = button.classList.contains('active');
+                        
+                        console.log(`按钮 ${index + 1}: ${iconText} ${buttonText} ${isActive ? '[ACTIVE]' : ''}`);
+                        console.log(`  - 可见性: ${button.offsetWidth}x${button.offsetHeight}`);
+                        console.log(`  - 位置: left=${button.offsetLeft}px, top=${button.offsetTop}px`);
+                    });
+                    
+                    // 检查导航容器的样式
+                    const navStyles = window.getComputedStyle(nav);
+                    console.log('导航容器样式:');
+                    console.log(`  - display: ${navStyles.display}`);
+                    console.log(`  - position: ${navStyles.position}`);
+                    console.log(`  - bottom: ${navStyles.bottom}`);
+                    console.log(`  - z-index: ${navStyles.zIndex}`);
+                    console.log(`  - visibility: ${navStyles.visibility}`);
+                    
+                } else {
+                    console.log('❌ 底部导航容器未找到');
+                    // 尝试查找所有可能的导航元素
+                    const allNavs = document.querySelectorAll('[class*="nav"]');
+                    console.log('找到的导航相关元素:', allNavs.length);
+                    allNavs.forEach((el, i) => {
+                        console.log(`  ${i + 1}: ${el.className} - ${el.tagName}`);
+                    });
+                }
+                console.log('=== 调试信息结束 ===');
+            }, 1000);
+        });
     </script>
-    
-    <!-- 简单PDF生成器 -->
-    <script src="simple-pdf-generator.js"></script>
 </body>
 </html>
