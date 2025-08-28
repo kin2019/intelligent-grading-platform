@@ -34,6 +34,7 @@ class Child(BaseModel):
     name: str
     grade: str
     school: Optional[str] = None
+    class_name: Optional[str] = None
     avatar: Optional[str] = None
     todayScore: int
     status: str
@@ -134,6 +135,7 @@ def get_parent_dashboard(
             "name": relation.nickname or child_user.nickname or f"用户{child_user.id}",
             "grade": child_user.grade or "未设置",
             "school": relation.school or "未设置学校",
+            "class_name": relation.class_name or "未设置班级",
             "avatar": child_user.avatar_url or "student",
             "todayScore": int(avg_score),
             "status": status

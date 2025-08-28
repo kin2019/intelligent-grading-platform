@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Token设置 - ZYJC智能批改</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .setup-container {
+            max-width: 500px;
+            width: 90%;
+            background: white;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        }
+        
+        .setup-title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .setup-subtitle {
+            text-align: center;
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 32px;
+        }
+        
+        .role-section {
+            margin-bottom: 24px;
+        }
+        
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 16px;
+        }
+        
+        .role-buttons {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+        
+        .role-btn {
+            padding: 16px;
+            border: 2px solid #e9ecef;
+            background: white;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: center;
+        }
+        
+        .role-btn:hover {
+            border-color: #007AFF;
+            background: #f8f9ff;
+        }
+        
+        .role-btn.active {
+            border-color: #007AFF;
+            background: #007AFF;
+            color: white;
+        }
+        
+        .role-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+            display: block;
+        }
+        
+        .role-name {
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .status-section {
+            margin-bottom: 24px;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            border-left: 4px solid #28a745;
+        }
+        
+        .status-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+        
+        .status-item {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 4px;
+            font-family: monospace;
+        }
+        
+        .action-buttons {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .action-btn {
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056cc;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+        
+        .test-links {
+            margin-top: 24px;
+            padding-top: 24px;
+            border-top: 1px solid #e9ecef;
+        }
+        
+        .test-link {
+            display: block;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #f8f9fa;
+            color: #007AFF;
+            text-decoration: none;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+        
+        .test-link:hover {
+            background: #e9ecef;
+        }
+        
+        .warning {
+            background: #fff3cd;
+            border: 1px solid #ffeaa7;
+            color: #856404;
+            padding: 12px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            font-size: 13px;
+        }
+    </style>
+</head>
+<body>
+    <div class="setup-container">
+        <div class="setup-title">🔧 Token设置工具</div>
+        <div class="setup-subtitle">用于测试和调试认证功能</div>
+        
+        <div class="warning">
+            ⚠️ 这是开发测试工具，仅用于调试和测试目的
+        </div>
+        
+        <div class="role-section">
+            <div class="section-title">选择用户角色：</div>
+            <div class="role-buttons">
+                <button class="role-btn" onclick="setRole('student')">
+                    <span class="role-icon">🎓</span>
+                    <span class="role-name">学生</span>
+                </button>
+                <button class="role-btn" onclick="setRole('parent')">
+                    <span class="role-icon">👨‍👩‍👧‍👦</span>
+                    <span class="role-name">家长</span>
+                </button>
+                <button class="role-btn" onclick="setRole('teacher')">
+                    <span class="role-icon">👩‍🏫</span>
+                    <span class="role-name">教师</span>
+                </button>
+            </div>
+        </div>
+        
+        <div class="status-section">
+            <div class="status-title">当前状态：</div>
+            <div id="currentStatus">
+                <div class="status-item">角色: <span id="currentRole">未设置</span></div>
+                <div class="status-item">Token: <span id="tokenStatus">无</span></div>
+            </div>
+        </div>
+        
+        <div class="action-buttons">
+            <button class="action-btn btn-primary" onclick="updateStatus()">刷新状态</button>
+            <button class="action-btn btn-secondary" onclick="clearStorage()">清除数据</button>
+        </div>
+        
+        <div class="test-links">
+            <div class="section-title">快速测试链接：</div>
+            <a href="/frontend/child-info.html?id=1" class="test-link" target="_blank">
+                📄 孩子详情页 (ID=1)
+            </a>
+            <a href="/frontend/child-info.html?id=110" class="test-link" target="_blank">
+                📄 孩子详情页 (ID=110)
+            </a>
+            <a href="/frontend/parent-home.html" class="test-link" target="_blank">
+                🏠 家长首页
+            </a>
+            <a href="/frontend/student-home.html" class="test-link" target="_blank">
+                🎒 学生首页
+            </a>
+        </div>
+    </div>
+    
+    <script src="/frontend/js/auth-utils.js"></script>
+    <script>
+        // 设置用户角色
+        function setRole(role) {
+            AuthUtils.setUserRole(role);
+            updateRoleButtons(role);
+            updateStatus();
+            
+            // 显示成功提示
+            setTimeout(() => {
+                alert(`✅ 已设置为${getRoleDisplayName(role)}身份`);
+            }, 100);
+        }
+        
+        // 更新角色按钮状态
+        function updateRoleButtons(activeRole) {
+            const buttons = document.querySelectorAll('.role-btn');
+            buttons.forEach(btn => {
+                btn.classList.remove('active');
+            });
+            
+            const roles = ['student', 'parent', 'teacher'];
+            const index = roles.indexOf(activeRole);
+            if (index >= 0 && buttons[index]) {
+                buttons[index].classList.add('active');
+            }
+        }
+        
+        // 更新状态显示
+        function updateStatus() {
+            const currentRole = AuthUtils.getCurrentUserRole();
+            const currentToken = AuthUtils.getCurrentToken();
+            
+            document.getElementById('currentRole').textContent = currentRole ? getRoleDisplayName(currentRole) : '未设置';
+            document.getElementById('tokenStatus').textContent = currentToken ? '已设置' : '无';
+            
+            if (currentRole) {
+                updateRoleButtons(currentRole);
+            }
+        }
+        
+        // 清除存储数据
+        function clearStorage() {
+            if (confirm('确定要清除所有认证数据吗？')) {
+                localStorage.removeItem('token');
+                localStorage.removeItem('userRole');
+                localStorage.removeItem('user');
+                
+                // 更新界面
+                updateStatus();
+                updateRoleButtons('');
+                
+                alert('✅ 已清除所有数据');
+            }
+        }
+        
+        // 获取角色显示名称
+        function getRoleDisplayName(role) {
+            const names = {
+                student: '学生',
+                parent: '家长',
+                teacher: '教师'
+            };
+            return names[role] || role;
+        }
+        
+        // 页面加载时初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            updateStatus();
+        });
+    </script>
+</body>
+</html>

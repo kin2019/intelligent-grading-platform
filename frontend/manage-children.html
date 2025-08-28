@@ -307,78 +307,28 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: #ffffff;
-            border-top: 1px solid #eee;
-            display: flex;
-            padding: 8px 0;
-        }
-        
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .nav-item.active {
-            color: #667eea;
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-        
-        .nav-text {
-            font-size: 10px;
-        }
     </style>
-    <script src="/frontend/js/global-nav.js"></script>
 </head>
 <body>
-    <div class="container">
+    <div class="theme-container">
         <!-- 顶部导航栏 -->
-        <div class="navbar">
-            <div class="navbar-content">
-                <div class="navbar-title">管理孩子</div>
-                <button class="add-btn" onclick="showAddChildModal()">+</button>
+        <div class="theme-navbar">
+            <div class="theme-navbar-content" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
+                <div class="theme-navbar-title">管理孩子</div>
+                <button class="theme-btn-nav" onclick="showAddChildModal()">+</button>
             </div>
         </div>
         
         <!-- 页面内容 -->
-        <div class="page-content">
+        <div class="theme-page-content">
             <div class="children-list" id="childrenList">
-                <div class="loading">
-                    <div class="loading-spinner"></div>
+                <div class="theme-loading">
+                    <div class="theme-loading-spinner"></div>
                     <div>加载孩子信息中...</div>
                 </div>
             </div>
         </div>
         
-        <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="goToParentHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
-            </div>
-            <div class="nav-item active">
-                <div class="nav-icon">👶</div>
-                <div class="nav-text">孩子</div>
-            </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
-            </div>
-        </div>
     </div>
     
     <!-- 添加孩子模态框 -->
@@ -484,7 +434,7 @@
 
         async function initPage() {
             // 手动设置测试token - 确保有有效的token
-            const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY0NTk4OTYsInN1YiI6IjIifQ.25NFiBUbJ1iuyoTsanurlC6-73hVyDjXipnqxWh0Qlw';
+            const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU2OTk5ODQ5fQ.I_27evrgdJdPt6D7cLMJJcWJu9s_eodpHGvs_H7p26M';
             localStorage.setItem('token', testToken);
             
             // 检查登录状态
@@ -575,7 +525,7 @@
             }
             
             const childrenHtml = children.map(child => `
-                <div class="child-card">
+                <div class="theme-card">
                     <div class="child-item">
                         <div class="child-info">
                             <div class="child-avatar">${getAvatarDisplay(child.avatar)}</div>
@@ -896,6 +846,23 @@
             localStorage.setItem('returnFromPage', 'manage-children');
             window.location.href = '/frontend/profile.html';
         }
+        
+        // 统一底部导航函数
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
+        }
 
         // 通知profile页面数据更新
         function notifyParentPageUpdate() {
@@ -936,32 +903,31 @@
         }
     </script>
     
-    <!-- 全局底部导航 -->
-    <div class="global-bottom-nav">
-        
-            <div class="global-nav-item" onclick="goHome()">
-                <div class="global-nav-icon">🏡</div>
-                <div class="global-nav-text">主页</div>
-            </div>
-<div class="global-nav-item" onclick="window.location.href='/frontend/parent-home.html'">
-            <div class="global-nav-icon">🏠</div>
-            <div class="global-nav-text">首页</div>
+    <!-- 底部导航 -->
+    <div class="theme-bottom-nav">
+        <div class="theme-nav-item" onclick="goToParentHome()">
+            <div class="theme-nav-icon">🏠</div>
+            <div class="theme-nav-text">首页</div>
         </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-            <div class="global-nav-icon">📷</div>
-            <div class="global-nav-text">拍照批改</div>
+        <div class="theme-nav-item" onclick="goToLearningReports()">
+            <div class="theme-nav-icon">📊</div>
+            <div class="theme-nav-text">学习报告</div>
         </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-            <div class="global-nav-icon">📚</div>
-            <div class="global-nav-text">错题本</div>
+        <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+            <div class="theme-nav-icon">🔍</div>
+            <div class="theme-nav-text">错题分析</div>
         </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-            <div class="global-nav-icon">📋</div>
-            <div class="global-nav-text">学习计划</div>
+        <div class="theme-nav-item" onclick="goToLearningProgress()">
+            <div class="theme-nav-icon">📈</div>
+            <div class="theme-nav-text">学习进度</div>
         </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
-            <div class="global-nav-icon">👤</div>
-            <div class="global-nav-text">我的</div>
+        <div class="theme-nav-item active" onclick="goToChildDetail()">
+            <div class="theme-nav-icon">👶</div>
+            <div class="theme-nav-text">孩子管理</div>
+        </div>
+        <div class="theme-nav-item" onclick="goToProfile()">
+            <div class="theme-nav-icon">👤</div>
+            <div class="theme-nav-text">我的</div>
         </div>
     </div>
 </body>

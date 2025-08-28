@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>孩子详情 - ZYJC智能批改</title>
-    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -12,26 +11,76 @@
             box-sizing: border-box;
         }
         
+        :root {
+            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --secondary-gradient: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+            --accent-gradient: linear-gradient(135deg, #89f7fe 0%, #66a6ff 100%);
+            --success-gradient: linear-gradient(135deg, #72ff9a 0%, #00c3ff 100%);
+            --bg-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --accent-color: #00c3ff;
+            --text-primary: #2c3e50;
+            --text-secondary: #7f8c8d;
+            --white: #ffffff;
+            --light-bg: #f8f9ff;
+            --card-shadow: 0 10px 30px rgba(102, 126, 234, 0.1);
+            --hover-shadow: 0 20px 40px rgba(102, 126, 234, 0.15);
+        }
+        
         body {
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #f5f5f5;
-            color: #333;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', sans-serif;
+            background: var(--bg-gradient);
+            color: var(--text-primary);
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+        }
+        
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
+                radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
         
         .container {
-            max-width: 400px;
+            max-width: 1200px;
             margin: 0 auto;
-            background: #f5f5f5;
             min-height: 100vh;
+            position: relative;
+            z-index: 1;
         }
         
-        /* 顶部导航栏 */
+        /* 现代化导航栏 */
         .navbar {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            padding: 10px 20px 20px;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 15px 30px 25px;
             color: white;
             position: relative;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
+            border-radius: 0 0 30px 30px;
+            pointer-events: none;
         }
         
         .navbar-content {
@@ -39,240 +88,429 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 20px;
+            position: relative;
+            z-index: 2;
         }
         
         .back-btn {
             background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
             border: none;
             color: white;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            width: 36px;
-            height: 36px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
+            padding: 12px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         
         .back-btn:hover {
             background: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
         }
         
         .navbar-title {
-            font-size: 18px;
-            font-weight: 600;
+            font-size: 22px;
+            font-weight: 700;
+            letter-spacing: -0.025em;
         }
         
         .navbar-action {
-            width: 36px;
+            width: 44px;
         }
         
-        /* 孩子信息卡片 */
+        /* 主要内容区域 */
+        .main-content {
+            padding: 30px 20px;
+            margin-top: -20px;
+            border-radius: 30px 30px 0 0;
+            background: var(--light-bg);
+            position: relative;
+            z-index: 2;
+            min-height: calc(100vh - 120px);
+        }
+        
+        /* 现代化孩子信息卡片 */
         .child-info-card {
-            background: white;
-            margin: 20px;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+            background: var(--white);
+            margin: 0 auto 40px;
+            border-radius: 24px;
+            padding: 40px;
+            box-shadow: var(--card-shadow);
+            max-width: 900px;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
         }
         
-        .child-avatar-section {
-            text-align: center;
-            margin-bottom: 24px;
+        .child-info-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .child-info-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--primary-gradient);
+        }
+        
+        .child-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 24px;
+            border-bottom: 2px solid #f1f3f4;
         }
         
         .child-avatar-large {
-            width: 80px;
-            height: 80px;
-            border-radius: 40px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            display: inline-flex;
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 32px;
+            font-size: 40px;
             color: white;
-            margin-bottom: 12px;
+            margin-right: 24px;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+            position: relative;
+        }
+        
+        .child-avatar-large::after {
+            content: '';
+            position: absolute;
+            inset: -4px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            z-index: -1;
+            opacity: 0.3;
+            animation: pulse 2s ease-in-out infinite alternate;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); opacity: 0.3; }
+            100% { transform: scale(1.05); opacity: 0.1; }
+        }
+        
+        .child-info {
+            flex: 1;
         }
         
         .child-name {
-            font-size: 20px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 4px;
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 8px;
         }
         
         .child-grade {
-            font-size: 14px;
-            color: #666;
+            font-size: 16px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         
-        /* 信息项 */
+        .child-grade::before {
+            content: '📚';
+            font-size: 18px;
+        }
+        
+        /* 信息网格 */
         .info-section {
-            margin-bottom: 24px;
+            margin-bottom: 32px;
         }
         
         .info-title {
-            font-size: 16px;
-            font-weight: 600;
-            color: #333;
-            margin-bottom: 12px;
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: 20px;
             display: flex;
             align-items: center;
+            position: relative;
+            padding-left: 16px;
         }
         
         .info-title::before {
             content: '';
-            width: 4px;
-            height: 16px;
-            background: #007AFF;
-            border-radius: 2px;
-            margin-right: 8px;
+            position: absolute;
+            left: 0;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 6px;
+            height: 24px;
+            background: var(--primary-gradient);
+            border-radius: 3px;
         }
         
         .info-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
         }
         
         .info-item {
-            background: #f8f9fa;
-            padding: 12px;
-            border-radius: 8px;
+            background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(102, 126, 234, 0.1);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .info-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+            border-color: rgba(102, 126, 234, 0.3);
+        }
+        
+        .info-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            background: var(--accent-gradient);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+        
+        .info-item:hover::before {
+            transform: scaleX(1);
         }
         
         .info-label {
-            font-size: 12px;
-            color: #666;
-            margin-bottom: 4px;
+            font-size: 13px;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
         .info-value {
-            font-size: 14px;
-            font-weight: 500;
-            color: #333;
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text-primary);
         }
         
         /* 统计卡片 */
+        .stats-section {
+            margin-bottom: 40px;
+        }
+        
         .stats-grid {
             display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-            margin: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 24px;
+            max-width: 900px;
+            margin: 0 auto;
         }
         
         .stat-card {
-            background: white;
-            padding: 20px;
-            border-radius: 12px;
+            background: var(--white);
+            padding: 28px 20px;
+            border-radius: 20px;
             text-align: center;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            box-shadow: var(--card-shadow);
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .stat-card:hover {
+            transform: translateY(-8px);
+            box-shadow: var(--hover-shadow);
+        }
+        
+        .stat-card:nth-child(1)::before { background: var(--primary-gradient); }
+        .stat-card:nth-child(2)::before { background: var(--secondary-gradient); }
+        .stat-card:nth-child(3)::before { background: var(--accent-gradient); }
+        .stat-card:nth-child(4)::before { background: var(--success-gradient); }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
         }
         
         .stat-number {
-            font-size: 24px;
-            font-weight: 700;
-            color: #007AFF;
-            margin-bottom: 4px;
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 8px;
+            background: var(--primary-gradient);
+            background-clip: text;
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
         }
         
         .stat-label {
-            font-size: 12px;
-            color: #666;
+            font-size: 14px;
+            color: var(--text-secondary);
+            font-weight: 600;
         }
         
-        /* 操作按钮 */
+        /* 现代化操作按钮 */
         .action-buttons {
-            padding: 20px;
+            display: flex;
+            gap: 20px;
+            max-width: 700px;
+            margin: 0 auto;
+            flex-wrap: wrap;
+            justify-content: center;
         }
         
         .action-btn {
-            width: 100%;
-            padding: 14px;
+            flex: 1;
+            min-width: 200px;
+            padding: 16px 24px;
             border: none;
-            border-radius: 12px;
+            border-radius: 16px;
             font-size: 16px;
             font-weight: 600;
             cursor: pointer;
-            margin-bottom: 12px;
-            transition: all 0.2s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
         }
         
         .btn-primary {
-            background: #007AFF;
+            background: var(--primary-gradient);
             color: white;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
         
         .btn-primary:hover {
-            background: #0056cc;
-            transform: translateY(-1px);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(102, 126, 234, 0.4);
         }
         
         .btn-secondary {
-            background: #28a745;
+            background: var(--success-gradient);
             color: white;
+            box-shadow: 0 8px 25px rgba(0, 195, 255, 0.3);
         }
         
         .btn-secondary:hover {
-            background: #1e7e34;
-            transform: translateY(-1px);
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(0, 195, 255, 0.4);
         }
         
-        /* 加载状态 */
+        /* 加载和错误状态 */
         .loading {
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 40px;
-            color: #666;
+            padding: 60px;
+            color: var(--text-secondary);
+            font-size: 18px;
+            font-weight: 600;
         }
         
-        .loading::after {
-            content: '';
-            width: 20px;
-            height: 20px;
-            border: 2px solid #ddd;
-            border-top-color: #007AFF;
+        .loading-spinner {
+            width: 32px;
+            height: 32px;
+            border: 3px solid rgba(102, 126, 234, 0.3);
+            border-top: 3px solid var(--primary-color);
             border-radius: 50%;
-            animation: spin 1s ease-in-out infinite;
-            margin-left: 12px;
+            animation: spin 1s linear infinite;
+            margin-left: 16px;
         }
         
         @keyframes spin {
             to { transform: rotate(360deg); }
         }
         
-        /* 错误状态 */
         .error-state {
             text-align: center;
-            padding: 40px 20px;
-            color: #dc3545;
+            padding: 60px 20px;
+            color: #e74c3c;
         }
         
         .error-icon {
-            font-size: 48px;
-            margin-bottom: 12px;
+            font-size: 60px;
+            margin-bottom: 20px;
         }
         
         .retry-btn {
-            background: #007AFF;
+            background: var(--primary-gradient);
             color: white;
             border: none;
-            padding: 12px 24px;
-            border-radius: 8px;
+            padding: 14px 28px;
+            border-radius: 12px;
             cursor: pointer;
-            margin-top: 16px;
-            transition: all 0.2s ease;
+            margin: 8px;
+            transition: all 0.3s ease;
+            font-weight: 600;
         }
         
         .retry-btn:hover {
-            background: #0056cc;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
         }
         
-        /* 响应式调整 */
+        /* 响应式设计 */
+        @media (max-width: 768px) {
+            .container {
+                max-width: 100%;
+            }
+            
+            .main-content {
+                padding: 20px 16px;
+                border-radius: 20px 20px 0 0;
+            }
+            
+            .child-info-card {
+                padding: 24px;
+                border-radius: 20px;
+            }
+            
+            .child-header {
+                flex-direction: column;
+                text-align: center;
+            }
+            
+            .child-avatar-large {
+                margin-right: 0;
+                margin-bottom: 16px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 16px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+                gap: 16px;
+            }
+            
+            .action-btn {
+                min-width: unset;
+            }
+        }
+        
         @media (max-width: 480px) {
             .info-grid {
                 grid-template-columns: 1fr;
@@ -281,6 +519,41 @@
             .stats-grid {
                 grid-template-columns: 1fr;
             }
+            
+            .child-name {
+                font-size: 24px;
+            }
+            
+            .navbar {
+                padding: 12px 20px 20px;
+            }
+            
+            .main-content {
+                padding: 16px 12px;
+            }
+            
+            .child-info-card {
+                padding: 20px;
+            }
+        }
+        
+        /* 现代化滚动条 */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-gradient);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--secondary-color);
         }
     </style>
 </head>
@@ -296,12 +569,16 @@
         </div>
         
         <!-- 主要内容 -->
-        <div id="mainContent" class="loading">
-            正在加载孩子信息...
+        <div class="main-content">
+            <div id="mainContent" class="loading">
+                正在加载孩子信息...
+                <div class="loading-spinner"></div>
+            </div>
         </div>
     </div>
 
     <script src="/frontend/js/common.js"></script>
+    <script src="/frontend/js/auth-utils.js"></script>
     <script>
         let childId = null;
         let childData = null;
@@ -328,7 +605,7 @@
             }
             
             if (avatar.startsWith('/uploads/')) {
-                return `<img src="${avatar}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                return `<img src="http://localhost:8000${avatar}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
             }
             
             return avatar.charAt(0).toUpperCase();
@@ -341,35 +618,50 @@
             }
             
             try {
-                const token = localStorage.getItem('token');
+                // 设置为家长用户并获取token
+                AuthUtils.setUserRole('parent');
+                const token = AuthUtils.getCurrentToken();
+                
+                console.log('使用token:', token);
+                console.log('请求URL:', `http://localhost:8000/api/v1/parent/children/${childId}`);
+                
                 if (!token) {
-                    window.location.href = '/frontend/login.html';
+                    showError('认证失败，请刷新页面重试');
                     return;
                 }
                 
-                const response = await fetch(`/api/v1/parent/children/${childId}`, {
+                const response = await fetch(`http://localhost:8000/api/v1/parent/children/${childId}`, {
                     headers: {
                         'Authorization': `Bearer ${token}`,
                         'Content-Type': 'application/json'
                     }
                 });
                 
-                if (response.status === 401) {
-                    localStorage.removeItem('token');
-                    window.location.href = '/frontend/login.html';
+                console.log('响应状态:', response.status);
+                
+                if (response.status === 401 || response.status === 403) {
+                    showError('认证失败，请检查登录状态');
+                    return;
+                }
+                
+                if (response.status === 404) {
+                    showError('未找到该孩子信息或无权访问');
                     return;
                 }
                 
                 if (response.ok) {
                     childData = await response.json();
+                    console.log('获取到的数据:', childData);
                     displayChildInfo(childData);
                 } else {
-                    throw new Error(`HTTP ${response.status}`);
+                    const errorText = await response.text();
+                    console.error('响应错误:', errorText);
+                    throw new Error(`HTTP ${response.status}: ${errorText}`);
                 }
                 
             } catch (error) {
                 console.error('加载孩子信息失败:', error);
-                showError('加载孩子信息失败，请检查网络连接');
+                showError(`加载孩子信息失败: ${error.message}`);
             }
         }
         
@@ -379,12 +671,14 @@
             const stats = child.stats || {};
             
             const html = `
-                <!-- 孩子基本信息卡片 -->
+                <!-- 现代化孩子信息卡片 -->
                 <div class="child-info-card">
-                    <div class="child-avatar-section">
+                    <div class="child-header">
                         <div class="child-avatar-large">${getAvatarDisplay(child.avatar_url)}</div>
-                        <div class="child-name">${child.nickname || '未命名'}</div>
-                        <div class="child-grade">${child.grade || '未设置年级'} · ${child.school || '未设置学校'}</div>
+                        <div class="child-info">
+                            <div class="child-name">${child.nickname || '未命名'}</div>
+                            <div class="child-grade">${child.grade || '未设置年级'} · ${child.school || '未设置学校'}</div>
+                        </div>
                     </div>
                     
                     <div class="info-section">
@@ -410,27 +704,29 @@
                     </div>
                 </div>
                 
-                <!-- 统计信息 -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-number">${stats.average_score || 0}</div>
-                        <div class="stat-label">平均分</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${stats.completed_homework || 0}</div>
-                        <div class="stat-label">已完成作业</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${stats.total_homework || 0}</div>
-                        <div class="stat-label">总作业数</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-number">${stats.current_streak || 0}</div>
-                        <div class="stat-label">连续学习天数</div>
+                <!-- 学习统计 -->
+                <div class="stats-section">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.average_score || 0}</div>
+                            <div class="stat-label">平均分</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.completed_homework || 0}</div>
+                            <div class="stat-label">已完成作业</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.total_homework || 0}</div>
+                            <div class="stat-label">总作业数</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-number">${stats.current_streak || 0}</div>
+                            <div class="stat-label">连续学习天数</div>
+                        </div>
                     </div>
                 </div>
                 
-                <!-- 操作按钮 -->
+                <!-- 现代化操作按钮 -->
                 <div class="action-buttons">
                     <button class="action-btn btn-primary" onclick="viewLearningProgress()">
                         📊 查看学习进度
@@ -453,10 +749,57 @@
             mainContent.innerHTML = `
                 <div class="error-state">
                     <div class="error-icon">😞</div>
-                    <div>${message}</div>
+                    <div style="margin-bottom: 24px; font-size: 16px; color: var(--text-primary);">${message}</div>
                     <button class="retry-btn" onclick="loadChildInfo()">重新加载</button>
+                    <button class="retry-btn" onclick="showDebugInfo()" style="background: var(--secondary-gradient);">调试信息</button>
                 </div>
             `;
+        }
+        
+        // 显示调试信息
+        function showDebugInfo() {
+            const currentRole = AuthUtils.getCurrentUserRole();
+            const currentToken = AuthUtils.getCurrentToken();
+            const debugInfo = `
+                <div class="child-info-card" style="max-width: 700px;">
+                    <div class="info-section">
+                        <div class="info-title">🔧 调试信息</div>
+                        <div class="info-grid" style="grid-template-columns: 1fr;">
+                            <div class="info-item">
+                                <div class="info-label">当前用户角色</div>
+                                <div class="info-value">${currentRole || '未设置'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Token状态</div>
+                                <div class="info-value">${currentToken ? '✅ 已设置' : '❌ 未设置'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">孩子ID</div>
+                                <div class="info-value">${childId}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">请求URL</div>
+                                <div class="info-value" style="word-break: break-all; font-size: 12px;">http://localhost:8000/api/v1/parent/children/${childId}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">页面地址</div>
+                                <div class="info-value" style="word-break: break-all; font-size: 12px;">${window.location.href}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">建议</div>
+                                <div class="info-value">确保以家长身份访问此页面</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="action-btn btn-primary" onclick="loadChildInfo()">🔄 重新加载</button>
+                        <button class="action-btn btn-secondary" onclick="window.location.href='/frontend/token-setup.html'">🔧 设置身份</button>
+                    </div>
+                </div>
+            `;
+            
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = debugInfo;
         }
         
         // 返回上一页
