@@ -26,12 +26,23 @@
             min-height: 100vh;
         }
         
+        /* 错题分析页面专用双色渐变主题 - 珊瑚橙到琥珀色 */
+        :root {
+            --error-gradient: linear-gradient(135deg, #F97316 0%, #F59E0B 100%);
+            --error-color: #F97316;
+            --error-secondary: #F59E0B;
+        }
+        
         /* 顶部导航栏 */
         .navbar {
-            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            background: var(--error-gradient);
             padding: 10px 20px 20px;
             color: white;
             position: relative;
+        }
+        
+        .theme-navbar {
+            background: var(--error-gradient) !important;
         }
         
         .navbar-content {
@@ -121,9 +132,9 @@
         }
         
         .child-tab.active {
-            background: #e74c3c;
+            background: var(--error-color);
             color: white;
-            border-color: #e74c3c;
+            border-color: var(--error-color);
         }
         
         /* 错题统计 */
@@ -162,7 +173,7 @@
         .stat-number {
             font-size: 24px;
             font-weight: bold;
-            color: #e74c3c;
+            color: var(--error-color);
             margin-bottom: 4px;
         }
         
@@ -193,7 +204,7 @@
             padding: 16px;
             background: #fff5f5;
             border-radius: 12px;
-            border-left: 4px solid #e74c3c;
+            border-left: 4px solid var(--error-color);
         }
         
         .subject-info {
@@ -219,7 +230,7 @@
         .count-number {
             font-size: 18px;
             font-weight: bold;
-            color: #e74c3c;
+            color: var(--error-color);
             margin-bottom: 4px;
         }
         
@@ -311,7 +322,7 @@
         
         .error-subject {
             font-size: 12px;
-            background: #e74c3c;
+            background: var(--error-color);
             color: white;
             padding: 2px 8px;
             border-radius: 4px;
@@ -502,7 +513,7 @@
             width: 24px;
             height: 24px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #e74c3c;
+            border-top: 3px solid var(--error-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 12px;
@@ -520,7 +531,7 @@
         }
         
         .retry-btn {
-            background: #e74c3c;
+            background: var(--error-color);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -552,7 +563,7 @@
         }
         
         .nav-item.active {
-            color: #e74c3c;
+            color: var(--error-color);
         }
         
         .nav-icon {
@@ -570,7 +581,6 @@
         <!-- 顶部导航栏 -->
         <div class="theme-navbar">
             <div class="theme-navbar-content" style="display: flex; align-items: center; justify-content: center; position: relative;">
-                <button class="theme-btn-nav" onclick="goBack()" style="position: absolute; left: 0;">←</button>
                 <div class="theme-navbar-title">错题分析</div>
             </div>
         </div>
@@ -646,17 +656,25 @@
         
         <!-- 底部导航 -->
         <div class="theme-bottom-nav">
-            <div class="theme-nav-item" onclick="goHome()">
-                <div class="theme-nav-icon">🏡</div>
-                <div class="theme-nav-text">主页</div>
-            </div>
             <div class="theme-nav-item" onclick="goToParentHome()">
                 <div class="theme-nav-icon">🏠</div>
                 <div class="theme-nav-text">首页</div>
             </div>
-            <div class="theme-nav-item active">
+            <div class="theme-nav-item" onclick="goToLearningReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">学习报告</div>
+            </div>
+            <div class="theme-nav-item active" onclick="goToErrorAnalysis()">
                 <div class="theme-nav-icon">🔍</div>
-                <div class="theme-nav-text">错题</div>
+                <div class="theme-nav-text">错题分析</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToLearningProgress()">
+                <div class="theme-nav-icon">📈</div>
+                <div class="theme-nav-text">学习进度</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToChildDetail()">
+                <div class="theme-nav-icon">👶</div>
+                <div class="theme-nav-text">孩子管理</div>
             </div>
             <div class="theme-nav-item" onclick="goToProfile()">
                 <div class="theme-nav-icon">👤</div>
@@ -714,7 +732,7 @@
                 <div style="text-align: center; padding: 20px; color: #666;">
                     <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
                     <div>还没有绑定孩子</div>
-                    <button style="margin-top: 16px; padding: 8px 16px; background: #e74c3c; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
+                    <button style="margin-top: 16px; padding: 8px 16px; background: var(--error-color); color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
                         添加孩子
                     </button>
                 </div>
@@ -1011,6 +1029,31 @@
 
         function goToProfile() {
             window.location.href = '/frontend/profile.html';
+        }
+
+        function goHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        // 统一底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
         }
 
         function showToast(message) {

@@ -1,0 +1,492 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>孩子详情 - ZYJC智能批改</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #f5f5f5;
+            color: #333;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: #f5f5f5;
+            min-height: 100vh;
+        }
+        
+        /* 顶部导航栏 */
+        .navbar {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 10px 20px 20px;
+            color: white;
+            position: relative;
+        }
+        
+        .navbar-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        
+        .back-btn {
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        
+        .back-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .navbar-title {
+            font-size: 18px;
+            font-weight: 600;
+        }
+        
+        .navbar-action {
+            width: 36px;
+        }
+        
+        /* 孩子信息卡片 */
+        .child-info-card {
+            background: white;
+            margin: 20px;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        
+        .child-avatar-section {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+        
+        .child-avatar-large {
+            width: 80px;
+            height: 80px;
+            border-radius: 40px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin-bottom: 12px;
+        }
+        
+        .child-name {
+            font-size: 20px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .child-grade {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        /* 信息项 */
+        .info-section {
+            margin-bottom: 24px;
+        }
+        
+        .info-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .info-title::before {
+            content: '';
+            width: 4px;
+            height: 16px;
+            background: #007AFF;
+            border-radius: 2px;
+            margin-right: 8px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .info-item {
+            background: #f8f9fa;
+            padding: 12px;
+            border-radius: 8px;
+        }
+        
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+        
+        .info-value {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+        
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin: 20px;
+        }
+        
+        .stat-card {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+        
+        .stat-number {
+            font-size: 24px;
+            font-weight: 700;
+            color: #007AFF;
+            margin-bottom: 4px;
+        }
+        
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        /* 操作按钮 */
+        .action-buttons {
+            padding: 20px;
+        }
+        
+        .action-btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 12px;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #0056cc;
+            transform: translateY(-1px);
+        }
+        
+        .btn-secondary {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-secondary:hover {
+            background: #1e7e34;
+            transform: translateY(-1px);
+        }
+        
+        /* 加载状态 */
+        .loading {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px;
+            color: #666;
+        }
+        
+        .loading::after {
+            content: '';
+            width: 20px;
+            height: 20px;
+            border: 2px solid #ddd;
+            border-top-color: #007AFF;
+            border-radius: 50%;
+            animation: spin 1s ease-in-out infinite;
+            margin-left: 12px;
+        }
+        
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        /* 错误状态 */
+        .error-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #dc3545;
+        }
+        
+        .error-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+        }
+        
+        .retry-btn {
+            background: #007AFF;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin-top: 16px;
+            transition: all 0.2s ease;
+        }
+        
+        .retry-btn:hover {
+            background: #0056cc;
+        }
+        
+        /* 响应式调整 */
+        @media (max-width: 480px) {
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 导航栏 -->
+        <div class="navbar">
+            <div class="navbar-content">
+                <button class="back-btn" onclick="goBack()">←</button>
+                <div class="navbar-title">孩子详情</div>
+                <div class="navbar-action"></div>
+            </div>
+        </div>
+        
+        <!-- 主要内容 -->
+        <div id="mainContent" class="loading">
+            正在加载孩子信息...
+        </div>
+    </div>
+
+    <script src="/frontend/js/common.js"></script>
+    <script>
+        let childId = null;
+        let childData = null;
+        
+        // 获取URL参数
+        function getUrlParams() {
+            const params = new URLSearchParams(window.location.search);
+            childId = params.get('id');
+            
+            if (!childId) {
+                showError('缺少孩子ID参数');
+                return false;
+            }
+            
+            return true;
+        }
+        
+        // 获取头像显示
+        function getAvatarDisplay(avatar) {
+            if (!avatar) return '👶';
+            
+            if (avatar.startsWith('emoji:')) {
+                return avatar.replace('emoji:', '');
+            }
+            
+            if (avatar.startsWith('/uploads/')) {
+                return `<img src="${avatar}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+            }
+            
+            return avatar.charAt(0).toUpperCase();
+        }
+        
+        // 加载孩子详细信息
+        async function loadChildInfo() {
+            if (!getUrlParams()) {
+                return;
+            }
+            
+            try {
+                const token = localStorage.getItem('token');
+                if (!token) {
+                    window.location.href = '/frontend/login.html';
+                    return;
+                }
+                
+                const response = await fetch(`/api/v1/parent/children/${childId}`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.status === 401) {
+                    localStorage.removeItem('token');
+                    window.location.href = '/frontend/login.html';
+                    return;
+                }
+                
+                if (response.ok) {
+                    childData = await response.json();
+                    displayChildInfo(childData);
+                } else {
+                    throw new Error(`HTTP ${response.status}`);
+                }
+                
+            } catch (error) {
+                console.error('加载孩子信息失败:', error);
+                showError('加载孩子信息失败，请检查网络连接');
+            }
+        }
+        
+        // 显示孩子信息
+        function displayChildInfo(child) {
+            const mainContent = document.getElementById('mainContent');
+            const stats = child.stats || {};
+            
+            const html = `
+                <!-- 孩子基本信息卡片 -->
+                <div class="child-info-card">
+                    <div class="child-avatar-section">
+                        <div class="child-avatar-large">${getAvatarDisplay(child.avatar_url)}</div>
+                        <div class="child-name">${child.nickname || '未命名'}</div>
+                        <div class="child-grade">${child.grade || '未设置年级'} · ${child.school || '未设置学校'}</div>
+                    </div>
+                    
+                    <div class="info-section">
+                        <div class="info-title">基本信息</div>
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <div class="info-label">昵称</div>
+                                <div class="info-value">${child.nickname || '未设置'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">年级</div>
+                                <div class="info-value">${child.grade || '未设置'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">学校</div>
+                                <div class="info-value">${child.school || '未设置'}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">班级</div>
+                                <div class="info-value">${child.class_name || '未设置'}</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 统计信息 -->
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.average_score || 0}</div>
+                        <div class="stat-label">平均分</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.completed_homework || 0}</div>
+                        <div class="stat-label">已完成作业</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.total_homework || 0}</div>
+                        <div class="stat-label">总作业数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number">${stats.current_streak || 0}</div>
+                        <div class="stat-label">连续学习天数</div>
+                    </div>
+                </div>
+                
+                <!-- 操作按钮 -->
+                <div class="action-buttons">
+                    <button class="action-btn btn-primary" onclick="viewLearningProgress()">
+                        📊 查看学习进度
+                    </button>
+                    <button class="action-btn btn-secondary" onclick="viewErrorBook()">
+                        📖 查看错题本
+                    </button>
+                    <button class="action-btn btn-primary" onclick="editChildInfo()">
+                        ✏️ 编辑信息
+                    </button>
+                </div>
+            `;
+            
+            mainContent.innerHTML = html;
+        }
+        
+        // 显示错误状态
+        function showError(message) {
+            const mainContent = document.getElementById('mainContent');
+            mainContent.innerHTML = `
+                <div class="error-state">
+                    <div class="error-icon">😞</div>
+                    <div>${message}</div>
+                    <button class="retry-btn" onclick="loadChildInfo()">重新加载</button>
+                </div>
+            `;
+        }
+        
+        // 返回上一页
+        function goBack() {
+            if (history.length > 1) {
+                history.back();
+            } else {
+                window.location.href = '/frontend/child-detail.html';
+            }
+        }
+        
+        // 查看学习进度
+        function viewLearningProgress() {
+            window.location.href = `/frontend/learning-progress.html?id=${childId}`;
+        }
+        
+        // 查看错题本
+        function viewErrorBook() {
+            window.location.href = `/frontend/error-book.html?id=${childId}`;
+        }
+        
+        // 编辑孩子信息
+        function editChildInfo() {
+            window.location.href = `/frontend/child-detail.html?edit=${childId}`;
+        }
+        
+        // 页面加载完成后执行
+        document.addEventListener('DOMContentLoaded', function() {
+            loadChildInfo();
+        });
+    </script>
+</body>
+</html>

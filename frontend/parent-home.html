@@ -12,9 +12,16 @@
             box-sizing: border-box;
         }
         
+        /* 家长端主页专用双色渐变主题 - 深蓝到紫罗兰 */
+        :root {
+            --home-gradient: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 100%);
+            --home-primary: #3B82F6;
+            --home-secondary: #8B5CF6;
+        }
+        
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: var(--home-gradient);
             color: #333;
             min-height: 100vh;
             position: relative;
@@ -38,7 +45,7 @@
         
         /* 页面特定样式覆盖 */
         .user-avatar {
-            background: var(--primary-gradient);
+            background: var(--home-gradient);
             border: 2px solid rgba(255, 255, 255, 0.3);
             cursor: pointer;
             transition: all 0.3s ease;
@@ -575,7 +582,7 @@
             <!-- 用户信息卡片 -->
             <div class="theme-card">
                 <div class="parent-info">
-                    <div class="theme-avatar theme-avatar-lg" style="background: var(--primary-gradient);">👨‍👩‍👧‍👦</div>
+                    <div class="theme-avatar theme-avatar-lg" style="background: var(--home-gradient);">👨‍👩‍👧‍👦</div>
                     <div class="info">
                         <div class="name" id="parentName" style="font-size: 16px; font-weight: 600; color: var(--text-primary); margin-bottom: 4px;">正在加载...</div>
                         <div class="role" style="font-size: 12px; color: var(--text-muted);">家长</div>
@@ -678,31 +685,31 @@
             </div>
         </div>
         
-        <!-- 全局底部导航 -->
-        <div class="global-bottom-nav">
-            <div class="global-nav-item" onclick="goHome()">
-                <div class="global-nav-icon">🏡</div>
-                <div class="global-nav-text">主页</div>
+        <!-- 底部导航 -->
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item active" onclick="goToParentHome()">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
             </div>
-            <div class="global-nav-item active" onclick="window.location.href='/frontend/parent-home.html'">
-                <div class="global-nav-icon">🏠</div>
-                <div class="global-nav-text">首页</div>
+            <div class="theme-nav-item" onclick="goToLearningReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">学习报告</div>
             </div>
-            <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-                <div class="global-nav-icon">📷</div>
-                <div class="global-nav-text">拍照批改</div>
+            <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                <div class="theme-nav-icon">🔍</div>
+                <div class="theme-nav-text">错题分析</div>
             </div>
-            <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-                <div class="global-nav-icon">📚</div>
-                <div class="global-nav-text">错题本</div>
+            <div class="theme-nav-item" onclick="goToLearningProgress()">
+                <div class="theme-nav-icon">📈</div>
+                <div class="theme-nav-text">学习进度</div>
             </div>
-            <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-                <div class="global-nav-icon">📋</div>
-                <div class="global-nav-text">学习计划</div>
+            <div class="theme-nav-item" onclick="goToChildDetail()">
+                <div class="theme-nav-icon">👶</div>
+                <div class="theme-nav-text">孩子管理</div>
             </div>
-            <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
-                <div class="global-nav-icon">👤</div>
-                <div class="global-nav-text">我的</div>
+            <div class="theme-nav-item" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
             </div>
         </div>
     </div>
@@ -1056,6 +1063,23 @@
 
         function goToProfile() {
             window.location.href = '/frontend/profile.html';
+        }
+        
+        // 统一底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
         }
         
         // 数据刷新函数

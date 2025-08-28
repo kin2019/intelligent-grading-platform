@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>学习进度 - ZYJC智能批改</title>
-    <link rel="stylesheet" href="/frontend/css/theme.css">
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -26,12 +26,23 @@
             min-height: 100vh;
         }
         
+        /* 学习进度页面专用双色渐变主题 - 翻绿到青绿 */
+        :root {
+            --progress-gradient: linear-gradient(135deg, #10B981 0%, #06D6A0 100%);
+            --progress-color: #10B981;
+            --progress-secondary: #06D6A0;
+        }
+        
         /* 顶部导航栏 */
         .navbar {
-            background: var(--primary-gradient);
+            background: var(--progress-gradient);
             padding: 10px 20px 20px;
             color: white;
             position: relative;
+        }
+        
+        .theme-navbar {
+            background: var(--progress-gradient) !important;
         }
         
         .navbar-content {
@@ -121,9 +132,9 @@
         }
         
         .child-tab.active {
-            background: #9b59b6;
+            background: var(--progress-color);
             color: white;
-            border-color: #9b59b6;
+            border-color: var(--progress-color);
         }
         
         /* 总体进度 */
@@ -163,7 +174,7 @@
         .progress-number {
             font-size: 24px;
             font-weight: bold;
-            color: #9b59b6;
+            color: var(--progress-color);
             margin-bottom: 8px;
         }
         
@@ -183,7 +194,7 @@
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            background: linear-gradient(90deg, var(--progress-color), #ffb347);
             border-radius: 3px;
             transition: width 0.3s ease;
         }
@@ -207,7 +218,7 @@
             padding: 16px;
             background: #f8f9fa;
             border-radius: 12px;
-            border-left: 4px solid #9b59b6;
+            border-left: 4px solid var(--progress-color);
         }
         
         .subject-header {
@@ -226,7 +237,7 @@
         .subject-percentage {
             font-size: 18px;
             font-weight: bold;
-            color: #9b59b6;
+            color: var(--progress-color);
         }
         
         .subject-stats {
@@ -251,7 +262,7 @@
         
         .progress-fill {
             height: 100%;
-            background: linear-gradient(90deg, #9b59b6, #8e44ad);
+            background: linear-gradient(90deg, var(--progress-color), #ffb347);
             border-radius: 4px;
             transition: width 0.3s ease;
         }
@@ -319,7 +330,7 @@
         }
         
         .calendar-day.active {
-            background: #9b59b6;
+            background: var(--progress-color);
             color: white;
         }
         
@@ -388,7 +399,7 @@
             width: 24px;
             height: 24px;
             border: 3px solid #f3f3f3;
-            border-top: 3px solid #9b59b6;
+            border-top: 3px solid var(--progress-color);
             border-radius: 50%;
             animation: spin 1s linear infinite;
             margin-bottom: 12px;
@@ -406,7 +417,7 @@
         }
         
         .retry-btn {
-            background: #9b59b6;
+            background: var(--progress-color);
             color: white;
             border: none;
             padding: 8px 16px;
@@ -438,7 +449,7 @@
         }
         
         .nav-item.active {
-            color: #9b59b6;
+            color: var(--progress-color);
         }
         
         .nav-icon {
@@ -456,7 +467,6 @@
         <!-- 顶部导航栏 -->
         <div class="theme-navbar">
             <div class="theme-navbar-content" style="display: flex; align-items: center; justify-content: center; position: relative;">
-                <button class="theme-btn-nav" onclick="goBack()" style="position: absolute; left: 0;">←</button>
                 <div class="theme-navbar-title">学习进度</div>
             </div>
         </div>
@@ -528,17 +538,25 @@
         
         <!-- 底部导航 -->
         <div class="theme-bottom-nav">
-            <div class="theme-nav-item" onclick="goHome()">
-                <div class="theme-nav-icon">🏡</div>
-                <div class="theme-nav-text">主页</div>
-            </div>
             <div class="theme-nav-item" onclick="goToParentHome()">
                 <div class="theme-nav-icon">🏠</div>
                 <div class="theme-nav-text">首页</div>
             </div>
-            <div class="theme-nav-item active">
+            <div class="theme-nav-item" onclick="goToLearningReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">学习报告</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                <div class="theme-nav-icon">🔍</div>
+                <div class="theme-nav-text">错题分析</div>
+            </div>
+            <div class="theme-nav-item active" onclick="goToLearningProgress()">
                 <div class="theme-nav-icon">📈</div>
-                <div class="theme-nav-text">进度</div>
+                <div class="theme-nav-text">学习进度</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToChildDetail()">
+                <div class="theme-nav-icon">👶</div>
+                <div class="theme-nav-text">孩子管理</div>
             </div>
             <div class="theme-nav-item" onclick="goToProfile()">
                 <div class="theme-nav-icon">👤</div>
@@ -611,7 +629,7 @@
                 <div style="text-align: center; padding: 20px; color: #666;">
                     <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
                     <div>还没有绑定孩子</div>
-                    <button style="margin-top: 16px; padding: 8px 16px; background: #9b59b6; color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
+                    <button style="margin-top: 16px; padding: 8px 16px; background: var(--progress-color); color: white; border: none; border-radius: 8px; cursor: pointer;" onclick="addChild()">
                         添加孩子
                     </button>
                 </div>
@@ -887,6 +905,31 @@
 
         function goToProfile() {
             window.location.href = '/frontend/profile.html';
+        }
+
+        function goHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        // 统一底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
         }
 
         function showToast(message) {

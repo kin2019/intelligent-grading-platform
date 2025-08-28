@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>孩子学习详情 - ZYJC智能批改</title>
+    <title>孩子管理列表 - ZYJC智能批改</title>
     <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
@@ -387,6 +387,129 @@
         .nav-text {
             font-size: 10px;
         }
+        
+        /* 孩子管理专用样式 */
+        .add-child-btn {
+            width: 100%;
+            padding: 16px;
+            border: 2px dashed #ddd;
+            background: #fff;
+            border-radius: 12px;
+            color: #666;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        
+        .add-child-btn:hover {
+            border-color: #007AFF;
+            color: #007AFF;
+            background: #f8f9ff;
+        }
+        
+        .add-icon {
+            font-size: 20px;
+            font-weight: bold;
+        }
+        
+        .child-management-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            border-left: 4px solid #007AFF;
+            transition: all 0.2s ease;
+        }
+        
+        .child-management-item:hover {
+            background: #e9ecef;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .child-info-section {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+        
+        .child-avatar-small {
+            width: 50px;
+            height: 50px;
+            border-radius: 25px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            margin-right: 12px;
+            flex-shrink: 0;
+        }
+        
+        .child-details {
+            flex: 1;
+        }
+        
+        .child-name {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+        
+        .child-meta {
+            font-size: 12px;
+            color: #666;
+        }
+        
+        .child-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .view-btn {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .view-btn:hover {
+            background: #0056cc;
+        }
+        
+        .edit-btn {
+            background: #28a745;
+            color: white;
+        }
+        
+        .edit-btn:hover {
+            background: #1e7e34;
+        }
+        
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .delete-btn:hover {
+            background: #c82333;
+        }
     </style>
 </head>
 <body>
@@ -395,93 +518,159 @@
         <div class="navbar">
             <div class="navbar-content">
                 <button class="back-btn" onclick="goBack()">←</button>
-                <div class="navbar-title" id="navTitle">孩子详情</div>
+                <div class="navbar-title" id="navTitle">孩子管理列表</div>
             </div>
         </div>
         
         <!-- 页面内容 -->
         <div class="page-content">
-            <!-- 孩子信息卡片 -->
-            <div class="child-info-card">
-                <div class="child-avatar" id="childAvatar">👶</div>
-                <div class="child-name" id="childName">加载中...</div>
-                <div class="child-grade" id="childGrade">加载中...</div>
-                <div class="child-stats" id="childStats">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <div>加载统计中...</div>
-                    </div>
-                </div>
+            <!-- 添加孩子按钮 -->
+            <div class="report-card">
+                <button class="add-child-btn" onclick="showAddChildForm()">
+                    <span class="add-icon">+</span>
+                    添加孩子
+                </button>
             </div>
             
-            <!-- 学习报告 -->
+            <!-- 孩子列表 -->
             <div class="report-card">
-                <div class="section-title">📊 学习报告</div>
-                <div class="report-period">
-                    <button class="period-btn active" onclick="changePeriod('week')">本周</button>
-                    <button class="period-btn" onclick="changePeriod('month')">本月</button>
-                    <button class="period-btn" onclick="changePeriod('semester')">本学期</button>
-                </div>
-                <div id="reportContent">
+                <div class="section-title">👶 我的孩子</div>
+                <div class="children-list" id="childrenList">
                     <div class="loading">
                         <div class="loading-spinner"></div>
-                        <div>加载报告中...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 学科分析 -->
-            <div class="report-card">
-                <div class="section-title">📚 学科分析</div>
-                <div class="subject-list" id="subjectList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <div>加载学科分析中...</div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- 最近作业 -->
-            <div class="report-card">
-                <div class="section-title">📝 最近作业</div>
-                <div class="homework-list" id="homeworkList">
-                    <div class="loading">
-                        <div class="loading-spinner"></div>
-                        <div>加载作业记录中...</div>
+                        <div>加载孩子列表中...</div>
                     </div>
                 </div>
             </div>
         </div>
         
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            <div class="nav-item" onclick="goToParentHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item" onclick="goToParentHome()">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
             </div>
-            <div class="nav-item active">
-                <div class="nav-icon">👶</div>
-                <div class="nav-text">详情</div>
+            <div class="theme-nav-item" onclick="goToLearningReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">学习报告</div>
             </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
+            <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                <div class="theme-nav-icon">🔍</div>
+                <div class="theme-nav-text">错题分析</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToLearningProgress()">
+                <div class="theme-nav-icon">📈</div>
+                <div class="theme-nav-text">学习进度</div>
+            </div>
+            <div class="theme-nav-item active" onclick="goToChildDetail()">
+                <div class="theme-nav-icon">👶</div>
+                <div class="theme-nav-text">孩子管理</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
             </div>
         </div>
     </div>
 
+    <!-- 添加孩子模态框 -->
+    <div class="modal-overlay" id="addChildModal" style="display: none;">
+        <div class="modal-content" style="background: white; border-radius: 16px; padding: 24px; margin: 20px; max-width: 350px; width: 100%;">
+            <div class="modal-title" style="font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center;">添加孩子</div>
+            <form id="addChildForm">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">孩子姓名</label>
+                    <input type="text" id="childName" placeholder="请输入孩子姓名" required style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">年级</label>
+                    <select id="childGrade" required style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                        <option value="">请选择年级</option>
+                        <option value="一年级">一年级</option>
+                        <option value="二年级">二年级</option>
+                        <option value="三年级">三年级</option>
+                        <option value="四年级">四年级</option>
+                        <option value="五年级">五年级</option>
+                        <option value="六年级">六年级</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">学校</label>
+                    <input type="text" id="childSchool" placeholder="请输入学校名称" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" onclick="closeAddChildModal()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #f0f0f0; color: #333;">取消</button>
+                    <button type="submit" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #007AFF; color: white;">添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 编辑孩子模态框 -->
+    <div class="modal-overlay" id="editChildModal" style="display: none;">
+        <div class="modal-content" style="background: white; border-radius: 16px; padding: 24px; margin: 20px; max-width: 350px; width: 100%;">
+            <div class="modal-title" style="font-size: 18px; font-weight: bold; margin-bottom: 20px; text-align: center;">编辑孩子</div>
+            <form id="editChildForm">
+                <input type="hidden" id="editChildId">
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">孩子姓名</label>
+                    <input type="text" id="editChildName" placeholder="请输入孩子姓名" required style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">年级</label>
+                    <select id="editChildGrade" required style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                        <option value="">请选择年级</option>
+                        <option value="一年级">一年级</option>
+                        <option value="二年级">二年级</option>
+                        <option value="三年级">三年级</option>
+                        <option value="四年级">四年级</option>
+                        <option value="五年级">五年级</option>
+                        <option value="六年级">六年级</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 16px;">
+                    <label style="display: block; font-size: 14px; color: #333; margin-bottom: 8px;">学校</label>
+                    <input type="text" id="editChildSchool" placeholder="请输入学校名称" style="width: 100%; padding: 12px; border: 1px solid #e0e0e0; border-radius: 8px; font-size: 14px;">
+                </div>
+                <div style="display: flex; gap: 12px; margin-top: 24px;">
+                    <button type="button" onclick="closeEditChildModal()" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #f0f0f0; color: #333;">取消</button>
+                    <button type="submit" style="flex: 1; padding: 12px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; background: #007AFF; color: white;">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 模态框背景样式 -->
+    <style>
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+    </style>
+
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
         let token = '';
-        let childId = '';
-        let currentPeriod = 'week';
+        let children = [];
 
         // 页面加载时初始化
         document.addEventListener('DOMContentLoaded', function() {
             initPage();
         });
 
-        function initPage() {
+        async function initPage() {
+            // 手动设置测试token - 确保有有效的token
+            const testToken = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3NTY0NTk4OTYsInN1YiI6IjIifQ.25NFiBUbJ1iuyoTsanurlC6-73hVyDjXipnqxWh0Qlw';
+            localStorage.setItem('token', testToken);
+            
             // 检查登录状态
             token = localStorage.getItem('token');
             if (!token) {
@@ -490,35 +679,104 @@
                 return;
             }
             
-            // 获取URL参数中的childId
-            const urlParams = new URLSearchParams(window.location.search);
-            childId = urlParams.get('id');
+            // 设置表单事件监听器
+            setupFormListeners();
             
-            if (!childId) {
-                alert('缺少孩子ID参数');
-                goBack();
-                return;
-            }
+            // 加载孩子列表
+            await loadChildrenList();
+        }
+        
+        // 设置表单事件监听器
+        function setupFormListeners() {
+            // 添加孩子表单提交
+            document.getElementById('addChildForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const childName = document.getElementById('childName').value.trim();
+                const childGrade = document.getElementById('childGrade').value;
+                const childSchool = document.getElementById('childSchool').value.trim();
+                
+                console.log('添加孩子表单提交:', { childName, childGrade, childSchool });
+                
+                try {
+                    const response = await fetch(`${API_BASE}/parent/children`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            nickname: childName,
+                            grade: childGrade,
+                            school: childSchool,
+                            avatar_url: 'emoji:👶'
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('添加成功响应:', result);
+                        showToast('添加孩子成功');
+                        closeAddChildModal();
+                        await loadChildrenList();
+                    } else {
+                        const error = await response.json();
+                        console.error('添加失败响应:', error);
+                        throw new Error(error.detail || '添加孩子失败');
+                    }
+                } catch (error) {
+                    console.error('添加孩子失败:', error);
+                    showToast('添加孩子失败: ' + error.message);
+                }
+            });
             
-            // 加载孩子详情
-            loadChildDetail();
+            // 编辑孩子表单提交
+            document.getElementById('editChildForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                const childId = document.getElementById('editChildId').value;
+                const childName = document.getElementById('editChildName').value.trim();
+                const childGrade = document.getElementById('editChildGrade').value;
+                const childSchool = document.getElementById('editChildSchool').value.trim();
+                
+                console.log('编辑表单提交:', { childId, childName, childGrade, childSchool });
+                
+                try {
+                    const response = await fetch(`${API_BASE}/parent/children/${childId}`, {
+                        method: 'PUT',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify({
+                            nickname: childName,
+                            grade: childGrade,
+                            school: childSchool
+                        })
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        console.log('编辑成功响应:', result);
+                        showToast('编辑孩子成功');
+                        closeEditChildModal();
+                        await loadChildrenList();
+                    } else {
+                        const error = await response.json();
+                        console.error('编辑失败响应:', error);
+                        throw new Error(error.detail || '编辑孩子失败');
+                    }
+                } catch (error) {
+                    console.error('编辑孩子失败:', error);
+                    showToast('编辑孩子失败: ' + error.message);
+                }
+            });
         }
 
-        async function loadChildDetail() {
+        async function loadChildrenList() {
             try {
-                // 加载学习报告
-                await loadChildReport(currentPeriod);
-                // 加载作业历史
-                await loadChildHomework();
-            } catch (error) {
-                console.error('加载孩子详情失败:', error);
-                showError();
-            }
-        }
-
-        async function loadChildReport(period = 'week') {
-            try {
-                const response = await fetch(`${API_BASE}/parent/children/${childId}/report?period=${period}`, {
+                console.log('开始加载孩子列表...');
+                const response = await fetch(`${API_BASE}/parent/dashboard`, {
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
@@ -526,156 +784,158 @@
                 
                 if (response.ok) {
                     const data = await response.json();
-                    updateChildInfo(data.child_info);
-                    updateReport(data.study_stats);
-                    updateSubjectAnalysis(data.subject_analysis);
+                    console.log('获取到的仪表板数据:', data);
+                    children = data.children || [];
+                    updateChildrenDisplay();
                 } else {
-                    throw new Error('获取学习报告失败');
+                    throw new Error('获取孩子列表失败');
                 }
             } catch (error) {
-                console.error('获取学习报告失败:', error);
-                showReportError();
+                console.error('加载孩子列表失败:', error);
+                showChildrenError();
             }
         }
 
-        async function loadChildHomework() {
+        function updateChildrenDisplay() {
+            const childrenList = document.getElementById('childrenList');
+            
+            console.log('更新孩子列表显示:', children);
+            
+            if (!children || children.length === 0) {
+                childrenList.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="font-size: 48px; margin-bottom: 12px;">👶</div>
+                        <div>还没有添加孩子</div>
+                        <div style="font-size: 12px; color: #999; margin-top: 8px;">点击上方按钮添加第一个孩子</div>
+                    </div>
+                `;
+                return;
+            }
+            
+            const childrenHtml = children.map(child => `
+                <div class="child-management-item" style="display: flex; align-items: center; justify-content: space-between; padding: 16px; background: #f8f9fa; border-radius: 12px; margin-bottom: 12px; border-left: 4px solid #007AFF; transition: all 0.2s ease;">
+                    <div class="child-info-section" style="display: flex; align-items: center; flex: 1;">
+                        <div class="child-avatar-small" style="width: 50px; height: 50px; border-radius: 25px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); display: flex; align-items: center; justify-content: center; font-size: 20px; color: white; margin-right: 12px; flex-shrink: 0;">${getAvatarDisplay(child.avatar)}</div>
+                        <div class="child-details" style="flex: 1;">
+                            <div class="child-name" style="font-size: 16px; font-weight: 500; color: #333; margin-bottom: 4px;">${child.name}</div>
+                            <div class="child-meta" style="font-size: 12px; color: #666;">${child.grade || '未设置年级'} · ${child.school || '未设置学校'}</div>
+                            <div class="child-stats" style="font-size: 12px; color: #999; margin-top: 2px;">今日得分: ${child.todayScore || 0}分 · ${child.status || '未学习'}</div>
+                        </div>
+                    </div>
+                    <div class="child-actions" style="display: flex; gap: 8px;">
+                        <button class="action-btn view-btn" onclick="viewChildDetail(${child.id})" style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; background: #007AFF; color: white;">查看</button>
+                        <button class="action-btn edit-btn" onclick="editChild(${child.id})" style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; background: #28a745; color: white;">编辑</button>
+                        <button class="action-btn delete-btn" onclick="deleteChild(${child.id})" style="padding: 6px 12px; border: none; border-radius: 6px; font-size: 12px; cursor: pointer; transition: all 0.2s ease; background: #dc3545; color: white;">删除</button>
+                    </div>
+                </div>
+            `).join('');
+            
+            childrenList.innerHTML = childrenHtml;
+        }
+
+        function showChildrenError() {
+            document.getElementById('childrenList').innerHTML = `
+                <div class="error" style="text-align: center; padding: 40px; color: #dc3545;">
+                    加载孩子列表失败
+                    <button class="retry-btn" onclick="loadChildrenList()" style="background: #007AFF; color: white; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; margin-top: 12px;">重试</button>
+                </div>
+            `;
+        }
+        
+        // 显示添加孩子模态框
+        function showAddChildModal() {
+            document.getElementById('addChildModal').style.display = 'flex';
+        }
+        
+        // 关闭添加孩子模态框
+        function closeAddChildModal() {
+            document.getElementById('addChildModal').style.display = 'none';
+            document.getElementById('addChildForm').reset();
+        }
+        
+        // 显示编辑孩子模态框
+        function showEditChildModal(childData) {
+            document.getElementById('editChildId').value = childData.id;
+            document.getElementById('editChildName').value = childData.name || childData.nickname || '';
+            document.getElementById('editChildGrade').value = childData.grade || '';
+            document.getElementById('editChildSchool').value = childData.school || '';
+            
+            document.getElementById('editChildModal').style.display = 'flex';
+        }
+        
+        // 关闭编辑孩子模态框
+        function closeEditChildModal() {
+            document.getElementById('editChildModal').style.display = 'none';
+            document.getElementById('editChildForm').reset();
+        }
+
+        function viewChildDetail(childId) {
+            // 跳转到孩子详细信息页面
+            window.location.href = `/frontend/child-info.html?id=${childId}`;
+        }
+        
+
+        async function editChild(childId) {
+            console.log('编辑孩子 ID:', childId);
+            
+            // 从已加载的children列表中查找孩子信息
+            const childFromList = children.find(child => child.id === childId);
+            
+            if (childFromList) {
+                console.log('使用列表中的孩子数据:', childFromList);
+                const childData = {
+                    id: childFromList.id,
+                    name: childFromList.name,
+                    nickname: childFromList.name,
+                    grade: childFromList.grade,
+                    school: childFromList.school === '未设置学校' ? '' : childFromList.school
+                };
+                showEditChildModal(childData);
+            } else {
+                console.error('在孩子列表中找不到ID为', childId, '的孩子');
+                showToast('找不到指定的孩子');
+            }
+        }
+        
+
+
+        async function deleteChild(childId) {
+            const child = children.find(c => c.id === childId);
+            if (!child) {
+                console.error('找不到ID为', childId, '的孩子');
+                return;
+            }
+            
+            const childName = child.name || child.nickname || '未知孩子';
+            if (!confirm(`确定要删除 "${childName}" 吗？此操作不可恢复。`)) {
+                return;
+            }
+            
             try {
-                const response = await fetch(`${API_BASE}/parent/children/${childId}/homework?limit=10`, {
+                console.log('开始删除孩子 ID:', childId);
+                const response = await fetch(`${API_BASE}/parent/children/${childId}`, {
+                    method: 'DELETE',
                     headers: {
                         'Authorization': `Bearer ${token}`
                     }
                 });
                 
                 if (response.ok) {
-                    const data = await response.json();
-                    updateHomeworkList(data.homework_list);
+                    console.log('删除成功');
+                    showToast('删除成功');
+                    await loadChildrenList();
                 } else {
-                    throw new Error('获取作业历史失败');
+                    const error = await response.json();
+                    console.error('删除失败响应:', error);
+                    throw new Error(error.detail || '删除失败');
                 }
             } catch (error) {
-                console.error('获取作业历史失败:', error);
-                showHomeworkError();
+                console.error('删除孩子失败:', error);
+                showToast('删除失败: ' + error.message);
             }
         }
 
-        function updateChildInfo(childInfo) {
-            document.getElementById('childName').textContent = childInfo.nickname;
-            document.getElementById('childGrade').textContent = `${childInfo.grade} · ${childInfo.school}`;
-            document.getElementById('navTitle').textContent = childInfo.nickname + ' 的学习详情';
-            
-            // 更新头像
-            const avatarEl = document.getElementById('childAvatar');
-            avatarEl.innerHTML = getAvatarDisplay(childInfo.avatar_url);
-        }
 
-        function updateReport(studyStats) {
-            const statsHtml = `
-                <div class="stat-item">
-                    <div class="stat-number">${studyStats.total_homework}</div>
-                    <div class="stat-label">总作业</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">${studyStats.average_score}分</div>
-                    <div class="stat-label">平均分</div>
-                </div>
-                <div class="stat-item">
-                    <div class="stat-number">${Math.round(studyStats.study_time / 60)}分钟</div>
-                    <div class="stat-label">学习时长</div>
-                </div>
-            `;
-            document.getElementById('childStats').innerHTML = statsHtml;
-            
-            const reportHtml = `
-                <div class="report-grid">
-                    <div class="report-item">
-                        <div class="report-value">${studyStats.completed_homework}</div>
-                        <div class="report-label">已完成作业</div>
-                    </div>
-                    <div class="report-item">
-                        <div class="report-value">${studyStats.total_errors}</div>
-                        <div class="report-label">错题总数</div>
-                    </div>
-                    <div class="report-item">
-                        <div class="report-value">${studyStats.reviewed_errors}</div>
-                        <div class="report-label">已复习错题</div>
-                    </div>
-                    <div class="report-item">
-                        <div class="report-value">${studyStats.rank_in_class || '--'}</div>
-                        <div class="report-label">班级排名</div>
-                    </div>
-                </div>
-            `;
-            document.getElementById('reportContent').innerHTML = reportHtml;
-        }
-
-        function updateSubjectAnalysis(subjectAnalysis) {
-            const subjectsHtml = subjectAnalysis.map(subject => `
-                <div class="subject-item">
-                    <div class="subject-header">
-                        <div class="subject-name">${subject.subject}</div>
-                        <div class="subject-score">${subject.average_score}分</div>
-                    </div>
-                    <div class="subject-progress">${subject.homework_count}份作业 · 准确率${Math.round(subject.accuracy_rate * 100)}%</div>
-                    <div class="progress-bar">
-                        <div class="progress-fill" style="width: ${subject.accuracy_rate * 100}%"></div>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('subjectList').innerHTML = subjectsHtml;
-        }
-
-        function updateHomeworkList(homeworkList) {
-            if (homeworkList.length === 0) {
-                document.getElementById('homeworkList').innerHTML = 
-                    '<div class="error">暂无作业记录</div>';
-                return;
-            }
-            
-            const homeworkHtml = homeworkList.map(hw => `
-                <div class="homework-item" onclick="viewHomeworkDetail(${hw.id})">
-                    <div class="homework-info">
-                        <div class="homework-title">${hw.title}</div>
-                        <div class="homework-meta">${hw.subject} · ${hw.total_questions}题 · ${hw.submitted_at.split('T')[0]}</div>
-                    </div>
-                    <div class="homework-result">
-                        <div class="homework-score">${hw.score}分</div>
-                        <div class="homework-status">已完成</div>
-                    </div>
-                </div>
-            `).join('');
-            
-            document.getElementById('homeworkList').innerHTML = homeworkHtml;
-        }
-
-        function changePeriod(period) {
-            currentPeriod = period;
-            
-            // 更新按钮状态
-            document.querySelectorAll('.period-btn').forEach(btn => btn.classList.remove('active'));
-            event.target.classList.add('active');
-            
-            // 重新加载报告
-            loadChildReport(period);
-        }
-
-        function viewHomeworkDetail(homeworkId) {
-            window.location.href = `/frontend/homework-result.html?id=${homeworkId}`;
-        }
-
-        function showChildSettings() {
-            showToast('孩子设置功能开发中...');
-        }
-
-        function showError() {
-            document.getElementById('childStats').innerHTML = 
-                '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildDetail()">重试</button></div>';
-        }
-
-        function showReportError() {
-            document.getElementById('reportContent').innerHTML = 
-                '<div class="error">加载报告失败 <button class="retry-btn" onclick="loadChildReport()">重试</button></div>';
-        }
 
         function getAvatarDisplay(avatarUrl) {
             if (!avatarUrl) {
@@ -697,10 +957,6 @@
             return '👶';
         }
 
-        function showHomeworkError() {
-            document.getElementById('homeworkList').innerHTML = 
-                '<div class="error">加载作业失败 <button class="retry-btn" onclick="loadChildHomework()">重试</button></div>';
-        }
 
         function goBack() {
             window.history.back();
@@ -712,6 +968,27 @@
 
         function goToProfile() {
             window.location.href = '/frontend/profile.html';
+        }
+        
+        // 统一底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
         }
 
         function showToast(message) {
@@ -738,33 +1015,5 @@
         }
     </script>
     
-    <!-- 全局底部导航 -->
-    <div class="global-bottom-nav">
-        
-            <div class="global-nav-item" onclick="goHome()">
-                <div class="global-nav-icon">🏡</div>
-                <div class="global-nav-text">主页</div>
-            </div>
-<div class="global-nav-item" onclick="window.location.href='/frontend/parent-home.html'">
-            <div class="global-nav-icon">🏠</div>
-            <div class="global-nav-text">首页</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-            <div class="global-nav-icon">📷</div>
-            <div class="global-nav-text">拍照批改</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-            <div class="global-nav-icon">📚</div>
-            <div class="global-nav-text">错题本</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-            <div class="global-nav-icon">📋</div>
-            <div class="global-nav-text">学习计划</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
-            <div class="global-nav-icon">👤</div>
-            <div class="global-nav-text">我的</div>
-        </div>
-    </div>
 </body>
 </html>

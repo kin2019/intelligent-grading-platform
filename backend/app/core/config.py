@@ -27,7 +27,7 @@ class Settings(BaseSettings):
     DB_NAME: str = "zyjc_db"
     DB_USER: str = "postgres"
     DB_PASSWORD: str = "postgres123"
-    DATABASE_URL: str = "sqlite:///./test.db"
+    DATABASE_URL: str = "sqlite:///./app.db"
     DATABASE_POOL_SIZE: int = 20
     DATABASE_POOL_OVERFLOW: int = 0
     

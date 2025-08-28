@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>测试孩子详情页面</title>
+</head>
+<body>
+    <h2>正在设置token并跳转到孩子详情页面...</h2>
+    <script>
+        // 设置家长用户token
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU2NDU5MzAzfQ.JYdr6IuIKyyN1XwQRFh4rcC_1O3bJokZ1fWYVxs_mDg';
+        localStorage.setItem('token', token);
+        console.log('Token已设置:', token);
+        
+        // 跳转到孩子详情页面（孩子ID=110）
+        setTimeout(() => {
+            window.location.href = '/frontend/child-info.html?id=110';
+        }, 1000);
+    </script>
+</body>
+</html>
