@@ -490,81 +490,7 @@
             z-index: 10001;
         }
         
-        /* 底部导航 - 学生样式 */
-        .bottom-nav, .global-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: #ffffff;
-            border-top: 1px solid #eee;
-            display: none; /* 默认隐藏，通过JavaScript控制显示 */
-            padding: 8px 0;
-            z-index: 9999;
-        }
-        
-        .nav-item, .global-nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .nav-item.active, .global-nav-item.active {
-            color: #007AFF;
-        }
-        
-        .nav-icon, .global-nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-        
-        .nav-text, .global-nav-text {
-            font-size: 10px;
-        }
-
-        /* 底部导航 - 家长样式 */
-        .theme-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: #ffffff;
-            border-top: 1px solid #eee;
-            display: none; /* 默认隐藏，通过JavaScript控制显示 */
-            padding: 8px 0;
-            z-index: 10000;
-        }
-        
-        .theme-nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px 4px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-            color: #666;
-        }
-        
-        .theme-nav-item.active {
-            color: #ff6b6b;
-        }
-        
-        .theme-nav-icon {
-            font-size: 18px;
-            margin-bottom: 2px;
-            display: block;
-        }
-        
-        .theme-nav-text {
-            font-size: 10px;
-            line-height: 1;
-            font-weight: 500;
-        }
+        /* 底部导航样式已移至统一组件 bottom-navigation.css */
         
         /* 头像编辑相关样式 */
         .avatar-edit-content {
@@ -1075,57 +1001,7 @@
         </div>
     </div>
     
-    <!-- 学生底部导航 -->
-    <div class="global-bottom-nav student-nav" id="studentNav" style="display: none;">
-        <div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
-            <div class="global-nav-icon">🏠</div>
-            <div class="global-nav-text">首页</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-            <div class="global-nav-icon">📷</div>
-            <div class="global-nav-text">拍照批改</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-            <div class="global-nav-icon">📚</div>
-            <div class="global-nav-text">错题本</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-            <div class="global-nav-icon">📋</div>
-            <div class="global-nav-text">学习计划</div>
-        </div>
-        <div class="global-nav-item active" onclick="window.location.href='/frontend/profile.html'">
-            <div class="global-nav-icon">👤</div>
-            <div class="global-nav-text">我的</div>
-        </div>
-    </div>
-    
-    <!-- 家长底部导航 -->
-    <div class="theme-bottom-nav" id="parentNav" style="display: none;">
-        <div class="theme-nav-item" onclick="goToParentHome()">
-            <div class="theme-nav-icon">🏠</div>
-            <div class="theme-nav-text">首页</div>
-        </div>
-        <div class="theme-nav-item" onclick="goToLearningReports()">
-            <div class="theme-nav-icon">📊</div>
-            <div class="theme-nav-text">学习报告</div>
-        </div>
-        <div class="theme-nav-item" onclick="goToErrorAnalysis()">
-            <div class="theme-nav-icon">🔍</div>
-            <div class="theme-nav-text">错题分析</div>
-        </div>
-        <div class="theme-nav-item" onclick="goToLearningProgress()">
-            <div class="theme-nav-icon">📈</div>
-            <div class="theme-nav-text">学习进度</div>
-        </div>
-        <div class="theme-nav-item" onclick="goToChildDetail()">
-            <div class="theme-nav-icon">👶</div>
-            <div class="theme-nav-text">孩子管理</div>
-        </div>
-        <div class="theme-nav-item active" onclick="goToProfile()">
-            <div class="theme-nav-icon">👤</div>
-            <div class="theme-nav-text">我的</div>
-        </div>
-    </div>
+    <!-- 底部导航通过统一组件自动生成，根据用户角色显示对应导航 -->
     
     <!-- 确认模态框 -->
     <div class="modal" id="confirmModal">
@@ -1193,6 +1069,11 @@
 
     <!-- 认证工具类 -->
     <script src="/frontend/js/auth-utils.js"></script>
+    
+    <!-- 底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
+    <script src="/frontend/js/navigation-config.js"></script>
+    <script src="/frontend/js/bottom-navigation.js"></script>
     
     <script>
         console.log('=== SCRIPT LOADING ===');
@@ -1319,122 +1200,47 @@
             console.log('=== 初始化页面 ===');
             
             try {
-                // 检查用户角色和权限 - 多重验证
-                console.log('=== 身份验证开始 ===');
+                // 绑定token获取
+                token = localStorage.getItem('token');
+                let role = localStorage.getItem('role');
                 
-                // 方法1：从AuthUtils获取角色
-                let role = AuthUtils.getCurrentUserRole();
-                console.log('AuthUtils获取的角色:', role);
+                console.log('初始化页面 - Token:', token ? 'OK' : 'NONE', 'Role:', role);
                 
-                // 方法2：从localStorage直接获取角色（备用验证）
-                const storedRole = localStorage.getItem('role');
-                console.log('localStorage中的角色:', storedRole);
-                
-                // 方法3：从用户信息中获取角色
-                const storedUser = localStorage.getItem('user');
-                let userRole = null;
-                if (storedUser) {
-                    try {
-                        const userObj = JSON.parse(storedUser);
-                        userRole = userObj.role;
-                        console.log('用户信息中的角色:', userRole);
-                    } catch (e) {
-                        console.warn('用户信息解析失败:', e);
-                    }
-                }
-                
-                // 角色一致性检查
-                if (!role && storedRole) {
-                    role = storedRole;
-                    console.log('使用localStorage中的角色:', role);
-                }
-                if (!role && userRole) {
-                    role = userRole;
-                    console.log('使用用户信息中的角色:', role);
-                }
-                
-                // 最终角色验证
-                if (!role || !['student', 'parent', 'teacher'].includes(role)) {
-                    console.error('❌ 未找到有效用户角色，当前role:', role);
-                    console.log('重定向到登录页面');
-                    window.location.href = '/frontend/login.html';
-                    return;
-                }
-                
-                console.log('✅ 身份验证通过，最终角色:', role);
-                
-                // 获取token
-                token = AuthUtils.getCurrentToken();
                 if (!token) {
-                    console.error('❌ 未找到有效token，重定向到登录页');
-                    window.location.href = '/frontend/login.html';
+                    showToast('请先登录');
+                    setTimeout(() => {
+                        window.location.href = '/frontend/login.html';
+                    }, 2000);
                     return;
                 }
-                console.log('✅ Token验证通过');
                 
-                console.log(`🎯 确认身份：以${AuthUtils.getRoleDisplayName(role)}身份访问个人中心页面`);
-                
-                // 确保DOM完全准备好后配置UI - 增加多重保障
-                function configureUIWhenReady(retryCount = 0) {
-                    const maxRetries = 10;
+                // 通过token判断用户角色，确保角色正确
+                try {
+                    const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                    const userId = tokenPayload.sub;
+                    console.log('Token中的用户ID:', userId);
                     
-                    // 检查关键元素是否存在
-                    const studentNav = document.getElementById('studentNav');
-                    const parentNav = document.getElementById('parentNav');
-                    
-                    if ((!studentNav || !parentNav) && retryCount < maxRetries) {
-                        console.log(`⏳ DOM未完全准备好（尝试 ${retryCount + 1}/${maxRetries}），等待重试...`);
-                        setTimeout(() => configureUIWhenReady(retryCount + 1), 100);
-                        return;
+                    // 根据用户ID判断角色：ID=1是学生，ID=2是家长
+                    if (userId === '2') {
+                        role = 'parent';
+                        console.log('从Token检测到家长用户');
+                    } else {
+                        role = 'student';
+                        console.log('从Token检测到学生用户');
                     }
                     
-                    try {
-                        console.log('🚀 开始配置基于角色的UI...');
-                        console.log('目标角色:', role);
-                        setupRoleBasedUI(role);
-                        console.log('✅ UI配置完成');
-                        
-                        // 额外验证：检查导航是否正确显示
-                        setTimeout(() => {
-                            const studentNavVisible = studentNav && studentNav.style.display !== 'none';
-                            const parentNavVisible = parentNav && parentNav.style.display !== 'none';
-                            
-                            console.log('=== 最终导航显示状态验证 ===');
-                            console.log('学生导航可见:', studentNavVisible);
-                            console.log('家长导航可见:', parentNavVisible);
-                            
-                            if (role === 'student' && !studentNavVisible) {
-                                console.warn('⚠️  学生用户但学生导航未显示，执行强制显示');
-                                forceShowCorrectNavigation();
-                            } else if (role === 'parent' && !parentNavVisible) {
-                                console.warn('⚠️  家长用户但家长导航未显示，执行强制显示');
-                                forceShowCorrectNavigation();
-                            }
-                            
-                            console.log('✅ 导航显示状态验证完成');
-                        }, 200);
-                        
-                        // 额外保障：延迟更久的强制检查
-                        setTimeout(() => {
-                            console.log('🔄 执行延迟的导航强制检查...');
-                            forceShowCorrectNavigation();
-                        }, 1000);
-                        
-                    } catch (uiError) {
-                        console.error('❌ UI配置失败:', uiError);
-                        console.error('错误堆栈:', uiError.stack);
-                        // UI配置失败不影响页面其他功能，但要显示友好提示
-                        showToast('页面UI加载遇到问题，部分功能可能受限');
-                    }
+                    // 更新localStorage中的角色信息
+                    localStorage.setItem('role', role);
+                    console.log('角色已更新到localStorage:', role);
+                    
+                } catch (error) {
+                    console.error('解析Token失败，使用默认学生角色:', error);
+                    role = 'student';
+                    localStorage.setItem('role', role);
                 }
                 
-                // 开始配置UI
-                configureUIWhenReady();
-                
-                console.log('API_BASE设置为:', API_BASE);
-                
-                // 加载用户数据
-                loadUserProfile(role);
+                // 生成角色对应的导航
+                generateRoleBasedNavigation();
                 
                 // 检查是否从其他页面返回，如果是则强制刷新
                 const returnFromPage = localStorage.getItem('returnFromPage');
@@ -1484,30 +1290,132 @@
             }
         }
         
-        function setupRoleBasedUI(role) {
-            console.log('=== 设置基于角色的UI ===');
-            console.log('当前用户角色:', role);
+        function generateRoleBasedNavigation() {
+            console.log('使用新的底部导航组件生成导航');
             
-            // 先确保所有导航都隐藏
-            const studentNav = document.getElementById('studentNav');
-            const parentNav = document.getElementById('parentNav');
-            
-            console.log('底部导航元素检查:', {
-                studentNav: !!studentNav,
-                parentNav: !!parentNav
+            // 使用新的统一组件初始化导航
+            const success = BottomNavigation.init({
+                currentPage: 'profile',
+                debug: false
             });
             
-            // 强制隐藏所有导航，防止重叠显示
-            if (studentNav) {
-                studentNav.style.display = 'none';
-                studentNav.style.visibility = 'hidden';
-                console.log('✅ 强制隐藏学生导航');
+            if (success) {
+                console.log('✅ 底部导航组件初始化成功');
+            } else {
+                console.error('❌ 底部导航组件初始化失败');
+                // 作为备用方案，使用旧的实现
+                setupRoleBasedUIFallback();
             }
-            if (parentNav) {
-                parentNav.style.display = 'none';
-                parentNav.style.visibility = 'hidden';
-                console.log('✅ 强制隐藏家长导航');
-            }
+            
+            // 继续配置UI显示
+            const role = getCurrentUserRole();
+            setupRoleBasedUI(role);
+        }
+        
+        // 作为备用方案的简化导航创建函数
+        function setupRoleBasedUIFallback() {
+            console.warn('⚠️ 使用备用导航方案');
+            const role = getCurrentUserRole();
+            
+            // 创建基本的导航结构
+            const navItems = role === 'parent' ? [
+                { icon: '🏠', text: '首页', onclick: 'goToParentHome()' },
+                { icon: '📊', text: '学习报告', onclick: 'goToLearningReports()' },
+                { icon: '👶', text: '孩子管理', onclick: 'goToChildrenManagement()' },
+                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+            ] : [
+                { icon: '🏠', text: '首页', onclick: 'goToStudentHome()' },
+                { icon: '📷', text: '拍照批改', onclick: 'goToHomeworkSubmit()' },
+                { icon: '📚', text: '错题本', onclick: 'goToErrorBook()' },
+                { icon: '📋', text: '学习计划', onclick: 'goToStudyPlan()' },
+                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+            ];
+            
+            // 创建简单的导航
+            const nav = document.createElement('div');
+            nav.className = role === 'parent' ? 'theme-bottom-nav' : 'global-bottom-nav';
+            
+            // 应用与study-plan.html一致的容器样式
+            nav.style.cssText = role === 'parent' ? `
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 100% !important;
+                max-width: 400px !important;
+                background: linear-gradient(135deg, rgba(102, 126, 234, 0.95), rgba(118, 142, 250, 0.95)) !important;
+                backdrop-filter: blur(20px) !important;
+                border-top: 1px solid rgba(255, 255, 255, 0.2) !important;
+                padding: 8px 0 6px !important;
+                z-index: 9999 !important;
+                display: flex !important;
+            ` : `
+                position: fixed !important;
+                bottom: 0 !important;
+                left: 50% !important;
+                transform: translateX(-50%) !important;
+                width: 100% !important;
+                max-width: 400px !important;
+                background: rgba(255, 255, 255, 0.95) !important;
+                backdrop-filter: blur(20px) !important;
+                border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+                padding: 8px 0 6px !important;
+                z-index: 9999 !important;
+                display: flex !important;
+            `;
+            
+            const itemClass = role === 'parent' ? 'theme-nav' : 'global-nav';
+            nav.innerHTML = navItems.map(item => `
+                <div class="${itemClass}-item ${item.active ? 'active' : ''}" ${item.onclick ? `onclick="${item.onclick}"` : ''}>
+                    <div class="${itemClass}-icon">${item.icon}</div>
+                    <div class="${itemClass}-text">${item.text}</div>
+                </div>
+            `).join('');
+            
+            document.body.appendChild(nav);
+            
+            // 应用按钮样式
+            const buttons = nav.querySelectorAll(`.${itemClass}-item`);
+            buttons.forEach((button, index) => {
+                const isActive = button.classList.contains('active');
+                
+                if (role === 'parent') {
+                    button.style.cssText = `
+                        flex: 1 !important;
+                        text-align: center !important;
+                        padding: 6px 2px 4px !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        border-radius: 12px !important;
+                        margin: 0 2px !important;
+                        ${isActive ? 'background: rgba(255, 255, 255, 0.2) !important; color: white !important;' : 'background: transparent !important; color: rgba(255, 255, 255, 0.8) !important;'}
+                    `;
+                } else {
+                    button.style.cssText = `
+                        flex: 1 !important;
+                        text-align: center !important;
+                        padding: 6px 2px 4px !important;
+                        cursor: pointer !important;
+                        transition: all 0.3s ease !important;
+                        border-radius: 12px !important;
+                        margin: 0 2px !important;
+                        ${isActive ? 'background: rgba(76, 175, 80, 0.1) !important; color: #4CAF50 !important;' : 'background: transparent !important; color: #666 !important;'}
+                    `;
+                }
+                
+                const icon = button.querySelector(`.${itemClass}-icon`);
+                const text = button.querySelector(`.${itemClass}-text`);
+                if (icon) icon.style.cssText = 'font-size: 20px !important; margin-bottom: 2px !important; display: block !important;';
+                if (text) text.style.cssText = 'font-size: 10px !important; line-height: 1 !important; font-weight: 500 !important;';
+            });
+            
+            // 设置页面底部间距
+            document.body.style.paddingBottom = '80px';
+        }
+        
+        function setupRoleBasedUI(role) {
+            console.log('=== 设置基于角色的UI内容显示 ===');
+            console.log('当前用户角色:', role);
             
             // 安全获取元素的函数
             function safeSetDisplay(selector, display, isId = false) {
@@ -1527,7 +1435,7 @@
                 }
             }
             
-            // 根据角色配置UI和导航
+            // 根据角色配置UI显示内容
             if (role === 'student') {
                 console.log('🎓 配置学生身份UI...');
                 
@@ -1537,15 +1445,6 @@
                 safeSetDisplay('.parent-stats', 'none');
                 safeSetDisplay('.parent-functions', 'none');
                 safeSetDisplay('childrenSection', 'none', true);
-                
-                // 显示学生底部导航
-                if (studentNav) {
-                    studentNav.style.display = 'flex';
-                    studentNav.style.visibility = 'visible';
-                    console.log('✅ 显示学生底部导航');
-                } else {
-                    console.error('❌ 未找到学生导航元素');
-                }
                 
             } else if (role === 'parent') {
                 console.log('👨‍👩‍👧‍👦 配置家长身份UI...');
@@ -1557,100 +1456,34 @@
                 safeSetDisplay('.student-functions', 'none');
                 safeSetDisplay('childrenSection', 'block', true);
                 
-                // 显示家长底部导航
-                if (parentNav) {
-                    parentNav.style.display = 'flex';
-                    parentNav.style.visibility = 'visible';
-                    console.log('✅ 显示家长底部导航');
-                } else {
-                    console.error('❌ 未找到家长导航元素');
-                }
-                
             } else {
                 console.error('❌ 未知的用户角色:', role);
                 return;
             }
             
-            // 验证最终状态
-            console.log('=== UI配置完成后的状态检查 ===');
-            if (studentNav) {
-                console.log('学生导航显示状态:', studentNav.style.display);
-            }
-            if (parentNav) {
-                console.log('家长导航显示状态:', parentNav.style.display);
-            }
-            
             console.log(`✅ ${role}身份UI配置完成`);
         }
 
-        // 强制确保正确的导航显示（备用方案）
-        function forceShowCorrectNavigation() {
-            console.log('=== 强制检查并显示正确的导航 ===');
-            
-            const role = AuthUtils.getCurrentUserRole();
-            const studentNav = document.getElementById('studentNav');
-            const parentNav = document.getElementById('parentNav');
-            
-            console.log('强制检查 - 当前角色:', role);
-            console.log('导航元素存在检查:', {
-                studentNav: !!studentNav,
-                parentNav: !!parentNav
-            });
-            
-            if (!role) {
-                console.error('❌ 无法获取用户角色');
-                return;
-            }
-            
-            // 强制隐藏所有导航
-            if (studentNav) {
-                studentNav.style.display = 'none';
-                studentNav.style.visibility = 'hidden';
-            }
-            if (parentNav) {
-                parentNav.style.display = 'none';
-                parentNav.style.visibility = 'hidden';
-            }
-            
-            // 根据角色强制显示对应导航（确保只显示一个）
-            if (role === 'parent' && parentNav) {
-                console.log('🔧 强制显示家长导航');
-                // 再次确保学生导航完全隐藏
-                if (studentNav) {
-                    studentNav.style.display = 'none';
-                    studentNav.style.visibility = 'hidden';
-                }
-                // 显示家长导航
-                parentNav.style.display = 'flex';
-                parentNav.style.visibility = 'visible';
-                parentNav.style.zIndex = '10000';
-                console.log('✅ 家长导航已强制显示');
-                
-                // 验证显示状态
-                setTimeout(() => {
-                    const computedStyle = window.getComputedStyle(parentNav);
-                    console.log('家长导航最终样式:', {
-                        display: computedStyle.display,
-                        visibility: computedStyle.visibility,
-                        zIndex: computedStyle.zIndex
-                    });
-                }, 100);
-                
-            } else if (role === 'student' && studentNav) {
-                console.log('🔧 强制显示学生导航');
-                // 再次确保家长导航完全隐藏
-                if (parentNav) {
-                    parentNav.style.display = 'none';
-                    parentNav.style.visibility = 'hidden';
-                }
-                // 显示学生导航
-                studentNav.style.display = 'flex';
-                studentNav.style.visibility = 'visible';
-                studentNav.style.zIndex = '9999';
-                console.log('✅ 学生导航已强制显示');
-            }
-            
-            console.log('=== 强制导航显示完成 ===');
+        // 导航相关功能函数 - 与底部导航组件配合使用
+        function goToStudentHome() {
+            window.location.href = '/frontend/student-home.html';
+        }
+        
+        function goToHomeworkSubmit() {
+            window.location.href = '/frontend/homework-submit.html';
+        }
+        
+        function goToErrorBook() {
+            window.location.href = '/frontend/error-book.html';
+        }
+        
+        function goToStudyPlan() {
+            window.location.href = '/frontend/study-plan.html';
+        }
+        
+        function goToProfile() {
+            // 当前就是profile页面，刷新页面
+            window.location.reload();
         }
 
         async function loadUserProfile(role) {
@@ -3609,86 +3442,8 @@
             }
         });
 
-        // 确保底部导航样式正确
-        function ensureNavigationStyles() {
-            console.log('设置profile底部导航样式...');
-            
-            try {
-                // 为页面底部留出导航空间
-                if (document.body) {
-                    document.body.style.paddingBottom = '80px';
-                    console.log('✅ 已设置页面底部间距');
-                }
-                
-                // 学生导航样式
-                const studentNav = document.querySelector('#studentNav');
-                if (studentNav) {
-                    console.log('找到学生导航元素，当前显示状态:', studentNav.style.display);
-                    if (studentNav.style.display !== 'none') {
-                        const buttons = studentNav.querySelectorAll('.global-nav-item');
-                        console.log(`学生导航找到 ${buttons.length} 个按钮`);
-                        buttons.forEach((button, index) => {
-                            try {
-                                const isActive = button.classList.contains('active');
-                                if (isActive) {
-                                    button.style.color = '#007AFF';
-                                    console.log(`✅ 已设置学生导航按钮 ${index} 的激活样式`);
-                                }
-                            } catch (btnError) {
-                                console.error(`设置学生导航按钮 ${index} 样式失败:`, btnError);
-                            }
-                        });
-                    }
-                } else {
-                    console.log('学生导航元素未找到');
-                }
-                
-                // 家长导航样式
-                const parentNav = document.querySelector('#parentNav');
-                if (parentNav) {
-                    console.log('找到家长导航元素，当前显示状态:', parentNav.style.display);
-                    if (parentNav.style.display !== 'none') {
-                        const buttons = parentNav.querySelectorAll('.theme-nav-item');
-                        console.log(`家长导航找到 ${buttons.length} 个按钮`);
-                        buttons.forEach((button, index) => {
-                            try {
-                                const isActive = button.classList.contains('active');
-                                if (isActive) {
-                                    button.style.color = '#ff6b6b';
-                                    console.log(`✅ 已设置家长导航按钮 ${index} 的激活样式`);
-                                }
-                            } catch (btnError) {
-                                console.error(`设置家长导航按钮 ${index} 样式失败:`, btnError);
-                            }
-                        });
-                    }
-                } else {
-                    console.log('家长导航元素未找到');
-                }
-                
-                console.log('✅ 导航样式设置完成');
-                
-            } catch (error) {
-                console.error('❌ 设置导航样式时出错:', error);
-            }
-        }
-        
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(ensureNavigationStyles, 500);
-            
-            // 页面完全加载后的最终导航检查
-            setTimeout(() => {
-                console.log('📋 执行页面完全加载后的最终导航检查');
-                const role = AuthUtils.getCurrentUserRole();
-                if (role === 'parent') {
-                    const parentNav = document.getElementById('parentNav');
-                    if (parentNav && parentNav.style.display === 'none') {
-                        console.log('🔧 页面加载完成后发现家长导航仍未显示，强制显示');
-                        forceShowCorrectNavigation();
-                    }
-                }
-            }, 2000);
-        });
+        // 页面底部间距由底部导航组件的CSS统一处理
+        // 不需要手动设置paddingBottom
     </script>
 </body>
 </html>

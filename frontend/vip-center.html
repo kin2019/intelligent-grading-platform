@@ -597,6 +597,11 @@
             }
         }
     </style>
+    
+    <!-- 底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
+    <script src="/frontend/js/navigation-config.js"></script>
+    <script src="/frontend/js/bottom-navigation.js"></script>
 </head>
 <body>
     <div class="container">
@@ -827,105 +832,21 @@
         }
 
         function generateRoleBasedNavigation() {
-            const role = localStorage.getItem('role') || 'student';
+            console.log('初始化vip-center统一底部导航组件...');
             
-            console.log('生成导航，用户角色:', role);
+            // 使用新的统一组件初始化导航
+            const success = BottomNavigation.init({
+                currentPage: 'vip-center',
+                debug: false
+            });
             
-            // 清除可能存在的其他导航
-            clearExistingNavigation();
-            
-            if (role === 'parent') {
-                console.log('创建家长用户导航');
-                createParentNavigation();
+            if (success) {
+                console.log('✅ 底部导航组件初始化成功');
             } else {
-                console.log('创建学生用户导航');
-                createStudentNavigation();
+                console.error('❌ 底部导航组件初始化失败');
             }
         }
-        
-        function clearExistingNavigation() {
-            // 清除所有可能存在的导航元素
-            const existingNavs = document.querySelectorAll('.global-bottom-nav, .theme-bottom-nav');
-            existingNavs.forEach(nav => {
-                console.log('移除现有导航:', nav.className);
-                nav.remove();
-            });
-        }
-        
-        function createParentNavigation() {
-            console.log('创建家长专用导航 (使用theme-bottom-nav样式)');
-            
-            // 创建家长专用导航，与learning-reports.html保持一致
-            const navItems = [
-                { icon: '🏠', text: '首页', onclick: 'goToParentHome()' },
-                { icon: '📊', text: '学习报告', onclick: 'goToLearningReports()' },
-                { icon: '🔍', text: '错题分析', onclick: 'goToErrorAnalysis()' },
-                { icon: '📈', text: '学习进度', onclick: 'goToLearningProgress()' },
-                { icon: '👶', text: '孩子管理', onclick: 'goToChildDetail()' },
-                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
-            ];
-            
-            // 家长使用theme-bottom-nav样式，与learning-reports.html保持一致
-            createParentThemeNavigation(navItems);
-        }
-        
-        function createStudentNavigation() {
-            console.log('创建学生专用导航');
-            
-            // 创建学生专用导航（与global-nav.js相同的导航项）
-            const navItems = [
-                { icon: '🏠', text: '首页', onclick: 'goToStudentHome()' },
-                { icon: '📷', text: '拍照批改', onclick: 'goToHomeworkSubmit()' },
-                { icon: '📚', text: '错题本', onclick: 'goToErrorBook()' },
-                { icon: '📋', text: '学习计划', onclick: 'goToStudyPlan()' },
-                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
-            ];
-            
-            createNavigation(navItems, 'global-bottom-nav');
-        }
-        
-        function createParentThemeNavigation(navItems) {
-            console.log('创建theme样式的家长导航');
-            
-            // 生成导航HTML，使用theme样式类
-            const navHTML = navItems.map(item => `
-                <div class="theme-nav-item ${item.active ? 'active' : ''}" ${item.onclick ? `onclick="${item.onclick}"` : ''}>
-                    <div class="theme-nav-icon">${item.icon}</div>
-                    <div class="theme-nav-text">${item.text}</div>
-                </div>
-            `).join('');
-            
-            // 创建导航容器，使用theme-bottom-nav类
-            const nav = document.createElement('div');
-            nav.className = 'theme-bottom-nav';
-            nav.innerHTML = navHTML;
-            
-            // 添加到页面
-            document.body.appendChild(nav);
-            
-            console.log('theme样式家长导航已创建并添加到页面');
-        }
-        
-        function createNavigation(navItems, navClass) {
-            // 学生导航使用global-nav样式类
-            const itemClass = 'global-nav';
-            const navHTML = navItems.map(item => `
-                <div class="${itemClass}-item ${item.active ? 'active' : ''}" ${item.onclick ? `onclick="${item.onclick}"` : ''}>
-                    <div class="${itemClass}-icon">${item.icon}</div>
-                    <div class="${itemClass}-text">${item.text}</div>
-                </div>
-            `).join('');
-            
-            // 创建导航容器
-            const nav = document.createElement('div');
-            nav.className = 'global-bottom-nav';
-            nav.innerHTML = navHTML;
-            
-            // 添加到页面
-            document.body.appendChild(nav);
-            
-            console.log(`学生导航已创建并添加到页面 (global样式)`);
-        }
+
 
         function bindPaymentMethods() {
             document.querySelectorAll('.payment-method').forEach(method => {

@@ -1,0 +1,248 @@
+/**
+ * 统一底部导航样式文件
+ * 支持学生端(global)和家长端(theme)两套样式体系
+ */
+
+/* =================================
+   通用底部导航基础样式
+   ================================= */
+
+/* 学生端导航容器 */
+.global-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    padding: 8px 0 6px !important;
+    border-top: 1px solid rgba(0, 0, 0, 0.1) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+}
+
+/* 家长端导航容器 */
+.theme-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    background: rgba(255, 255, 255, 0.95) !important;
+    backdrop-filter: blur(20px) !important;
+    padding: 8px 0 6px !important;
+    border-top: 1px solid rgba(102, 126, 234, 0.1) !important;
+    box-shadow: 0 -8px 32px rgba(102, 126, 234, 0.1) !important;
+    z-index: 9999 !important;
+    display: flex !important;
+}
+
+/* =================================
+   导航项通用样式
+   ================================= */
+
+/* 学生端导航项 */
+.global-nav-item {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 6px 2px 4px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border-radius: 12px !important;
+    margin: 0 2px !important;
+    background: transparent !important;
+    color: #666 !important;
+    text-decoration: none !important;
+}
+
+.global-nav-item:hover {
+    color: #4CAF50 !important;
+}
+
+.global-nav-item.active {
+    background: rgba(76, 175, 80, 0.1) !important;
+    color: #4CAF50 !important;
+}
+
+/* 家长端导航项 */
+.theme-nav-item {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 6px 2px 4px !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    border-radius: 8px !important;
+    margin: 0 1px !important;
+    background: transparent !important;
+    color: #666 !important;
+    text-decoration: none !important;
+}
+
+.theme-nav-item:hover {
+    background: rgba(102, 126, 234, 0.05) !important;
+    transform: translateY(-1px) !important;
+}
+
+.theme-nav-item.active {
+    color: #667eea !important;
+    background: rgba(102, 126, 234, 0.1) !important;
+}
+
+/* =================================
+   图标样式
+   ================================= */
+
+/* 学生端图标 */
+.global-nav-icon {
+    font-size: 20px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+    line-height: 1 !important;
+}
+
+/* 家长端图标 */
+.theme-nav-icon {
+    font-size: 20px !important;
+    margin-bottom: 2px !important;
+    display: block !important;
+    line-height: 1 !important;
+}
+
+/* =================================
+   文字样式
+   ================================= */
+
+/* 学生端文字 */
+.global-nav-text {
+    font-size: 10px !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    display: block !important;
+}
+
+/* 家长端文字 */
+.theme-nav-text {
+    font-size: 10px !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    display: block !important;
+}
+
+/* =================================
+   响应式适配
+   ================================= */
+
+@media (max-width: 480px) {
+    .global-bottom-nav,
+    .theme-bottom-nav {
+        max-width: 100% !important;
+        border-radius: 0 !important;
+    }
+    
+    .global-nav-item,
+    .theme-nav-item {
+        padding: 6px 1px 4px !important;
+    }
+    
+    .global-nav-icon,
+    .theme-nav-icon {
+        font-size: 18px !important;
+    }
+    
+    .global-nav-text,
+    .theme-nav-text {
+        font-size: 9px !important;
+    }
+}
+
+/* =================================
+   页面底部间距调整
+   ================================= */
+
+/* 为所有包含底部导航的页面添加底部间距 */
+body {
+    padding-bottom: 70px !important;
+}
+
+/* 特殊布局调整 */
+.container {
+    padding-bottom: 0 !important;
+}
+
+/* =================================
+   动画效果
+   ================================= */
+
+/* 导航显示动画 */
+.global-bottom-nav,
+.theme-bottom-nav {
+    animation: slideUpNav 0.3s ease-out;
+}
+
+@keyframes slideUpNav {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* 激活状态的缩放效果 */
+.global-nav-item.active .global-nav-icon,
+.theme-nav-item.active .theme-nav-icon {
+    transform: scale(1.1);
+    transition: transform 0.3s ease;
+}
+
+/* =================================
+   兼容性处理
+   ================================= */
+
+/* 隐藏可能存在的旧版导航 */
+.bottom-nav:not(.global-bottom-nav):not(.theme-bottom-nav) {
+    display: none !important;
+}
+
+/* 确保组件样式优先级 */
+[data-nav-component="bottom-navigation"] {
+    all: unset;
+}
+
+[data-nav-component="bottom-navigation"] * {
+    box-sizing: border-box;
+}
+
+/* =================================
+   调试模式样式（可选）
+   ================================= */
+
+.bottom-nav-debug .global-bottom-nav,
+.bottom-nav-debug .theme-bottom-nav {
+    border: 2px solid red !important;
+}
+
+.bottom-nav-debug .global-nav-item,
+.bottom-nav-debug .theme-nav-item {
+    border: 1px solid blue !important;
+}
+
+/* =================================
+   打印样式
+   ================================= */
+
+@media print {
+    .global-bottom-nav,
+    .theme-bottom-nav {
+        display: none !important;
+    }
+    
+    body {
+        padding-bottom: 0 !important;
+    }
+}

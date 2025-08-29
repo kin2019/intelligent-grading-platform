@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>底部导航组件测试</title>
+    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        
+        .container {
+            max-width: 400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            padding: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
+        }
+        
+        .test-section {
+            margin-bottom: 30px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 12px;
+        }
+        
+        .test-title {
+            font-size: 18px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #333;
+        }
+        
+        .test-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        
+        .test-btn {
+            padding: 8px 16px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+        
+        .test-btn-primary {
+            background: #007AFF;
+            color: white;
+        }
+        
+        .test-btn-primary:hover {
+            background: #0056CC;
+        }
+        
+        .test-btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .test-btn-secondary:hover {
+            background: #545b62;
+        }
+        
+        .test-btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .test-btn-success:hover {
+            background: #1e7e34;
+        }
+        
+        .test-btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .test-btn-warning:hover {
+            background: #e0a800;
+        }
+        
+        .test-info {
+            background: #d1ecf1;
+            border: 1px solid #bee5eb;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 15px;
+            font-size: 13px;
+            color: #0c5460;
+        }
+        
+        .status-display {
+            background: white;
+            border: 1px solid #dee2e6;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        
+        .log-output {
+            background: #212529;
+            color: #28a745;
+            border-radius: 6px;
+            padding: 12px;
+            margin-top: 10px;
+            font-family: monospace;
+            font-size: 12px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 style="text-align: center; color: #333; margin-bottom: 30px;">
+            🧪 底部导航组件测试
+        </h1>
+        
+        <!-- 基础功能测试 -->
+        <div class="test-section">
+            <div class="test-title">📋 基础功能测试</div>
+            <div class="test-controls">
+                <button class="test-btn test-btn-primary" onclick="renderStudentNav()">
+                    渲染学生导航
+                </button>
+                <button class="test-btn test-btn-primary" onclick="renderParentNav()">
+                    渲染家长导航
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="destroyNav()">
+                    销毁导航
+                </button>
+                <button class="test-btn test-btn-success" onclick="refreshNav()">
+                    刷新导航
+                </button>
+            </div>
+            <div class="test-info">
+                测试导航组件的基本渲染和销毁功能
+            </div>
+        </div>
+        
+        <!-- 角色切换测试 -->
+        <div class="test-section">
+            <div class="test-title">🔄 角色切换测试</div>
+            <div class="test-controls">
+                <button class="test-btn test-btn-warning" onclick="switchToStudent()">
+                    切换到学生
+                </button>
+                <button class="test-btn test-btn-warning" onclick="switchToParent()">
+                    切换到家长
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="autoDetectRole()">
+                    自动检测角色
+                </button>
+            </div>
+            <div class="test-info">
+                测试角色切换和自动检测功能
+            </div>
+        </div>
+        
+        <!-- 页面激活测试 -->
+        <div class="test-section">
+            <div class="test-title">✨ 激活状态测试</div>
+            <div class="test-controls">
+                <button class="test-btn test-btn-success" onclick="setActivePage('home')">
+                    激活首页
+                </button>
+                <button class="test-btn test-btn-success" onclick="setActivePage('camera')">
+                    激活拍照
+                </button>
+                <button class="test-btn test-btn-success" onclick="setActivePage('errorbook')">
+                    激活错题本
+                </button>
+                <button class="test-btn test-btn-success" onclick="setActivePage('study')">
+                    激活学习计划
+                </button>
+                <button class="test-btn test-btn-success" onclick="setActivePage('profile')">
+                    激活我的
+                </button>
+            </div>
+            <div class="test-info">
+                测试不同页面的激活状态显示
+            </div>
+        </div>
+        
+        <!-- 调试功能测试 -->
+        <div class="test-section">
+            <div class="test-title">🐛 调试功能测试</div>
+            <div class="test-controls">
+                <button class="test-btn test-btn-warning" onclick="toggleDebugMode()">
+                    切换调试模式
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="showState()">
+                    显示状态
+                </button>
+                <button class="test-btn test-btn-secondary" onclick="clearLog()">
+                    清空日志
+                </button>
+            </div>
+            <div class="test-info">
+                测试调试模式和状态查看功能
+            </div>
+        </div>
+        
+        <!-- 状态显示 -->
+        <div class="test-section">
+            <div class="test-title">📊 组件状态</div>
+            <div id="statusDisplay" class="status-display">
+                点击"显示状态"按钮查看当前组件状态
+            </div>
+        </div>
+        
+        <!-- 日志输出 -->
+        <div class="test-section">
+            <div class="test-title">📝 操作日志</div>
+            <div id="logOutput" class="log-output">
+                等待操作日志...
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入依赖文件 -->
+    <script src="/frontend/js/navigation-config.js"></script>
+    <script src="/frontend/js/bottom-navigation.js"></script>
+    
+    <script>
+        // 日志输出函数
+        function log(message) {
+            const logOutput = document.getElementById('logOutput');
+            const timestamp = new Date().toLocaleTimeString();
+            logOutput.innerHTML += `[${timestamp}] ${message}\n`;
+            logOutput.scrollTop = logOutput.scrollHeight;
+        }
+        
+        // 测试函数
+        function renderStudentNav() {
+            log('渲染学生导航...');
+            localStorage.setItem('role', 'student');
+            const success = BottomNavigation.render({
+                role: 'student',
+                currentPage: 'home',
+                debug: true
+            });
+            log(`学生导航渲染${success ? '成功' : '失败'}`);
+        }
+        
+        function renderParentNav() {
+            log('渲染家长导航...');
+            localStorage.setItem('role', 'parent');
+            const success = BottomNavigation.render({
+                role: 'parent',
+                currentPage: 'home',
+                debug: true
+            });
+            log(`家长导航渲染${success ? '成功' : '失败'}`);
+        }
+        
+        function destroyNav() {
+            log('销毁导航...');
+            BottomNavigation.destroy();
+            log('导航已销毁');
+        }
+        
+        function refreshNav() {
+            log('刷新导航...');
+            BottomNavigation.refresh();
+            log('导航已刷新');
+        }
+        
+        function switchToStudent() {
+            log('切换到学生角色...');
+            localStorage.setItem('role', 'student');
+            BottomNavigation.refresh('student');
+            log('已切换到学生角色');
+        }
+        
+        function switchToParent() {
+            log('切换到家长角色...');
+            localStorage.setItem('role', 'parent');
+            BottomNavigation.refresh('parent');
+            log('已切换到家长角色');
+        }
+        
+        function autoDetectRole() {
+            log('自动检测角色...');
+            const role = getCurrentUserRole();
+            log(`检测到角色: ${role}`);
+            BottomNavigation.refresh();
+        }
+        
+        function setActivePage(pageId) {
+            log(`设置激活页面: ${pageId}`);
+            BottomNavigation.updateActive(pageId);
+            log(`页面 ${pageId} 已激活`);
+        }
+        
+        function toggleDebugMode() {
+            const currentState = BottomNavigation.getState();
+            const newDebugMode = !currentState.debug;
+            log(`切换调试模式: ${newDebugMode ? '开启' : '关闭'}`);
+            BottomNavigation.setDebugMode(newDebugMode);
+            log(`调试模式已${newDebugMode ? '开启' : '关闭'}`);
+        }
+        
+        function showState() {
+            const state = BottomNavigation.getState();
+            const statusDisplay = document.getElementById('statusDisplay');
+            statusDisplay.innerHTML = `
+                <strong>当前状态:</strong><br>
+                角色: ${state.role}<br>
+                当前页面: ${state.currentPage}<br>
+                是否激活: ${state.isActive}<br>
+                调试模式: ${state.debug}<br>
+                更新时间: ${new Date().toLocaleString()}
+            `;
+            log('状态已更新');
+        }
+        
+        function clearLog() {
+            document.getElementById('logOutput').innerHTML = '';
+            log('日志已清空');
+        }
+        
+        // 监听导航事件
+        document.addEventListener('beforeNavigate', function(e) {
+            log(`准备导航: ${e.detail.from} → ${e.detail.to} (${e.detail.url})`);
+        });
+        
+        document.addEventListener('afterNavigate', function(e) {
+            log(`导航完成: ${e.detail.from} → ${e.detail.to}`);
+        });
+        
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            log('测试页面加载完成');
+            log('底部导航组件版本: 1.0.0');
+            
+            // 设置测试用的token
+            if (!localStorage.getItem('token')) {
+                localStorage.setItem('token', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU3MDAwMDAwfQ.test');
+                log('设置测试token (学生用户)');
+            }
+            
+            // 自动渲染学生导航进行初始测试
+            setTimeout(() => {
+                renderStudentNav();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
