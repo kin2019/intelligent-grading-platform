@@ -173,6 +173,16 @@
             background: linear-gradient(135deg, #fff9e6 0%, #fff3d4 100%);
         }
         
+        .plan-card.monthly {
+            border-color: #4CAF50;
+            background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
+        }
+        
+        .plan-card.yearly {
+            border-color: #FF6B35;
+            background: linear-gradient(135deg, #fff5f2 0%, #ffebe6 100%);
+        }
+        
         .plan-card.current {
             border-color: #4CAF50;
             background: linear-gradient(135deg, #f1f8e9 0%, #e8f5e8 100%);
@@ -297,6 +307,26 @@
         
         .btn-secondary:hover {
             background: #e0e0e0;
+        }
+        
+        .btn-monthly {
+            background: linear-gradient(90deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+        }
+        
+        .btn-monthly:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+        }
+        
+        .btn-yearly {
+            background: linear-gradient(90deg, #FF6B35 0%, #e55a2e 100%);
+            color: white;
+        }
+        
+        .btn-yearly:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(255, 107, 53, 0.4);
         }
         
         .btn-current {
@@ -463,16 +493,88 @@
             color: #333;
         }
         
-        /* 自定义底部导航样式已移除，使用modern-theme.css中的theme-bottom-nav样式 */
-        
-        /* 初始隐藏导航，避免角色检测前的闪烁 */
-        #bottomNav {
-            display: none;
+        /* 学生底部导航样式 - global-bottom-nav */
+        .global-bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid rgba(102, 126, 234, 0.1);
+            display: flex;
+            padding: 8px 0 6px;
+            box-shadow: 0 -8px 32px rgba(102, 126, 234, 0.1);
+            z-index: 1000;
         }
         
-        /* 当导航准备好时，JavaScript会设置display: flex */
-        #bottomNav.ready {
+        .global-nav-item {
+            flex: 1;
             display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 6px 2px 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            margin: 0 1px;
+            text-decoration: none;
+            color: #666;
+        }
+        
+        .global-nav-item:hover {
+            background: rgba(102, 126, 234, 0.05);
+            transform: translateY(-1px);
+            color: #667eea;
+        }
+        
+        .global-nav-item.active {
+            color: #667eea;
+            background: rgba(102, 126, 234, 0.1);
+        }
+        
+        .global-nav-item.active .global-nav-icon {
+            transform: scale(1.05);
+            filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
+        }
+        
+        .global-nav-icon {
+            font-size: 18px;
+            margin-bottom: 2px;
+            transition: all 0.3s ease;
+            display: block;
+        }
+        
+        .global-nav-text {
+            font-size: 9px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            text-align: center;
+            line-height: 1;
+        }
+        
+        /* 移动端优化 */
+        @media (max-width: 480px) {
+            .global-bottom-nav {
+                padding: 6px 0 4px;
+            }
+            
+            .global-nav-item {
+                padding: 4px 1px 3px;
+                margin: 0;
+            }
+            
+            .global-nav-icon {
+                font-size: 16px;
+                margin-bottom: 1px;
+            }
+            
+            .global-nav-text {
+                font-size: 8px;
+            }
         }
         
         /* 移动端适配 */
@@ -532,7 +634,7 @@
                 <div class="section-title">选择您的VIP计划</div>
                 <div class="plans-grid">
                     <!-- 月度会员 -->
-                    <div class="plan-card" data-plan="monthly" onclick="selectPlan('monthly')">
+                    <div class="plan-card monthly" data-plan="monthly" onclick="selectPlan('monthly')">
                         <div class="plan-header">
                             <div class="plan-name">月度VIP</div>
                             <div class="plan-desc">适合短期使用，灵活续费</div>
@@ -547,10 +649,10 @@
                             <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
                             <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
                             <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
+                            <li><span class="feature-icon feature-check">✓</span>家长报告</li>
                             <li><span class="feature-icon feature-cross">✗</span>专属客服</li>
-                            <li><span class="feature-icon feature-cross">✗</span>家长报告</li>
                         </ul>
-                        <button class="plan-button btn-secondary">选择月度VIP</button>
+                        <button class="plan-button btn-monthly">选择月度VIP</button>
                     </div>
                     
                     <!-- 季度会员 -->
@@ -571,14 +673,14 @@
                             <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
                             <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
                             <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
-                            <li><span class="feature-icon feature-check">✓</span>专属客服</li>
-                            <li><span class="feature-icon feature-cross">✗</span>家长报告</li>
+                            <li><span class="feature-icon feature-check">✓</span>家长报告</li>
+                            <li><span class="feature-icon feature-cross">✗</span>专属客服</li>
                         </ul>
                         <button class="plan-button btn-primary">选择季度VIP</button>
                     </div>
                     
                     <!-- 年度会员 -->
-                    <div class="plan-card" data-plan="yearly" onclick="selectPlan('yearly')">
+                    <div class="plan-card yearly" data-plan="yearly" onclick="selectPlan('yearly')">
                         <div class="plan-header">
                             <div class="plan-name">年度VIP</div>
                             <div class="plan-desc">超值优惠，全功能体验</div>
@@ -594,10 +696,10 @@
                             <li><span class="feature-icon feature-check">✓</span>详细错题解析</li>
                             <li><span class="feature-icon feature-check">✓</span>学习计划制定</li>
                             <li><span class="feature-icon feature-check">✓</span>错题本管理</li>
-                            <li><span class="feature-icon feature-check">✓</span>专属客服</li>
                             <li><span class="feature-icon feature-check">✓</span>家长报告</li>
+                            <li><span class="feature-icon feature-check">✓</span>专属客服</li>
                         </ul>
-                        <button class="plan-button btn-secondary">选择年度VIP</button>
+                        <button class="plan-button btn-yearly">选择年度VIP</button>
                     </div>
                 </div>
             </div>
@@ -638,25 +740,6 @@
                     </div>
                 </div>
             </div>
-            
-            <!-- 支付方式 -->
-            <div class="payment-section">
-                <div class="section-title">支付方式</div>
-                <div class="payment-methods">
-                    <div class="payment-method selected" data-method="wechat">
-                        <div class="payment-icon">💚</div>
-                        <div class="payment-name">微信支付</div>
-                    </div>
-                    <div class="payment-method" data-method="alipay">
-                        <div class="payment-icon">💙</div>
-                        <div class="payment-name">支付宝</div>
-                    </div>
-                    <div class="payment-method" data-method="apple">
-                        <div class="payment-icon">🍎</div>
-                        <div class="payment-name">Apple Pay</div>
-                    </div>
-                </div>
-            </div>
         </div>
         
         <!-- 购买确认模态框 -->
@@ -674,11 +757,10 @@
             </div>
         </div>
         
-        <!-- 底部导航 -->
-        <div class="theme-bottom-nav" id="bottomNav">
-            <!-- 导航项将根据用户角色动态生成 -->
-        </div>
+        <!-- 底部导航：学生用户使用global-bottom-nav样式，家长用户使用theme-bottom-nav样式（与learning-reports.html一致） -->
     </div>
+
+    <!-- VIP中心页面使用自定义导航，不引入global-nav.js避免冲突 -->
 
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
@@ -692,43 +774,7 @@
             initPage();
         });
         
-        // 测试函数：强制显示导航（家长版本，使用theme样式）
-        function forceShowNavigation() {
-            console.log('强制显示导航');
-            const bottomNav = document.getElementById('bottomNav');
-            if (bottomNav) {
-                bottomNav.innerHTML = `
-                    <div class="theme-nav-item" onclick="goToParentHome()">
-                        <div class="theme-nav-icon">🏠</div>
-                        <div class="theme-nav-text">首页</div>
-                    </div>
-                    <div class="theme-nav-item" onclick="goToLearningReports()">
-                        <div class="theme-nav-icon">📊</div>
-                        <div class="theme-nav-text">学习报告</div>
-                    </div>
-                    <div class="theme-nav-item" onclick="goToErrorAnalysis()">
-                        <div class="theme-nav-icon">🔍</div>
-                        <div class="theme-nav-text">错题分析</div>
-                    </div>
-                    <div class="theme-nav-item" onclick="goToLearningProgress()">
-                        <div class="theme-nav-icon">📈</div>
-                        <div class="theme-nav-text">学习进度</div>
-                    </div>
-                    <div class="theme-nav-item" onclick="goToChildDetail()">
-                        <div class="theme-nav-icon">👶</div>
-                        <div class="theme-nav-text">孩子管理</div>
-                    </div>
-                    <div class="theme-nav-item active" onclick="goToProfile()">
-                        <div class="theme-nav-icon">👤</div>
-                        <div class="theme-nav-text">我的</div>
-                    </div>
-                `;
-                bottomNav.className = 'theme-bottom-nav ready';
-                console.log('家长导航已强制显示（我的为选中状态）');
-            }
-        }
-        
-        // 移除自动强制显示导航，避免干扰正常流程
+        // 导航处理逻辑已优化：学生用户使用global-nav.js，家长用户使用自定义导航
 
         function initPage() {
             // 绑定支付方式选择
@@ -736,7 +782,7 @@
             
             // 检查登录状态和角色
             token = localStorage.getItem('token');
-            const role = localStorage.getItem('role');
+            let role = localStorage.getItem('role');
             
             console.log('初始化页面 - Token:', token ? 'OK' : 'NONE', 'Role:', role);
             
@@ -748,15 +794,33 @@
                 return;
             }
             
-            // 确保有角色信息后再生成导航
-            if (role) {
-                generateRoleBasedNavigation();
-            } else {
-                // 如果没有角色信息，设置默认角色为parent（因为当前是家长登录场景）
-                console.log('没有角色信息，设置默认角色为parent');
-                localStorage.setItem('role', 'parent');
-                generateRoleBasedNavigation();
+            // 通过token判断用户角色，确保角色正确
+            try {
+                const tokenPayload = JSON.parse(atob(token.split('.')[1]));
+                const userId = tokenPayload.sub;
+                console.log('Token中的用户ID:', userId);
+                
+                // 根据用户ID判断角色：ID=1是学生，ID=2是家长
+                if (userId === '2') {
+                    role = 'parent';
+                    console.log('从Token检测到家长用户');
+                } else {
+                    role = 'student';
+                    console.log('从Token检测到学生用户');
+                }
+                
+                // 更新localStorage中的角色信息
+                localStorage.setItem('role', role);
+                console.log('角色已更新到localStorage:', role);
+                
+            } catch (error) {
+                console.error('解析Token失败，使用默认学生角色:', error);
+                role = 'student';
+                localStorage.setItem('role', role);
             }
+            
+            // 生成角色对应的导航
+            generateRoleBasedNavigation();
             
             // 加载用户VIP状态
             loadVIPStatus();
@@ -764,38 +828,64 @@
 
         function generateRoleBasedNavigation() {
             const role = localStorage.getItem('role') || 'student';
-            const bottomNav = document.getElementById('bottomNav');
             
             console.log('生成导航，用户角色:', role);
-            console.log('bottomNav元素:', bottomNav);
             
-            if (!bottomNav) {
-                console.error('未找到bottomNav元素');
-                return;
-            }
-            
-            let navItems = [];
+            // 清除可能存在的其他导航
+            clearExistingNavigation();
             
             if (role === 'parent') {
-                // 家长导航（完全参照manage-children.html）- 6个导航项，我的为active
-                navItems = [
-                    { icon: '🏠', text: '首页', onclick: 'goToParentHome()' },
-                    { icon: '📊', text: '学习报告', onclick: 'goToLearningReports()' },
-                    { icon: '🔍', text: '错题分析', onclick: 'goToErrorAnalysis()' },
-                    { icon: '📈', text: '学习进度', onclick: 'goToLearningProgress()' },
-                    { icon: '👶', text: '孩子管理', onclick: 'goToChildDetail()' },
-                    { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
-                ];
+                console.log('创建家长用户导航');
+                createParentNavigation();
             } else {
-                // 学生导航（参照student-home.html）- 5个导航项，我的为active
-                navItems = [
-                    { icon: '🏠', text: '首页', onclick: 'goToStudentHome()' },
-                    { icon: '📷', text: '拍照批改', onclick: 'goToHomeworkSubmit()' },
-                    { icon: '📚', text: '错题本', onclick: 'goToErrorBook()' },
-                    { icon: '💎', text: 'VIP', onclick: '' },
-                    { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
-                ];
+                console.log('创建学生用户导航');
+                createStudentNavigation();
             }
+        }
+        
+        function clearExistingNavigation() {
+            // 清除所有可能存在的导航元素
+            const existingNavs = document.querySelectorAll('.global-bottom-nav, .theme-bottom-nav');
+            existingNavs.forEach(nav => {
+                console.log('移除现有导航:', nav.className);
+                nav.remove();
+            });
+        }
+        
+        function createParentNavigation() {
+            console.log('创建家长专用导航 (使用theme-bottom-nav样式)');
+            
+            // 创建家长专用导航，与learning-reports.html保持一致
+            const navItems = [
+                { icon: '🏠', text: '首页', onclick: 'goToParentHome()' },
+                { icon: '📊', text: '学习报告', onclick: 'goToLearningReports()' },
+                { icon: '🔍', text: '错题分析', onclick: 'goToErrorAnalysis()' },
+                { icon: '📈', text: '学习进度', onclick: 'goToLearningProgress()' },
+                { icon: '👶', text: '孩子管理', onclick: 'goToChildDetail()' },
+                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+            ];
+            
+            // 家长使用theme-bottom-nav样式，与learning-reports.html保持一致
+            createParentThemeNavigation(navItems);
+        }
+        
+        function createStudentNavigation() {
+            console.log('创建学生专用导航');
+            
+            // 创建学生专用导航（与global-nav.js相同的导航项）
+            const navItems = [
+                { icon: '🏠', text: '首页', onclick: 'goToStudentHome()' },
+                { icon: '📷', text: '拍照批改', onclick: 'goToHomeworkSubmit()' },
+                { icon: '📚', text: '错题本', onclick: 'goToErrorBook()' },
+                { icon: '📋', text: '学习计划', onclick: 'goToStudyPlan()' },
+                { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+            ];
+            
+            createNavigation(navItems, 'global-bottom-nav');
+        }
+        
+        function createParentThemeNavigation(navItems) {
+            console.log('创建theme样式的家长导航');
             
             // 生成导航HTML，使用theme样式类
             const navHTML = navItems.map(item => `
@@ -805,14 +895,36 @@
                 </div>
             `).join('');
             
-            bottomNav.innerHTML = navHTML;
+            // 创建导航容器，使用theme-bottom-nav类
+            const nav = document.createElement('div');
+            nav.className = 'theme-bottom-nav';
+            nav.innerHTML = navHTML;
             
-            // 添加ready类以显示导航
-            bottomNav.classList.add('ready');
+            // 添加到页面
+            document.body.appendChild(nav);
             
-            console.log('导航HTML已设置:', navHTML);
-            console.log('底部导航元素内容:', bottomNav.innerHTML);
-            console.log('导航已显示，角色:', role);
+            console.log('theme样式家长导航已创建并添加到页面');
+        }
+        
+        function createNavigation(navItems, navClass) {
+            // 学生导航使用global-nav样式类
+            const itemClass = 'global-nav';
+            const navHTML = navItems.map(item => `
+                <div class="${itemClass}-item ${item.active ? 'active' : ''}" ${item.onclick ? `onclick="${item.onclick}"` : ''}>
+                    <div class="${itemClass}-icon">${item.icon}</div>
+                    <div class="${itemClass}-text">${item.text}</div>
+                </div>
+            `).join('');
+            
+            // 创建导航容器
+            const nav = document.createElement('div');
+            nav.className = 'global-bottom-nav';
+            nav.innerHTML = navHTML;
+            
+            // 添加到页面
+            document.body.appendChild(nav);
+            
+            console.log(`学生导航已创建并添加到页面 (global样式)`);
         }
 
         function bindPaymentMethods() {
@@ -1003,40 +1115,261 @@
             if (!selectedPlan) return;
             
             try {
-                showToast('正在处理支付...');
+                showToast('正在创建订单...');
+                
+                // 创建FormData对象，因为后端接口使用Form参数
+                const formData = new FormData();
+                formData.append('plan_id', selectedPlan);
+                formData.append('payment_method', selectedPayment);
                 
                 const response = await fetch(`${API_BASE}/payment/create-order`, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json'
+                        'Authorization': `Bearer ${token}`
                     },
-                    body: JSON.stringify({
-                        plan_type: selectedPlan,
-                        payment_method: selectedPayment
-                    })
+                    body: formData
+                });
+                
+                if (response.ok) {
+                    const order = await response.json();
+                    console.log('订单创建成功:', order);
+                    
+                    // 关闭确认模态框
+                    closePurchaseModal();
+                    
+                    // 根据支付方式跳转
+                    if (selectedPayment === 'wechat') {
+                        showToast('正在跳转到微信支付...');
+                        
+                        // 跳转到微信支付
+                        setTimeout(() => {
+                            redirectToWeChatPay(order);
+                        }, 1000);
+                        
+                    } else if (selectedPayment === 'alipay') {
+                        showToast('正在跳转到支付宝...');
+                        
+                        // 跳转到支付宝
+                        setTimeout(() => {
+                            redirectToAlipay(order);
+                        }, 1000);
+                        
+                    } else if (selectedPayment === 'apple') {
+                        showToast('正在启动Apple Pay...');
+                        
+                        // 启动Apple Pay
+                        setTimeout(() => {
+                            redirectToApplePay(order);
+                        }, 1000);
+                    }
+                    
+                } else {
+                    const errorData = await response.text();
+                    throw new Error(`创建订单失败: ${response.status} - ${errorData}`);
+                }
+            } catch (error) {
+                console.error('支付处理失败:', error);
+                
+                // 支付失败处理
+                closePurchaseModal();
+                showToast('支付处理失败：' + error.message);
+            }
+        }
+
+        // 跳转到微信支付
+        function redirectToWeChatPay(order) {
+            console.log('准备跳转到微信支付:', order);
+            
+            if (order.payment_url) {
+                // 如果后端提供了支付链接，直接跳转
+                window.open(order.payment_url, '_blank');
+            } else {
+                // 模拟微信支付跳转
+                const wechatPayUrl = `weixin://pay/order/${order.order_id}`;
+                
+                // 尝试打开微信支付链接
+                window.location.href = wechatPayUrl;
+                
+                // 如果微信应用未安装，显示备用方案
+                setTimeout(() => {
+                    showPaymentOptions(order);
+                }, 2000);
+            }
+            
+            // 开始轮询检查支付状态
+            startPaymentStatusPolling(order.order_id);
+        }
+
+        // 跳转到支付宝
+        function redirectToAlipay(order) {
+            console.log('准备跳转到支付宝:', order);
+            
+            if (order.payment_url) {
+                window.open(order.payment_url, '_blank');
+            } else {
+                // 模拟支付宝支付跳转
+                const alipayUrl = `alipays://platformapi/startapp?saId=10000007&qrcode=https://qr.alipay.com/${order.order_id}`;
+                window.location.href = alipayUrl;
+                
+                setTimeout(() => {
+                    showPaymentOptions(order);
+                }, 2000);
+            }
+            
+            startPaymentStatusPolling(order.order_id);
+        }
+
+        // 启动Apple Pay
+        function redirectToApplePay(order) {
+            console.log('准备启动Apple Pay:', order);
+            showToast('Apple Pay功能开发中，请选择其他支付方式');
+        }
+
+        // 显示支付选项（当应用跳转失败时的备用方案）
+        function showPaymentOptions(order) {
+            const paymentModal = document.createElement('div');
+            paymentModal.className = 'modal';
+            paymentModal.style.display = 'flex';
+            paymentModal.innerHTML = `
+                <div class="modal-content">
+                    <div class="modal-title">完成支付</div>
+                    <div style="margin: 20px 0; text-align: center; color: #666;">
+                        <div style="margin-bottom: 12px;">订单号：${order.order_id}</div>
+                        <div style="margin-bottom: 12px;">金额：¥${order.amount}</div>
+                        <div style="font-size: 14px;">请在${selectedPayment === 'wechat' ? '微信' : '支付宝'}中完成支付</div>
+                    </div>
+                    <div class="modal-buttons">
+                        <button class="modal-btn btn-modal-secondary" onclick="cancelPayment('${order.order_id}')">取消支付</button>
+                        <button class="modal-btn btn-modal-primary" onclick="checkPaymentResult('${order.order_id}')">已完成支付</button>
+                    </div>
+                </div>
+            `;
+            
+            document.body.appendChild(paymentModal);
+        }
+
+        // 开始轮询支付状态
+        function startPaymentStatusPolling(orderId) {
+            console.log('开始轮询支付状态:', orderId);
+            
+            let pollCount = 0;
+            const maxPolls = 30; // 最多轮询30次（5分钟）
+            
+            const pollInterval = setInterval(async () => {
+                pollCount++;
+                
+                try {
+                    const formData = new FormData();
+                    formData.append('order_id', orderId);
+                    
+                    const response = await fetch(`${API_BASE}/payment/verify-payment`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        },
+                        body: formData
+                    });
+                    
+                    if (response.ok) {
+                        const result = await response.json();
+                        
+                        if (result.status === 'success') {
+                            clearInterval(pollInterval);
+                            showToast('支付成功！VIP权益已生效');
+                            
+                            // 关闭支付选项模态框
+                            const existingModal = document.querySelector('.modal');
+                            if (existingModal && existingModal.style.display === 'flex') {
+                                document.body.removeChild(existingModal);
+                            }
+                            
+                            // 延迟刷新页面状态
+                            setTimeout(() => {
+                                location.reload();
+                            }, 2000);
+                        } else if (result.status === 'failed') {
+                            clearInterval(pollInterval);
+                            showToast('支付失败，请重试');
+                        }
+                    }
+                } catch (error) {
+                    console.error('支付状态查询失败:', error);
+                }
+                
+                // 达到最大轮询次数
+                if (pollCount >= maxPolls) {
+                    clearInterval(pollInterval);
+                    console.log('支付状态轮询超时');
+                }
+            }, 10000); // 每10秒查询一次
+        }
+
+        // 取消支付
+        function cancelPayment(orderId) {
+            fetch(`${API_BASE}/payment/cancel-order`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`
+                },
+                body: (() => {
+                    const formData = new FormData();
+                    formData.append('order_id', orderId);
+                    return formData;
+                })()
+            }).then(() => {
+                showToast('支付已取消');
+                // 关闭模态框
+                const modal = document.querySelector('.modal');
+                if (modal) {
+                    document.body.removeChild(modal);
+                }
+            }).catch(error => {
+                console.error('取消支付失败:', error);
+                showToast('取消支付失败');
+            });
+        }
+
+        // 手动检查支付结果
+        async function checkPaymentResult(orderId) {
+            try {
+                showToast('正在验证支付结果...');
+                
+                const formData = new FormData();
+                formData.append('order_id', orderId);
+                
+                const response = await fetch(`${API_BASE}/payment/verify-payment`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: formData
                 });
                 
                 if (response.ok) {
                     const result = await response.json();
                     
-                    // 支付成功处理
-                    closePurchaseModal();
-                    showToast('支付成功！VIP权益已生效');
-                    
-                    // 延迟刷新页面状态
-                    setTimeout(() => {
-                        location.reload();
-                    }, 2000);
+                    if (result.status === 'success') {
+                        showToast('支付成功！VIP权益已生效');
+                        
+                        // 关闭模态框
+                        const modal = document.querySelector('.modal');
+                        if (modal) {
+                            document.body.removeChild(modal);
+                        }
+                        
+                        // 延迟刷新页面状态
+                        setTimeout(() => {
+                            location.reload();
+                        }, 2000);
+                    } else {
+                        showToast('支付未完成，请确认后重试');
+                    }
                 } else {
-                    throw new Error('支付失败');
+                    throw new Error('验证支付失败');
                 }
             } catch (error) {
-                console.error('支付失败:', error);
-                
-                // 支付失败处理
-                closePurchaseModal();
-                showToast('支付失败：' + error.message);
+                console.error('验证支付失败:', error);
+                showToast('验证支付失败：' + error.message);
             }
         }
 
@@ -1060,6 +1393,10 @@
         
         function goToStudentHome() {
             window.location.href = '/frontend/student-home.html';
+        }
+        
+        function goToStudyPlan() {
+            window.location.href = '/frontend/study-plan.html';
         }
         
         function goToLearningReports() {
