@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 作业记录</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -299,6 +300,41 @@
             cursor: pointer;
         }
         
+        /* 底部导航 */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 100%;
+            max-width: 400px;
+            background: #ffffff;
+            border-top: 1px solid #eee;
+            display: flex;
+            padding: 8px 0 6px;
+        }
+        
+        .nav-item {
+            flex: 1;
+            text-align: center;
+            padding: 8px;
+            cursor: pointer;
+            transition: color 0.2s ease;
+        }
+        
+        .nav-item.active {
+            color: #007AFF;
+        }
+        
+        .nav-icon {
+            font-size: 20px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-text {
+            font-size: 10px;
+        }
+        
         /* 移动端适配 */
         @media (max-width: 480px) {
             .container {
@@ -307,6 +343,7 @@
             
             .page-content {
                 padding: 16px;
+                margin-bottom: 80px;
             }
             
             .stat-group {
@@ -314,6 +351,12 @@
             }
         }
     </style>
+    <script src="/frontend/js/global-nav.js"></script>
+    
+    <!-- 底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
+    <script src="/frontend/js/navigation-config.js"></script>
+    <script src="/frontend/js/bottom-navigation.js"></script>
 </head>
 <body>
     <div class="container">
@@ -353,7 +396,13 @@
                 </div>
             </div>
         </div>
+        
+        <!-- 全局底部导航 -->
+        <!-- 底部导航将通过统一组件自动生成 -->
     </div>
+
+    <!-- 引入认证工具类 -->
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
 
     <script>
         const API_BASE = 'http://localhost:8000/api/v1';
@@ -580,6 +629,26 @@
                 document.body.removeChild(toast);
             }, duration);
         }
+
+        // 初始化统一底部导航组件
+        function initBottomNavigation() {
+            console.log('初始化homework-list底部导航组件...');
+            
+            // 使用新的统一组件初始化导航
+            const success = BottomNavigation.init({
+                currentPage: 'profile',
+                debug: false
+            });
+            
+            if (success) {
+                console.log('✅ 底部导航组件初始化成功');
+            } else {
+                console.error('❌ 底部导航组件初始化失败');
+            }
+        }
+        
+        document.addEventListener('DOMContentLoaded', initBottomNavigation);
+        setTimeout(initBottomNavigation, 500);
     </script>
 </body>
 </html>

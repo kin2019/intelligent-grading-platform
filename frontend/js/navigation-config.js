@@ -45,7 +45,7 @@ const NAVIGATION_CONFIG = {
                 icon: '👤',
                 text: '我的',
                 url: '/frontend/profile.html',
-                pages: ['profile.html', 'vip-center.html']
+                pages: ['profile.html', 'vip-center.html', 'homework-list.html']
             }
         ]
     },
@@ -98,7 +98,7 @@ const NAVIGATION_CONFIG = {
                 icon: '👤',
                 text: '我的',
                 url: '/frontend/profile.html',
-                pages: ['profile.html']
+                pages: ['profile.html', 'homework-list.html']
             }
         ]
     }

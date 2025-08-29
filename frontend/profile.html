@@ -289,13 +289,14 @@
         }
         
         .menu-icon {
-            width: 24px;
-            height: 24px;
+            width: 28px;
+            height: 28px;
             margin-right: 16px;
             display: flex;
             align-items: center;
             justify-content: center;
             font-size: 18px;
+            flex-shrink: 0;
         }
         
         .menu-content {
@@ -311,6 +312,9 @@
         .menu-desc {
             font-size: 12px;
             color: #666;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
         
         .menu-arrow {
@@ -342,11 +346,18 @@
             border-radius: 12px;
             position: relative;
             cursor: pointer;
-            transition: background 0.3s ease;
+            transition: all 0.3s ease;
+            user-select: none;
+        }
+        
+        .setting-toggle:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
         }
         
         .setting-toggle.active {
             background: #4CAF50;
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
         .toggle-handle {
@@ -357,12 +368,17 @@
             position: absolute;
             top: 2px;
             left: 2px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
         }
         
         .setting-toggle.active .toggle-handle {
             transform: translateX(20px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .setting-toggle:active {
+            transform: scale(0.98);
         }
         
         /* 版本信息 */
@@ -484,7 +500,7 @@
             padding: 24px;
             max-width: 400px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 85vh;
             overflow-y: auto;
             position: relative;
             z-index: 10001;
@@ -949,11 +965,11 @@
             
             <!-- 账户管理 -->
             <div class="menu-section">
-                <div class="menu-item" onclick="goToVipCenter()">
+                <div class="menu-item" id="vipCenterItem" onclick="goToVipCenter()">
                     <div class="menu-icon">💎</div>
                     <div class="menu-content">
                         <div class="menu-title">会员中心</div>
-                        <div class="menu-desc">升级VIP，享受更多特权</div>
+                        <div class="menu-desc" id="vipStatusDesc">正在加载会员信息...</div>
                     </div>
                     <div class="menu-arrow">›</div>
                 </div>
@@ -1007,6 +1023,18 @@
                     <div class="menu-content">
                         <div class="menu-title">关于我们</div>
                         <div class="menu-desc">了解ZYJC智能批改</div>
+                    </div>
+                    <div class="menu-arrow">›</div>
+                </div>
+            </div>
+            
+            <!-- 系统管理 -->
+            <div class="menu-section">
+                <div class="menu-item" onclick="checkForUpdates()">
+                    <div class="menu-icon">🔄</div>
+                    <div class="menu-content">
+                        <div class="menu-title">检查更新</div>
+                        <div class="menu-desc">检查应用更新和版本信息</div>
                     </div>
                     <div class="menu-arrow">›</div>
                 </div>
@@ -1325,6 +1353,12 @@
                     }
                 }, 200);
                 
+                // 初始化通知开关状态
+                setTimeout(() => {
+                    console.log('初始化通知开关状态');
+                    initializeNotificationToggle();
+                }, 300);
+                
             } catch (error) {
                 console.error('页面初始化过程中出现错误:', error);
                 // 显示用户友好的错误信息，但不阻止页面加载
@@ -1488,6 +1522,9 @@
                 safeSetDisplay('.parent-functions', 'none');
                 safeSetDisplay('childrenSection', 'none', true);
                 
+                // 隐藏会员中心模块（学生身份不显示）
+                safeSetDisplay('vipCenterItem', 'none', true);
+                
             } else if (role === 'parent') {
                 console.log('👨‍👩‍👧‍👦 配置家长身份UI...');
                 
@@ -1497,6 +1534,9 @@
                 safeSetDisplay('.student-stats', 'none');
                 safeSetDisplay('.student-functions', 'none');
                 safeSetDisplay('childrenSection', 'block', true);
+                
+                // 显示会员中心模块（家长身份显示）
+                safeSetDisplay('vipCenterItem', 'block', true);
                 
             } else {
                 console.error('❌ 未知的用户角色:', role);
@@ -1546,12 +1586,21 @@
                 // 显示加载状态
                 showLoadingState();
                 
-                // 并行请求用户信息和统计数据
+                // 并行请求用户信息、统计数据和VIP状态
                 const requests = [];
                 
                 // 用户基本信息请求
                 requests.push(
                     fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                );
+                
+                // VIP状态请求
+                requests.push(
+                    fetch(`${API_BASE}/user/vip-status`, {
                         headers: {
                             'Authorization': `Bearer ${token}`
                         }
@@ -1579,10 +1628,11 @@
                 
                 // 并行执行所有请求
                 const responses = await Promise.all(requests);
-                const [userResponse, statsResponse] = responses;
+                const [userResponse, vipStatusResponse, statsResponse] = responses;
                 
                 console.log('API响应状态:', {
                     user: userResponse.status,
+                    vipStatus: vipStatusResponse.status,
                     stats: statsResponse?.status
                 });
                 
@@ -1590,6 +1640,24 @@
                 if (userResponse.ok) {
                     userInfo = await userResponse.json();
                     console.log('获取到用户信息:', userInfo);
+                    
+                    // 处理VIP状态数据
+                    let vipStatusData = null;
+                    if (vipStatusResponse.ok) {
+                        vipStatusData = await vipStatusResponse.json();
+                        console.log('获取到VIP状态数据:', vipStatusData);
+                    } else {
+                        console.error('VIP状态API调用失败:', vipStatusResponse.status, vipStatusResponse.statusText);
+                        // 使用默认VIP状态数据
+                        vipStatusData = {
+                            is_vip: false,
+                            vip_type: 'free',
+                            expire_date: null,
+                            remaining_days: 0,
+                            daily_quota: 3,
+                            remaining_quota: 3
+                        };
+                    }
                     
                     // 处理统计数据
                     let statsData = null;
@@ -1603,7 +1671,7 @@
                     }
                     
                     // 批量更新UI
-                    updateUserInterface(userInfo, statsData, role);
+                    updateUserInterface(userInfo, statsData, role, vipStatusData);
                     
                     // 更新localStorage
                     localStorage.setItem('user', JSON.stringify(userInfo));
@@ -1761,8 +1829,8 @@
         }
         
         // 批量更新UI接口
-        function updateUserInterface(userInfo, statsData, role) {
-            // 批量更新用户信息和统计数据
+        function updateUserInterface(userInfo, statsData, role, vipStatusData) {
+            // 批量更新用户信息、统计数据和VIP状态
             const updates = [];
             
             // 准备用户信息更新
@@ -1773,6 +1841,11 @@
                 updates.push(() => updateStudentStats(statsData));
             } else if (role === 'parent') {
                 updates.push(() => updateParentStats(statsData));
+            }
+            
+            // 准备VIP状态更新
+            if (vipStatusData) {
+                updates.push(() => updateVipCenterStatus(vipStatusData));
             }
             
             // 批量执行更新，减少重排重绘
@@ -1795,10 +1868,19 @@
                 daily_used: 0
             };
             
+            const defaultVipStatus = {
+                is_vip: false,
+                vip_type: 'free',
+                expire_date: null,
+                remaining_days: 0,
+                daily_quota: 3,
+                remaining_quota: 3
+            };
+            
             const role = getCurrentUserRole();
             const defaultStats = getDefaultStatsData(role);
             
-            updateUserInterface(defaultUser, defaultStats, role);
+            updateUserInterface(defaultUser, defaultStats, role, defaultVipStatus);
         }
 
         function updateUserProfile(user) {
@@ -1832,9 +1914,17 @@
             
             if (userInfoEl) {
                 const roleText = user.role === 'student' ? '学生' : user.role === 'parent' ? '家长' : '教师';
-                const gradeText = user.grade || '未设置年级';
-                userInfoEl.textContent = `${roleText} · ${gradeText}`;
-                console.log('用户信息已更新为:', `${roleText} · ${gradeText}`);
+                
+                // 家长身份时只显示"家长"，不显示年级信息
+                if (user.role === 'parent') {
+                    userInfoEl.textContent = roleText;
+                    console.log('用户信息已更新为:', roleText);
+                } else {
+                    // 学生和其他角色显示角色和年级
+                    const gradeText = user.grade || '未设置年级';
+                    userInfoEl.textContent = `${roleText} · ${gradeText}`;
+                    console.log('用户信息已更新为:', `${roleText} · ${gradeText}`);
+                }
             }
             
             // 更新VIP状态
@@ -1962,6 +2052,58 @@
             }
             
             console.log('=== 家长统计数据更新完成 ===');
+        }
+        
+        // 更新会员中心状态描述 - 使用VIP状态API数据
+        function updateVipCenterStatus(vipStatusData) {
+            console.log('=== 更新会员中心状态描述 ===');
+            console.log('VIP状态API数据:', vipStatusData);
+            
+            const vipStatusDescEl = document.getElementById('vipStatusDesc');
+            if (!vipStatusDescEl) {
+                console.log('未找到vipStatusDesc元素');
+                return;
+            }
+            
+            if (vipStatusData.is_vip && vipStatusData.expire_date) {
+                // VIP用户 - 显示到期时间和剩余次数
+                const daysLeft = vipStatusData.remaining_days || 0;
+                const remainingQuota = vipStatusData.remaining_quota || 0;
+                
+                let statusText = '';
+                if (daysLeft > 0) {
+                    statusText = `VIP会员 · 剩余${daysLeft}天 · 今日还可用${remainingQuota}次`;
+                } else {
+                    statusText = 'VIP已过期 · 点击续费';
+                }
+                
+                vipStatusDescEl.textContent = statusText;
+                console.log('VIP状态描述已更新:', statusText);
+                
+            } else if (vipStatusData.is_vip) {
+                // VIP用户但没有过期时间信息
+                const remainingQuota = vipStatusData.remaining_quota || 0;
+                const statusText = `VIP会员 · 今日还可用${remainingQuota}次`;
+                vipStatusDescEl.textContent = statusText;
+                console.log('VIP状态描述已更新:', statusText);
+                
+            } else {
+                // 普通用户 - 显示剩余免费次数
+                const remainingQuota = vipStatusData.remaining_quota || 0;
+                const dailyQuota = vipStatusData.daily_quota || 3;
+                
+                let statusText = '';
+                if (remainingQuota > 0) {
+                    statusText = `免费用户 · 今日还可用${remainingQuota}次 · 升级VIP享特权`;
+                } else {
+                    statusText = '今日免费次数已用完 · 升级VIP无限使用';
+                }
+                
+                vipStatusDescEl.textContent = statusText;
+                console.log('普通用户状态描述已更新:', statusText);
+            }
+            
+            console.log('=== 会员中心状态描述更新完成 ===');
         }
         
         // 优化的头像设置函数
@@ -2644,7 +2786,186 @@
         }
 
         function toggleNotification() {
-            showNotificationSettingsModal();
+            // 实现开关切换效果
+            const toggle = document.getElementById('notificationToggle');
+            if (!toggle) {
+                console.warn('未找到通知开关元素');
+                return;
+            }
+            
+            // 切换开关状态
+            const isCurrentlyActive = toggle.classList.contains('active');
+            
+            if (isCurrentlyActive) {
+                // 关闭通知
+                toggle.classList.remove('active');
+                localStorage.setItem('notificationEnabled', 'false');
+                showToast('🔕 消息通知已关闭', 2000);
+                console.log('通知已关闭');
+            } else {
+                // 开启通知
+                toggle.classList.add('active');
+                localStorage.setItem('notificationEnabled', 'true');
+                showToast('🔔 消息通知已开启', 2000);
+                console.log('通知已开启');
+            }
+            
+            // 添加点击反馈动画
+            toggle.style.transform = 'scale(0.95)';
+            setTimeout(() => {
+                toggle.style.transform = 'scale(1)';
+            }, 150);
+        }
+        
+        // 初始化通知开关状态
+        function initializeNotificationToggle() {
+            const toggle = document.getElementById('notificationToggle');
+            if (!toggle) {
+                console.warn('未找到通知开关元素，稍后重试');
+                // 延迟重试
+                setTimeout(() => {
+                    initializeNotificationToggle();
+                }, 500);
+                return;
+            }
+            
+            // 从localStorage读取保存的设置，默认为开启状态
+            const savedSetting = localStorage.getItem('notificationEnabled');
+            const isEnabled = savedSetting === null ? true : savedSetting === 'true';
+            
+            console.log('初始化通知开关状态:', isEnabled ? '开启' : '关闭');
+            
+            if (isEnabled) {
+                toggle.classList.add('active');
+            } else {
+                toggle.classList.remove('active');
+            }
+        }
+        
+        function pushNotificationMessages() {
+            console.log('📢 开始推送通知消息...');
+            
+            // 获取当前用户角色
+            const currentRole = AuthUtils.getCurrentUserRole() || localStorage.getItem('role') || 'student';
+            
+            // 根据用户角色推送不同的通知内容
+            const notifications = getNotificationsByRole(currentRole);
+            
+            // 依次推送通知，每个通知间隔1.5秒
+            notifications.forEach((notification, index) => {
+                setTimeout(() => {
+                    showNotificationToast(notification);
+                }, index * 1500);
+            });
+            
+            // 显示推送完成提示
+            setTimeout(() => {
+                showToast('✅ 所有通知已推送完成', 2000);
+            }, notifications.length * 1500);
+        }
+        
+        function getNotificationsByRole(role) {
+            const baseNotifications = [
+                { title: '系统消息', content: '🔔 ZYJC智能批改系统为您服务' },
+                { title: '学习提醒', content: '📚 今天还没有完成学习任务，快来学习吧！' },
+                { title: '功能更新', content: '🆕 系统新增了错题分析功能，快来体验吧！' }
+            ];
+            
+            if (role === 'student') {
+                return [
+                    ...baseNotifications,
+                    { title: '作业提醒', content: '📝 您有新的作业需要完成，请及时处理' },
+                    { title: '错题复习', content: '🔍 发现3道错题需要复习，建议今天完成' },
+                    { title: '学习计划', content: '📅 今日学习计划：完成数学练习30分钟' },
+                    { title: '成绩提醒', content: '🏆 恭喜！您的数学成绩有了明显提升！' }
+                ];
+            } else if (role === 'parent') {
+                return [
+                    ...baseNotifications,
+                    { title: '孩子学习', content: '👶 您的孩子今天完成了2项作业，表现很棒！' },
+                    { title: '学习报告', content: '📊 本周学习报告已生成，孩子进步明显' },
+                    { title: '错题统计', content: '📈 孩子本周错题率下降了15%，继续保持！' },
+                    { title: '家长建议', content: '💡 建议加强孩子的计算练习，提高准确率' }
+                ];
+            } else {
+                return baseNotifications;
+            }
+        }
+        
+        function showNotificationToast(notification) {
+            console.log('推送通知:', notification.title, '-', notification.content);
+            
+            // 创建通知样式的Toast
+            const toast = document.createElement('div');
+            toast.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                padding: 16px 20px;
+                border-radius: 12px;
+                font-size: 14px;
+                z-index: 10002;
+                box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                max-width: 300px;
+                min-width: 250px;
+                animation: slideInFromRight 0.4s ease-out;
+                backdrop-filter: blur(10px);
+            `;
+            
+            toast.innerHTML = `
+                <div style="display: flex; align-items: start; gap: 12px;">
+                    <div style="font-size: 20px; margin-top: 2px;">🔔</div>
+                    <div style="flex: 1;">
+                        <div style="font-weight: 600; font-size: 15px; margin-bottom: 4px;">${notification.title}</div>
+                        <div style="font-size: 13px; line-height: 1.4; opacity: 0.95;">${notification.content}</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.remove()" style="background: rgba(255,255,255,0.2); border: none; color: white; width: 20px; height: 20px; border-radius: 50%; font-size: 12px; cursor: pointer; display: flex; align-items: center; justify-content: center;">×</button>
+                </div>
+            `;
+            
+            // 添加动画样式（如果还没有）
+            if (!document.getElementById('notification-animation-styles')) {
+                const style = document.createElement('style');
+                style.id = 'notification-animation-styles';
+                style.textContent = `
+                    @keyframes slideInFromRight {
+                        0% { 
+                            opacity: 0; 
+                            transform: translateX(100%); 
+                        }
+                        100% { 
+                            opacity: 1; 
+                            transform: translateX(0); 
+                        }
+                    }
+                    @keyframes slideOutToRight {
+                        0% { 
+                            opacity: 1; 
+                            transform: translateX(0); 
+                        }
+                        100% { 
+                            opacity: 0; 
+                            transform: translateX(100%); 
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            document.body.appendChild(toast);
+            
+            // 5秒后自动消失
+            setTimeout(() => {
+                toast.style.animation = 'slideOutToRight 0.4s ease-out';
+                setTimeout(() => {
+                    if (document.body.contains(toast)) {
+                        document.body.removeChild(toast);
+                    }
+                }, 400);
+            }, 5000);
         }
 
         function showNotificationSettingsModal() {
@@ -3231,7 +3552,7 @@
                 <div class="modal" id="faqModal" style="display: flex;">
                     <div class="modal-content" style="max-width: 450px;">
                         <div class="modal-title">${faq.title}</div>
-                        <div style="padding: 20px 0; max-height: 400px; overflow-y: auto;">
+                        <div style="padding: 20px 0; max-height: 350px; overflow-y: auto;">
                             ${faq.items.map((item, index) => `
                                 <div style="margin-bottom: 16px; border-bottom: 1px solid #f0f0f0; padding-bottom: 16px;">
                                     <div style="font-size: 14px; font-weight: 500; color: #333; margin-bottom: 8px; cursor: pointer;" onclick="toggleFAQAnswer(${index})">
@@ -3298,7 +3619,7 @@
                 <div class="modal" id="aboutModal" style="display: flex;">
                     <div class="modal-content" style="max-width: 420px;">
                         <div class="modal-title">关于我们</div>
-                        <div style="padding: 20px 0; max-height: 500px; overflow-y: auto;">
+                        <div style="padding: 20px 0;">
                             <!-- 产品介绍 -->
                             <div style="text-align: center; margin-bottom: 24px;">
                                 <div style="font-size: 48px; margin-bottom: 8px;">📚</div>
@@ -3411,8 +3732,7 @@
                             </div>
                         </div>
                         <div class="modal-buttons" style="margin-top: 16px;">
-                            <button class="modal-btn btn-secondary" onclick="checkForUpdates()" style="flex: 1; margin-right: 8px;">检查更新</button>
-                            <button class="modal-btn btn-primary" onclick="closeAboutModal()" style="flex: 1;">知道了</button>
+                            <button class="modal-btn btn-primary" onclick="closeAboutModal()" style="width: 100%;">知道了</button>
                         </div>
                     </div>
                 </div>

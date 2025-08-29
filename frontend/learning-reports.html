@@ -872,7 +872,7 @@
             initPage();
         }
         
-        // 头像显示函数 - 与管理孩子页面保持一致
+        // 头像显示函数 - 支持最新头像格式
         function getAvatarDisplay(avatarUrl) {
             if (!avatarUrl) {
                 return '👶';
@@ -881,6 +881,11 @@
             // 如果是emoji格式
             if (avatarUrl.startsWith('emoji:')) {
                 return avatarUrl.replace('emoji:', '');
+            }
+            
+            // 如果是data URL（base64图片），直接显示
+            if (avatarUrl.startsWith('data:')) {
+                return `<img src="${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
             }
             
             // 如果是图片URL，显示img标签

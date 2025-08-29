@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Avatar Test - ZYJC</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        .child-tab { 
+            display: inline-block;
+            margin: 10px;
+            padding: 12px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+        }
+        .child-tab.active { border-color: #06B6D4; background: #06B6D4; color: white; }
+        .child-avatar { 
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            display: inline-block;
+            margin-bottom: 8px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 24px;
+        }
+        .child-name { display: block; font-size: 14px; }
+        .test-info { background: #f0f0f0; padding: 15px; margin: 20px 0; border-radius: 8px; }
+        .error { color: red; }
+        .success { color: green; }
+    </style>
+</head>
+<body>
+    <h1>Avatar Display Test</h1>
+    
+    <div class="test-info">
+        <h3>Testing Pages:</h3>
+        <p>
+            <a href="http://localhost:8080/frontend/learning-reports.html" target="_blank">Learning Reports</a> | 
+            <a href="http://localhost:8080/frontend/error-analysis.html" target="_blank">Error Analysis</a> | 
+            <a href="http://localhost:8080/frontend/learning-progress.html" target="_blank">Learning Progress</a>
+        </p>
+        <p><strong>Parent Token:</strong> <code>eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU3MDY2MDUwfQ.8jkwoXsJgWPffTMGdyXcz65Ba0grQTCfSaTFR-kkx8s</code></p>
+        <p><em>Save this token in localStorage with key 'authToken' on each page to test.</em></p>
+    </div>
+
+    <div id="children-container">
+        <p>Loading children data...</p>
+    </div>
+
+    <script src="/frontend/js/auth-utils.js?v=5"></script>
+    <script>
+        // Set token for testing
+        localStorage.setItem('authToken', 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU3MDY2MDUwfQ.8jkwoXsJgWPffTMGdyXcz65Ba0grQTCfSaTFR-kkx8s');
+        
+        // Avatar display function - same as used in the pages
+        function getAvatarDisplay(avatarUrl) {
+            if (!avatarUrl) {
+                return '👶';
+            }
+            
+            // If it's emoji format
+            if (avatarUrl.startsWith('emoji:')) {
+                return avatarUrl.replace('emoji:', '');
+            }
+            
+            // If it's a data URL, display img tag
+            if (avatarUrl.startsWith('data:')) {
+                return `<img src="${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // If it's an image URL, display img tag
+            if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
+                const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8001';
+                return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
+            // Default to baby emoji
+            return '👶';
+        }
+
+        async function loadAndDisplayChildren() {
+            try {
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
+                });
+                
+                const children = data?.children || [];
+                console.log('Loaded children data:', children);
+                
+                if (children.length === 0) {
+                    document.getElementById('children-container').innerHTML = 
+                        '<p class="error">No children found</p>';
+                    return;
+                }
+                
+                let html = '<h3>Current Avatar Display:</h3>';
+                children.forEach((child, index) => {
+                    const avatarDisplay = getAvatarDisplay(child.avatar);
+                    html += `
+                        <div class="child-tab ${index === 0 ? 'active' : ''}" data-child-id="${child.id}">
+                            <div class="child-avatar">${avatarDisplay}</div>
+                            <span class="child-name">${child.name}</span>
+                        </div>
+                    `;
+                });
+                
+                html += '<div class="test-info"><h4>Debug Information:</h4>';
+                children.forEach(child => {
+                    html += `<p><strong>${child.name} (ID: ${child.id}):</strong><br>`;
+                    html += `Avatar URL: <code>${(child.avatar || '').substring(0, 100)}...</code><br>`;
+                    html += `Type: ${child.avatar?.startsWith('/uploads/') ? 'Image Path' : 
+                                   child.avatar?.startsWith('data:') ? 'Data URL' : 
+                                   child.avatar?.startsWith('emoji:') ? 'Emoji' : 'Unknown'}</p>`;
+                });
+                html += '</div>';
+                
+                document.getElementById('children-container').innerHTML = html;
+                document.querySelector('.success')?.remove();
+                
+                const successMsg = document.createElement('p');
+                successMsg.className = 'success';
+                successMsg.textContent = `Successfully loaded ${children.length} children with avatar data`;
+                document.body.insertBefore(successMsg, document.getElementById('children-container'));
+                
+            } catch (error) {
+                console.error('Error loading children:', error);
+                document.getElementById('children-container').innerHTML = 
+                    `<p class="error">Error loading children: ${error.message}</p>`;
+            }
+        }
+
+        // Load data when page loads
+        document.addEventListener('DOMContentLoaded', function() {
+            loadAndDisplayChildren();
+        });
+    </script>
+</body>
+</html>
