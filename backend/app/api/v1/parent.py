@@ -136,7 +136,7 @@ def get_parent_dashboard(
             "grade": child_user.grade or "未设置",
             "school": relation.school or "未设置学校",
             "class_name": relation.class_name or "未设置班级",
-            "avatar": child_user.avatar_url or "student",
+            "avatar": child_user.avatar_url if child_user.avatar_url is not None else "student",
             "todayScore": int(avg_score),
             "status": status
         }
@@ -989,7 +989,7 @@ def update_child(
             child_user.nickname = child_data.nickname
         if child_data.grade:
             child_user.grade = child_data.grade
-        if child_data.avatar_url:
+        if child_data.avatar_url is not None:
             child_user.avatar_url = child_data.avatar_url
         
         # 更新parent-child关系

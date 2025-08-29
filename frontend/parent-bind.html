@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - 家长绑定</title>
     <link rel="stylesheet" href="/frontend/css/modern-theme.css">
+    <link rel="stylesheet" href="/frontend/css/theme.css">
     <style>
         * {
             margin: 0;
@@ -522,6 +523,9 @@
             // 获取用户信息
             await loadUserInfo();
             
+            // 根据用户身份生成底部导航
+            generateBottomNavigation();
+            
             // 加载绑定列表
             await loadBindingList();
             
@@ -832,35 +836,129 @@
                 }
             }, duration);
         }
+        
+        // 家长端底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
+        }
+        
+        function goToProfile() {
+            window.location.href = '/frontend/profile.html';
+        }
+        
+        // 根据用户身份生成底部导航
+        function generateBottomNavigation() {
+            const navigationContainer = document.getElementById('bottom-navigation');
+            
+            if (!currentUser) {
+                // 用户信息未加载，显示默认导航或隐藏导航
+                navigationContainer.innerHTML = '';
+                return;
+            }
+            
+            let navigationHTML = '';
+            
+            if (currentUser.role === 'parent') {
+                // 家长端导航（参照error-analysis.html）
+                navigationHTML = `
+                    <div class="theme-bottom-nav">
+                        <div class="theme-nav-item" onclick="goToParentHome()">
+                            <div class="theme-nav-icon">🏠</div>
+                            <div class="theme-nav-text">首页</div>
+                        </div>
+                        <div class="theme-nav-item" onclick="goToLearningReports()">
+                            <div class="theme-nav-icon">📊</div>
+                            <div class="theme-nav-text">学习报告</div>
+                        </div>
+                        <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                            <div class="theme-nav-icon">🔍</div>
+                            <div class="theme-nav-text">错题分析</div>
+                        </div>
+                        <div class="theme-nav-item" onclick="goToLearningProgress()">
+                            <div class="theme-nav-icon">📈</div>
+                            <div class="theme-nav-text">学习进度</div>
+                        </div>
+                        <div class="theme-nav-item" onclick="goToChildDetail()">
+                            <div class="theme-nav-icon">👶</div>
+                            <div class="theme-nav-text">孩子管理</div>
+                        </div>
+                        <div class="theme-nav-item" onclick="goToProfile()">
+                            <div class="theme-nav-icon">👤</div>
+                            <div class="theme-nav-text">我的</div>
+                        </div>
+                    </div>
+                `;
+            } else if (currentUser.role === 'student') {
+                // 学生端导航
+                navigationHTML = `
+                    <div class="global-bottom-nav">
+                        <div class="global-nav-item" onclick="goToStudentHome()">
+                            <div class="global-nav-icon">🏠</div>
+                            <div class="global-nav-text">首页</div>
+                        </div>
+                        <div class="global-nav-item" onclick="goToHomeworkSubmit()">
+                            <div class="global-nav-icon">📷</div>
+                            <div class="global-nav-text">拍照批改</div>
+                        </div>
+                        <div class="global-nav-item" onclick="goToErrorBook()">
+                            <div class="global-nav-icon">📚</div>
+                            <div class="global-nav-text">错题本</div>
+                        </div>
+                        <div class="global-nav-item" onclick="goToStudyPlan()">
+                            <div class="global-nav-icon">📋</div>
+                            <div class="global-nav-text">学习计划</div>
+                        </div>
+                        <div class="global-nav-item" onclick="goToProfile()">
+                            <div class="global-nav-icon">👤</div>
+                            <div class="global-nav-text">我的</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                // 未知角色，显示基础导航或隐藏
+                navigationHTML = '';
+            }
+            
+            navigationContainer.innerHTML = navigationHTML;
+        }
+        
+        // 学生端导航函数
+        function goToStudentHome() {
+            window.location.href = '/frontend/student-home.html';
+        }
+        
+        function goToHomeworkSubmit() {
+            window.location.href = '/frontend/homework-submit.html';
+        }
+        
+        function goToErrorBook() {
+            window.location.href = '/frontend/error-book.html';
+        }
+        
+        function goToStudyPlan() {
+            window.location.href = '/frontend/study-plan.html';
+        }
     </script>
     
-    <!-- 全局底部导航 -->
-    <div class="global-bottom-nav">
-        
-            <div class="global-nav-item" onclick="goHome()">
-                <div class="global-nav-icon">🏡</div>
-                <div class="global-nav-text">主页</div>
-            </div>
-<div class="global-nav-item" onclick="window.location.href='/frontend/student-home.html'">
-            <div class="global-nav-icon">🏠</div>
-            <div class="global-nav-text">首页</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/homework-submit.html'">
-            <div class="global-nav-icon">📷</div>
-            <div class="global-nav-text">拍照批改</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/error-book.html'">
-            <div class="global-nav-icon">📚</div>
-            <div class="global-nav-text">错题本</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/study-plan.html'">
-            <div class="global-nav-icon">📋</div>
-            <div class="global-nav-text">学习计划</div>
-        </div>
-        <div class="global-nav-item" onclick="window.location.href='/frontend/profile.html'">
-            <div class="global-nav-icon">👤</div>
-            <div class="global-nav-text">我的</div>
-        </div>
+    <!-- 动态底部导航 -->
+    <div id="bottom-navigation">
+        <!-- 导航内容将由JavaScript动态生成 -->
     </div>
 </body>
 </html>

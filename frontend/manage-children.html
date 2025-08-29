@@ -262,15 +262,20 @@
             display: flex;
             gap: 12px;
             margin-top: 24px;
+            padding: 12px 0;
+            justify-content: flex-end;
+            border-top: 1px solid #eee;
         }
         
         .modal-btn {
             flex: 1;
             padding: 12px;
-            border: none;
-            border-radius: 8px;
+            min-height: 40px;
+            min-width: 80px;
             font-size: 14px;
             font-weight: 500;
+            border: none;
+            border-radius: 8px;
             cursor: pointer;
         }
         
@@ -282,6 +287,181 @@
         .confirm-btn {
             background: #007AFF;
             color: white;
+            border: none;
+            transition: all 0.3s ease;
+        }
+        
+        .confirm-btn:hover:not(:disabled) {
+            background: #0056CC;
+            transform: translateY(-1px);
+        }
+        
+        .confirm-btn:disabled {
+            background: #ccc !important;
+            cursor: not-allowed !important;
+            opacity: 0.7 !important;
+        }
+        
+        /* 头像选择器样式 */
+        .avatar-selector {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .avatar-preview-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .avatar-preview-container:hover {
+            transform: scale(1.05);
+        }
+        
+        .child-avatar-preview {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            color: white;
+            border: 2px solid #e0e0e0;
+            transition: all 0.2s ease;
+        }
+        
+        .child-avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+        
+        .avatar-edit-hint {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-align: center;
+        }
+        
+        /* 头像编辑模态框样式 */
+        .avatar-edit-content {
+            padding: 20px 0;
+        }
+
+        .current-avatar-preview {
+            text-align: center;
+            margin-bottom: 24px;
+        }
+
+        .avatar-preview {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+            color: white;
+            margin: 0 auto 8px;
+            border: 3px solid #f0f0f0;
+        }
+
+        .avatar-preview img {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            object-fit: cover;
+        }
+
+        .avatar-preview-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .upload-options {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .upload-option {
+            border: 2px dashed #e0e0e0;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-option:hover {
+            border-color: #007AFF;
+            background: #f8f9ff;
+        }
+
+        .upload-option.selected {
+            border-color: #007AFF;
+            background: #f0f5ff;
+        }
+
+        .upload-icon {
+            font-size: 24px;
+            margin-bottom: 8px;
+        }
+
+        .upload-text {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+            margin-bottom: 4px;
+        }
+
+        .upload-desc {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .default-avatars {
+            padding: 16px 0;
+        }
+
+        .avatar-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+        }
+
+        .default-avatar-item {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+            justify-self: center;
+        }
+
+        .default-avatar-item:hover {
+            transform: scale(1.1);
+            border-color: #007AFF;
+        }
+
+        .default-avatar-item.selected {
+            border-color: #007AFF;
+            box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
         }
         
         /* 加载状态 */
@@ -332,8 +512,8 @@
     </div>
     
     <!-- 添加孩子模态框 -->
-    <div class="modal-overlay" id="addChildModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="addChildModal" style="z-index: 1000;">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="modal-title">添加孩子</div>
             <form id="addChildForm">
                 <div class="form-group">
@@ -365,23 +545,44 @@
                     </select>
                 </div>
                 <div class="form-group">
+                    <label class="form-label">头像</label>
+                    <div class="avatar-selector">
+                        <div class="avatar-preview-container" onclick="editChildAvatar('add')">
+                            <div class="child-avatar-preview" id="addChildAvatarPreview">👶</div>
+                            <div class="avatar-edit-hint">点击编辑</div>
+                        </div>
+                        <input type="hidden" id="childAvatar" value="emoji:👶">
+                    </div>
+                </div>
+                <div class="form-group">
                     <label class="form-label">学校</label>
                     <input type="text" class="form-input" id="childSchool" placeholder="请输入学校名称" required>
                 </div>
-                <div class="modal-actions">
+                <!-- 固定在底部的按钮区域 -->
+                <div class="modal-actions" style="position: sticky; bottom: 0; background: white; z-index: 1001; margin-top: 24px; padding: 16px 0; border-top: 1px solid #eee;">
                     <button type="button" class="modal-btn cancel-btn" onclick="closeAddChildModal()">取消</button>
-                    <button type="submit" class="modal-btn confirm-btn">添加</button>
+                    <button type="submit" class="modal-btn confirm-btn" style="background: #007AFF; color: white;">添加</button>
                 </div>
             </form>
         </div>
     </div>
 
     <!-- 编辑孩子模态框 -->
-    <div class="modal-overlay" id="editChildModal">
-        <div class="modal-content">
+    <div class="modal-overlay" id="editChildModal" style="z-index: 1000;">
+        <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
             <div class="modal-title">编辑孩子</div>
             <form id="editChildForm">
                 <input type="hidden" id="editChildId">
+                <div class="form-group">
+                    <label class="form-label">头像</label>
+                    <div class="avatar-selector">
+                        <div class="avatar-preview-container" onclick="editChildAvatar('edit')">
+                            <div class="child-avatar-preview" id="editChildAvatarPreview">👶</div>
+                            <div class="avatar-edit-hint">点击编辑</div>
+                        </div>
+                        <input type="hidden" id="editChildAvatar" value="emoji:👶">
+                    </div>
+                </div>
                 <div class="form-group">
                     <label class="form-label">孩子姓名</label>
                     <input type="text" class="form-input" id="editChildName" placeholder="请输入孩子姓名" required>
@@ -414,11 +615,66 @@
                     <label class="form-label">学校</label>
                     <input type="text" class="form-input" id="editChildSchool" placeholder="请输入学校名称" required>
                 </div>
-                <div class="modal-actions">
+                <!-- 固定在底部的按钮区域 -->
+                <div class="modal-actions" style="position: sticky; bottom: 0; background: white; z-index: 1001; margin-top: 24px; padding: 16px 0; border-top: 1px solid #eee;">
                     <button type="button" class="modal-btn cancel-btn" onclick="closeEditChildModal()">取消</button>
-                    <button type="submit" class="modal-btn confirm-btn">保存</button>
+                    <button type="submit" class="modal-btn confirm-btn" style="background: #007AFF; color: white;">保存</button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- 孩子头像编辑模态框 -->
+    <div class="modal-overlay" id="childAvatarModal" style="z-index: 9999;">
+        <div class="modal-content" style="max-width: 350px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-title">选择头像</div>
+            <div style="text-align: center; color: #666; font-size: 14px; margin-bottom: 16px;">选择后会自动应用</div>
+            <div class="avatar-edit-content">
+                <!-- 当前头像预览 -->
+                <div class="current-avatar-preview">
+                    <div class="avatar-preview" id="childAvatarPreview">👶</div>
+                    <div class="avatar-preview-label">当前头像</div>
+                </div>
+                
+                <!-- 上传选项 -->
+                <div class="upload-options">
+                    <div class="upload-option" onclick="selectChildAvatarFile()">
+                        <div class="upload-icon">📁</div>
+                        <div class="upload-text">选择本地图片</div>
+                        <div class="upload-desc">支持JPG、PNG格式，最大5MB，选择后立即应用</div>
+                    </div>
+                    
+                    <div class="upload-option" onclick="selectChildDefaultAvatar()">
+                        <div class="upload-icon">😊</div>
+                        <div class="upload-text">选择默认头像</div>
+                        <div class="upload-desc">系统提供的头像图标，点击即可应用</div>
+                    </div>
+                </div>
+                
+                <!-- 文件上传 -->
+                <input type="file" id="childAvatarFileInput" accept="image/jpeg,image/jpg,image/png" style="display: none;">
+            </div>
+            
+            <!-- 取消按钮区域 -->
+            <div class="modal-actions" style="background: white; position: sticky; bottom: 0; z-index: 10;">
+                <button class="modal-btn cancel-btn" onclick="closeChildAvatarModal()" style="width: 100%;">取消</button>
+                <!-- 保存按钮已移除，选择头像后自动应用 -->
+            </div>
+        </div>
+    </div>
+
+    <!-- 默认头像选择模态框 -->
+    <div class="modal-overlay" id="childDefaultAvatarModal" style="z-index: 10000;">
+        <div class="modal-content" style="max-width: 300px;">
+            <div class="modal-title">选择默认头像</div>
+            <div class="default-avatars">
+                <div class="avatar-grid" id="childAvatarGrid">
+                    <!-- 默认头像将通过JavaScript生成 -->
+                </div>
+            </div>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" onclick="closeChildDefaultAvatarModal()">取消</button>
+            </div>
         </div>
     </div>
 
@@ -547,13 +803,251 @@
             childrenListEl.innerHTML = childrenHtml;
         }
 
+        // 孩子头像编辑相关变量
+        let currentEditingModal = null; // 'add' or 'edit'
+        let selectedChildAvatarType = null; // 'file' 或 'default'
+        let selectedChildFile = null;
+        let selectedChildDefaultAvatar = null;
+
+        function editChildAvatar(modalType) {
+            console.log('editChildAvatar 被调用，模式:', modalType);
+            currentEditingModal = modalType;
+            
+            // 获取当前头像
+            const previewId = modalType === 'add' ? 'addChildAvatarPreview' : 'editChildAvatarPreview';
+            const currentAvatar = document.getElementById(previewId).innerHTML;
+            console.log('当前头像内容:', currentAvatar);
+            document.getElementById('childAvatarPreview').innerHTML = currentAvatar;
+            
+            // 重置选择状态
+            selectedChildAvatarType = null;
+            selectedChildFile = null;
+            selectedChildDefaultAvatar = null;
+            
+            // 显示头像编辑模态框
+            document.getElementById('childAvatarModal').style.display = 'flex';
+            
+            // 确保文件输入监听器正常工作
+            setTimeout(() => {
+                const fileInput = document.getElementById('childAvatarFileInput');
+                if (fileInput) {
+                    fileInput.removeEventListener('change', handleChildFileSelect);
+                    fileInput.addEventListener('change', handleChildFileSelect);
+                    console.log('孩子头像文件选择监听器已设置');
+                }
+            }, 50);
+        }
+
+        function selectChildAvatarFile() {
+            console.log('selectChildAvatarFile 被调用');
+            const fileInput = document.getElementById('childAvatarFileInput');
+            if (fileInput) {
+                fileInput.click();
+            }
+        }
+
+        function selectChildDefaultAvatar() {
+            // 生成默认头像选项
+            generateChildDefaultAvatars();
+            document.getElementById('childDefaultAvatarModal').style.display = 'flex';
+        }
+
+        function generateChildDefaultAvatars() {
+            const avatars = ['👶', '🧒', '👦', '👧', '🎓', '📚', '✏️', '🌟', '😊', '😎', '🤗', '🙂'];
+            const avatarGrid = document.getElementById('childAvatarGrid');
+            
+            avatarGrid.innerHTML = '';
+            
+            avatars.forEach(avatar => {
+                const avatarItem = document.createElement('div');
+                avatarItem.className = 'default-avatar-item';
+                avatarItem.textContent = avatar;
+                avatarItem.onclick = () => selectChildDefaultAvatarItem(avatar, avatarItem);
+                avatarGrid.appendChild(avatarItem);
+            });
+        }
+
+        function selectChildDefaultAvatarItem(avatar, element) {
+            // 清除之前的选择
+            document.querySelectorAll('.default-avatar-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            // 选择当前项
+            element.classList.add('selected');
+            selectedChildDefaultAvatar = avatar;
+            selectedChildAvatarType = 'default';
+            
+            // 更新预览
+            document.getElementById('childAvatarPreview').innerHTML = avatar;
+            
+            // 关闭默认头像选择模态框
+            setTimeout(() => {
+                document.getElementById('childDefaultAvatarModal').style.display = 'none';
+                
+                // 直接更新目标页面的头像预览并关闭编辑模态框
+                const avatarValue = `emoji:${avatar}`;
+                updateChildAvatarPreview(avatarValue);
+                closeChildAvatarModal();
+                showToast('头像已更新');
+            }, 300);
+        }
+
+        function handleChildFileSelect(event) {
+            console.log('handleChildFileSelect 被调用');
+            const file = event.target.files[0];
+            
+            console.log('选择的文件:', file);
+            if (!file) {
+                return;
+            }
+            
+            // 验证文件类型
+            if (!file.type.match(/^image\/(jpeg|jpg|png)$/)) {
+                showToast('请选择JPG或PNG格式的图片');
+                return;
+            }
+            
+            // 验证文件大小 (5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                showToast('图片文件不能超过5MB');
+                return;
+            }
+            
+            selectedChildFile = file;
+            selectedChildAvatarType = 'file';
+            
+            // 显示文件预览并直接更新目标页面
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const avatarValue = e.target.result;
+                
+                // 更新编辑模态框中的预览
+                const previewContainer = document.getElementById('childAvatarPreview');
+                if (previewContainer) {
+                    previewContainer.innerHTML = 
+                        `<img src="${avatarValue}" alt="头像预览" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                }
+                
+                // 直接更新目标页面的头像预览并关闭编辑模态框
+                updateChildAvatarPreview(avatarValue);
+                closeChildAvatarModal();
+                showToast('头像已更新');
+            };
+            reader.readAsDataURL(file);
+        }
+
+        function updateChildSaveButton() {
+            // 这个函数不再需要，因为保存按钮已移除
+            // 选择头像后会自动更新并关闭模态框
+        }
+
+        async function saveChildAvatar() {
+            if (!selectedChildAvatarType || !currentEditingModal) {
+                showToast('请先选择头像');
+                return;
+            }
+
+            let avatarValue = '';
+            
+            if (selectedChildAvatarType === 'file') {
+                if (!selectedChildFile) {
+                    showToast('没有选择文件');
+                    return;
+                }
+                
+                // 使用Promise包装FileReader，确保异步操作完成
+                try {
+                    avatarValue = await new Promise((resolve, reject) => {
+                        const reader = new FileReader();
+                        reader.onload = function(e) {
+                            resolve(e.target.result); // base64格式
+                        };
+                        reader.onerror = function() {
+                            reject(new Error('文件读取失败'));
+                        };
+                        reader.readAsDataURL(selectedChildFile);
+                    });
+                    
+                    console.log('文件读取完成，base64长度:', avatarValue.length);
+                    updateChildAvatarPreview(avatarValue);
+                    closeChildAvatarModal();
+                    showToast('头像已更新');
+                    
+                } catch (error) {
+                    console.error('文件读取失败:', error);
+                    showToast('文件读取失败');
+                }
+                
+            } else if (selectedChildAvatarType === 'default') {
+                avatarValue = `emoji:${selectedChildDefaultAvatar}`;
+                updateChildAvatarPreview(avatarValue);
+                closeChildAvatarModal();
+                showToast('头像已更新');
+            }
+        }
+
+        function updateChildAvatarPreview(avatarValue) {
+            const previewId = currentEditingModal === 'add' ? 'addChildAvatarPreview' : 'editChildAvatarPreview';
+            const inputId = currentEditingModal === 'add' ? 'childAvatar' : 'editChildAvatar';
+            
+            const preview = document.getElementById(previewId);
+            const input = document.getElementById(inputId);
+            
+            if (avatarValue.startsWith('emoji:')) {
+                const emoji = avatarValue.replace('emoji:', '');
+                preview.innerHTML = emoji;
+                preview.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                input.value = avatarValue;
+            } else if (avatarValue.startsWith('data:')) {
+                // base64图片
+                preview.innerHTML = `<img src="${avatarValue}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                input.value = avatarValue; // 实际项目中这里应该是服务器返回的图片URL
+            }
+        }
+
+        function closeChildAvatarModal() {
+            document.getElementById('childAvatarModal').style.display = 'none';
+            document.getElementById('childAvatarFileInput').value = '';
+            selectedChildAvatarType = null;
+            selectedChildFile = null;
+            selectedChildDefaultAvatar = null;
+            currentEditingModal = null;
+        }
+
+        function closeChildDefaultAvatarModal() {
+            document.getElementById('childDefaultAvatarModal').style.display = 'none';
+        }
+
+        // Debug function - 可以在控制台调用测试头像模态框
+        function debugShowAvatarModal() {
+            console.log('Debug: 强制显示头像编辑模态框');
+            currentEditingModal = 'add';
+            selectedChildAvatarType = null;
+            
+            const modal = document.getElementById('childAvatarModal');
+            console.log('Modal element:', modal);
+            
+            modal.style.display = 'flex';
+            console.log('头像编辑模态框已显示');
+        }
+
+        // 页面加载后让debug函数全局可用
+        window.debugShowAvatarModal = debugShowAvatarModal;
+
         function showAddChildModal() {
             document.getElementById('addChildModal').style.display = 'flex';
+            // 重置头像预览
+            document.getElementById('addChildAvatarPreview').innerHTML = '👶';
+            document.getElementById('childAvatar').value = 'emoji:👶';
         }
 
         function closeAddChildModal() {
             document.getElementById('addChildModal').style.display = 'none';
             document.getElementById('addChildForm').reset();
+            // 重置头像预览
+            document.getElementById('addChildAvatarPreview').innerHTML = '👶';
+            document.getElementById('childAvatar').value = 'emoji:👶';
         }
 
         // 检查名字是否重复
@@ -571,6 +1065,7 @@
             const childGrade = document.getElementById('childGrade').value;
             const childClass = document.getElementById('childClass').value;
             const childSchool = document.getElementById('childSchool').value.trim();
+            const childAvatar = document.getElementById('childAvatar').value;
             
             // 名字重复校验
             if (checkNameDuplicate(childName)) {
@@ -590,7 +1085,7 @@
                         grade: childGrade,
                         class_name: childClass,
                         school: childSchool,
-                        avatar_url: 'emoji:👶'
+                        avatar_url: childAvatar
                     })
                 });
                 
@@ -618,6 +1113,7 @@
             const childGrade = document.getElementById('editChildGrade').value;
             const childClass = document.getElementById('editChildClass').value;
             const childSchool = document.getElementById('editChildSchool').value.trim();
+            const childAvatar = document.getElementById('editChildAvatar').value;
             
             console.log('编辑表单提交:', {
                 childId, childName, childGrade, childClass, childSchool
@@ -635,7 +1131,8 @@
                     nickname: childName,
                     grade: childGrade,
                     class_name: childClass,
-                    school: childSchool
+                    school: childSchool,
+                    avatar_url: childAvatar
                 };
                 console.log('请求数据:', requestData);
                 
@@ -744,6 +1241,26 @@
             document.getElementById('editChildGrade').value = childData.grade || '';
             document.getElementById('editChildSchool').value = childData.school || '';
             
+            // 设置头像
+            const avatarUrl = childData.avatar_url || 'emoji:👶';
+            const preview = document.getElementById('editChildAvatarPreview');
+            const input = document.getElementById('editChildAvatar');
+            
+            if (avatarUrl.startsWith('emoji:')) {
+                const emoji = avatarUrl.replace('emoji:', '');
+                preview.innerHTML = emoji;
+                preview.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                input.value = avatarUrl;
+            } else if (avatarUrl.startsWith('http') || avatarUrl.startsWith('data:')) {
+                preview.innerHTML = `<img src="${avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;">`;
+                input.value = avatarUrl;
+            } else {
+                // 默认头像
+                preview.innerHTML = '👶';
+                preview.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                input.value = 'emoji:👶';
+            }
+            
             console.log('表单值设置完成:', {
                 id: childData.id,
                 name: childData.nickname || '',
@@ -777,6 +1294,9 @@
         function closeEditChildModal() {
             document.getElementById('editChildModal').style.display = 'none';
             document.getElementById('editChildForm').reset();
+            // 重置头像预览
+            document.getElementById('editChildAvatarPreview').innerHTML = '👶';
+            document.getElementById('editChildAvatar').value = 'emoji:👶';
         }
 
         async function deleteChild(childId) {
@@ -807,7 +1327,13 @@
         }
 
         function getAvatarDisplay(avatarUrl) {
-            if (!avatarUrl) {
+            // 明确检查null和undefined，允许空字符串通过
+            if (avatarUrl === null || avatarUrl === undefined) {
+                return '👶';
+            }
+            
+            // 如果是空字符串，返回默认头像
+            if (avatarUrl === '') {
                 return '👶';
             }
             
@@ -816,13 +1342,18 @@
                 return avatarUrl.replace('emoji:', '');
             }
             
+            // 如果是base64图片格式
+            if (avatarUrl.startsWith('data:image/')) {
+                return `<img src="${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
+            }
+            
             // 如果是图片URL，显示img标签
             if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
                 const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
                 return `<img src="${baseUrl}${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶'">`;
             }
             
-            // 默认返回baby emoji
+            // 对于其他非空字符串，也返回默认头像
             return '👶';
         }
 
