@@ -1,11 +1,3 @@
-        function goToSmartHome() {
-            const role = localStorage.getItem('role') || 'student';
-            if (role === 'parent') {
-                window.location.href = '/frontend/parent-home.html';
-            } else {
-                window.location.href = '/frontend/student-home.html';
-            }
-        }
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -531,7 +523,6 @@
         <div class="navbar">
             <div class="navbar-content">
                 <div class="navbar-left">
-                    <button class="back-btn" onclick="goBack()">←</button>
                     <div class="navbar-title">VIP中心</div>
                     <div class="crown-icon">👑</div>
                 </div>
@@ -707,13 +698,9 @@
         <!-- 底部导航 -->
         <div class="bottom-nav">
             
-            <div class="nav-item" onclick="goToSmartHome()">
+            <div class="nav-item" onclick="goHome()">
                 <div class="nav-icon">🏡</div>
                 <div class="nav-text">主页</div>
-            </div>
-<div class="nav-item" onclick="goHome()">
-                <div class="nav-icon">🏠</div>
-                <div class="nav-text">首页</div>
             </div>
             <div class="nav-item" onclick="goToErrorBook()">
                 <div class="nav-icon">📚</div>

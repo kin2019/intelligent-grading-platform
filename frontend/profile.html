@@ -856,7 +856,6 @@
                 <div class="navbar-left">
                     <div class="navbar-title">个人中心</div>
                 </div>
-                <button class="settings-btn" onclick="editProfile()">设置</button>
             </div>
         </div>
         
@@ -1995,18 +1994,27 @@
             
             // 生成孩子卡片
             children.forEach(child => {
-                // 修复头像显示逻辑
+                // 修复头像显示逻辑 - 添加缓存破坏时间戳
                 let avatarDisplay;
                 if (child.avatar && child.avatar.startsWith('emoji:')) {
                     // 表情头像
                     avatarDisplay = child.avatar.replace('emoji:', '');
+                    console.log('孩子头像 - 表情:', avatarDisplay);
+                } else if (child.avatar && child.avatar.startsWith('data:image/')) {
+                    // base64编码的图片数据
+                    avatarDisplay = `<img src="${child.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
+                    console.log('孩子头像 - base64数据');
                 } else if (child.avatar && (child.avatar.startsWith('http') || child.avatar.startsWith('/uploads/') || child.avatar.includes('.jpg') || child.avatar.includes('.png'))) {
-                    // 图片头像
+                    // 图片头像 - 添加时间戳强制刷新缓存
                     const fullUrl = child.avatar.startsWith('/') ? `http://localhost:8000${child.avatar}` : child.avatar;
-                    avatarDisplay = `<img src="${fullUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
+                    const separator = fullUrl.includes('?') ? '&' : '?';
+                    const timestampUrl = `${fullUrl}${separator}t=${Date.now()}`;
+                    avatarDisplay = `<img src="${timestampUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
+                    console.log('孩子头像 - 图片URL (带时间戳):', timestampUrl);
                 } else {
                     // 默认头像或其他情况
                     avatarDisplay = child.avatar === 'student' ? '🎓' : '👶';
+                    console.log('孩子头像 - 默认头像:', avatarDisplay);
                 }
                 
                 const statusClass = child.status === '已完成' ? '' : (child.status === '进行中' ? 'inactive' : 'inactive');
