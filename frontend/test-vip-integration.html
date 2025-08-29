@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP中心集成测试</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .test-container {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+        }
+        .test-button {
+            background: #007AFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 12px 24px;
+            margin: 8px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .test-button:hover {
+            background: #0056CC;
+        }
+        .test-results {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 16px;
+            margin-top: 16px;
+            font-family: monospace;
+            white-space: pre-wrap;
+        }
+        .success {
+            color: #28a745;
+        }
+        .error {
+            color: #dc3545;
+        }
+        .info {
+            color: #17a2b8;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>VIP中心集成测试</h1>
+        <p>此页面用于测试VIP中心页面与后端API的集成。</p>
+        
+        <h3>测试步骤:</h3>
+        <button class="test-button" onclick="testNonVipUser()">测试非VIP用户</button>
+        <button class="test-button" onclick="testVipUser()">测试VIP用户</button>
+        <button class="test-button" onclick="openVipCenter()">打开VIP中心页面</button>
+        <button class="test-button" onclick="clearTests()">清除测试结果</button>
+        
+        <div id="testResults" class="test-results"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        
+        function log(message, type = 'info') {
+            const resultsDiv = document.getElementById('testResults');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : (type === 'success' ? 'success' : 'info');
+            resultsDiv.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            resultsDiv.scrollTop = resultsDiv.scrollHeight;
+        }
+        
+        function clearTests() {
+            document.getElementById('testResults').innerHTML = '';
+        }
+        
+        async function generateToken() {
+            // 这里使用固定的测试token，实际应用中应该从认证服务获取
+            return 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU3MDQ4NzYzfQ.dYXVgHIxW5pud---PIYr-zVATurZ6b-Upf_Lz5WRQz8';
+        }
+        
+        async function testApiCall(token) {
+            try {
+                log('正在调用VIP状态API...', 'info');
+                const response = await fetch(`${API_BASE}/user/vip-status`, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    log(`API调用成功: ${JSON.stringify(data, null, 2)}`, 'success');
+                    return data;
+                } else {
+                    const errorText = await response.text();
+                    log(`API调用失败: ${response.status} - ${errorText}`, 'error');
+                    return null;
+                }
+            } catch (error) {
+                log(`API调用异常: ${error.message}`, 'error');
+                return null;
+            }
+        }
+        
+        async function setUserVipStatus(isVip) {
+            try {
+                log(`正在设置用户VIP状态为: ${isVip}`, 'info');
+                // 这里应该调用设置用户状态的API，目前通过后端直接操作数据库
+                log('请手动设置用户状态，或实现相应的测试API', 'info');
+                return true;
+            } catch (error) {
+                log(`设置用户状态失败: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function testNonVipUser() {
+            log('=== 开始测试非VIP用户场景 ===', 'info');
+            
+            const token = await generateToken();
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', 'parent');
+            
+            log('Token和角色已设置到localStorage', 'success');
+            
+            const data = await testApiCall(token);
+            if (data) {
+                if (!data.is_vip) {
+                    log(`✓ 非VIP状态正确: 剩余次数 ${data.remaining_quota}, 每日额度 ${data.daily_quota}`, 'success');
+                } else {
+                    log('× 预期非VIP用户，但API返回VIP状态', 'error');
+                }
+            }
+        }
+        
+        async function testVipUser() {
+            log('=== 开始测试VIP用户场景 ===', 'info');
+            
+            const token = await generateToken();
+            localStorage.setItem('token', token);
+            localStorage.setItem('role', 'parent');
+            
+            log('Token和角色已设置到localStorage', 'success');
+            
+            // 注意：需要手动在数据库中设置VIP状态用于测试
+            log('请先在数据库中设置用户ID=2为VIP状态', 'info');
+            
+            const data = await testApiCall(token);
+            if (data) {
+                if (data.is_vip) {
+                    log(`✓ VIP状态正确: 类型 ${data.vip_type}, 过期时间 ${data.expire_date}, 剩余天数 ${data.remaining_days}`, 'success');
+                } else {
+                    log('× 预期VIP用户，但API返回非VIP状态', 'error');
+                }
+            }
+        }
+        
+        function openVipCenter() {
+            log('正在打开VIP中心页面...', 'info');
+            window.open('vip-center.html', '_blank');
+        }
+        
+        // 页面加载时显示当前状态
+        window.addEventListener('load', async function() {
+            log('VIP中心集成测试页面已加载', 'success');
+            log('当前localStorage状态:', 'info');
+            log(`  token: ${localStorage.getItem('token') ? '已设置' : '未设置'}`, 'info');
+            log(`  role: ${localStorage.getItem('role') || '未设置'}`, 'info');
+        });
+    </script>
+</body>
+</html>

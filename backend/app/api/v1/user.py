@@ -41,6 +41,7 @@ class VIPStatus(BaseModel):
     daily_quota: int
     monthly_quota: int
     total_used: int
+    remaining_quota: int  # 剩余次数，VIP用户为-1表示无限
 
 class UserSettings(BaseModel):
     """用户设置"""
@@ -400,28 +401,59 @@ def get_vip_status(
     """
     获取当前用户的VIP状态详情
     """
-    # 模拟VIP状态
-    is_vip = getattr(current_user, 'is_vip', False) or random.choice([True, False])
+    # 获取用户真实VIP状态
+    is_vip = getattr(current_user, 'is_vip', False)
+    vip_expire_time = getattr(current_user, 'vip_expire_time', None)
+    daily_quota = getattr(current_user, 'daily_quota', 3)
+    total_used = getattr(current_user, 'total_used', 0)
+    daily_used = getattr(current_user, 'daily_used', 0)
     
-    if is_vip:
-        expire_date = datetime.now() + timedelta(days=random.randint(1, 365))
-        remaining_days = (expire_date - datetime.now()).days
-        vip_type = random.choice(["monthly", "quarterly", "yearly"])
-        daily_quota = {"monthly": 50, "quarterly": 80, "yearly": 120}[vip_type]
+    # 检查VIP是否过期
+    if is_vip and vip_expire_time:
+        if datetime.now() > vip_expire_time:
+            # VIP已过期，更新用户状态
+            current_user.is_vip = False
+            db.add(current_user)
+            db.commit()
+            db.refresh(current_user)
+            is_vip = False
+    
+    # 计算剩余天数和VIP类型
+    if is_vip and vip_expire_time:
+        remaining_days = (vip_expire_time - datetime.now()).days
+        # 根据剩余天数推断VIP类型
+        if remaining_days <= 31:
+            vip_type = "monthly"
+        elif remaining_days <= 93:
+            vip_type = "quarterly"  
+        else:
+            vip_type = "yearly"
+            
+        # VIP用户享有更高的每日额度
+        if daily_quota <= 5:  # 如果还是免费额度，给予VIP额度
+            daily_quota = 50 if vip_type == "monthly" else (80 if vip_type == "quarterly" else 120)
     else:
-        expire_date = None
         remaining_days = 0
         vip_type = "free"
-        daily_quota = 5
+        # 非VIP用户的免费额度
+        if daily_quota > 5:
+            daily_quota = 3
+    
+    # 计算剩余次数（VIP用户无限制，显示为-1表示无限）
+    if is_vip:
+        remaining_quota = -1  # VIP用户无限制
+    else:
+        remaining_quota = max(0, daily_quota - daily_used) if daily_used is not None else daily_quota
     
     return {
         "is_vip": is_vip,
         "vip_type": vip_type,
-        "expire_date": expire_date.isoformat() if expire_date else None,
-        "remaining_days": remaining_days,
+        "expire_date": vip_expire_time.isoformat() if vip_expire_time else None,
+        "remaining_days": remaining_days if is_vip else 0,
         "daily_quota": daily_quota,
-        "monthly_quota": daily_quota * 30,
-        "total_used": random.randint(50, 500)
+        "monthly_quota": daily_quota * 30 if not is_vip else -1,  # VIP无限制
+        "total_used": total_used,
+        "remaining_quota": remaining_quota
     }
 
 @router.get("/settings", response_model=UserSettings, summary="获取用户设置")
