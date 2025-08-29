@@ -500,7 +500,7 @@
             max-width: 400px;
             background: #ffffff;
             border-top: 1px solid #eee;
-            display: flex;
+            display: none; /* 默认隐藏，通过JavaScript控制显示 */
             padding: 8px 0;
             z-index: 9999;
         }
@@ -536,7 +536,7 @@
             max-width: 400px;
             background: #ffffff;
             border-top: 1px solid #eee;
-            display: flex;
+            display: none; /* 默认隐藏，通过JavaScript控制显示 */
             padding: 8px 0;
             z-index: 10000;
         }
@@ -1498,13 +1498,16 @@
                 parentNav: !!parentNav
             });
             
+            // 强制隐藏所有导航，防止重叠显示
             if (studentNav) {
                 studentNav.style.display = 'none';
-                console.log('✅ 隐藏学生导航');
+                studentNav.style.visibility = 'hidden';
+                console.log('✅ 强制隐藏学生导航');
             }
             if (parentNav) {
-                parentNav.style.display = 'none';  
-                console.log('✅ 隐藏家长导航');
+                parentNav.style.display = 'none';
+                parentNav.style.visibility = 'hidden';
+                console.log('✅ 强制隐藏家长导航');
             }
             
             // 安全获取元素的函数
@@ -1539,6 +1542,7 @@
                 // 显示学生底部导航
                 if (studentNav) {
                     studentNav.style.display = 'flex';
+                    studentNav.style.visibility = 'visible';
                     console.log('✅ 显示学生底部导航');
                 } else {
                     console.error('❌ 未找到学生导航元素');
@@ -1557,6 +1561,7 @@
                 // 显示家长底部导航
                 if (parentNav) {
                     parentNav.style.display = 'flex';
+                    parentNav.style.visibility = 'visible';
                     console.log('✅ 显示家长底部导航');
                 } else {
                     console.error('❌ 未找到家长导航元素');
@@ -1608,9 +1613,15 @@
                 parentNav.style.visibility = 'hidden';
             }
             
-            // 根据角色强制显示对应导航
+            // 根据角色强制显示对应导航（确保只显示一个）
             if (role === 'parent' && parentNav) {
                 console.log('🔧 强制显示家长导航');
+                // 再次确保学生导航完全隐藏
+                if (studentNav) {
+                    studentNav.style.display = 'none';
+                    studentNav.style.visibility = 'hidden';
+                }
+                // 显示家长导航
                 parentNav.style.display = 'flex';
                 parentNav.style.visibility = 'visible';
                 parentNav.style.zIndex = '10000';
@@ -1628,6 +1639,12 @@
                 
             } else if (role === 'student' && studentNav) {
                 console.log('🔧 强制显示学生导航');
+                // 再次确保家长导航完全隐藏
+                if (parentNav) {
+                    parentNav.style.display = 'none';
+                    parentNav.style.visibility = 'hidden';
+                }
+                // 显示学生导航
                 studentNav.style.display = 'flex';
                 studentNav.style.visibility = 'visible';
                 studentNav.style.zIndex = '9999';
@@ -1978,7 +1995,20 @@
             
             // 生成孩子卡片
             children.forEach(child => {
-                const avatarDisplay = child.avatar === 'student' ? '🎓' : (child.avatar || '👶');
+                // 修复头像显示逻辑
+                let avatarDisplay;
+                if (child.avatar && child.avatar.startsWith('emoji:')) {
+                    // 表情头像
+                    avatarDisplay = child.avatar.replace('emoji:', '');
+                } else if (child.avatar && (child.avatar.startsWith('http') || child.avatar.startsWith('/uploads/') || child.avatar.includes('.jpg') || child.avatar.includes('.png'))) {
+                    // 图片头像
+                    const fullUrl = child.avatar.startsWith('/') ? `http://localhost:8000${child.avatar}` : child.avatar;
+                    avatarDisplay = `<img src="${fullUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
+                } else {
+                    // 默认头像或其他情况
+                    avatarDisplay = child.avatar === 'student' ? '🎓' : '👶';
+                }
+                
                 const statusClass = child.status === '已完成' ? '' : (child.status === '进行中' ? 'inactive' : 'inactive');
                 const scoreClass = child.todayScore >= 80 ? '' : 'low';
                 
