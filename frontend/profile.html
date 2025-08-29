@@ -747,6 +747,37 @@
             }
         }
         
+        /* 加载状态优化 */
+        .loading-shimmer {
+            background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+        
+        @keyframes shimmer {
+            0% {
+                background-position: -200% 0;
+            }
+            100% {
+                background-position: 200% 0;
+            }
+        }
+        
+        .fade-in {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
         /* 移动端适配 */
         @media (max-width: 480px) {
             .container {
@@ -1083,6 +1114,11 @@
         let userInfo = null;
         let pendingAction = null;
         
+        // 优化：添加加载状态控制
+        let isLoading = false;
+        let lastLoadTime = 0;
+        const LOAD_DEBOUNCE_TIME = 2000; // 2秒防抖
+        
         console.log('Variables initialized, API_BASE:', API_BASE);
 
         // 页面初始化
@@ -1260,9 +1296,15 @@
                 if (returnFromPage || childDataUpdated) {
                     // 延迟一点刷新，确保页面加载完成
                     setTimeout(() => {
-                        console.log('从其他页面返回，刷新数据');
-                        loadUserProfile(role);
+                        console.log('从其他页面返回，强制刷新数据');
+                        loadUserProfile(role, true); // 强制刷新
                     }, 500);
+                } else {
+                    // 正常初始化加载
+                    setTimeout(() => {
+                        console.log('正常初始化加载用户数据');
+                        loadUserProfile(role);
+                    }, 100);
                 }
                 
                 // 设置头像文件选择监听器
@@ -1486,49 +1528,104 @@
             window.location.reload();
         }
 
-        async function loadUserProfile(role) {
+        async function loadUserProfile(role, force = false) {
+            // 防抖机制：避免频繁重复请求
+            const now = Date.now();
+            if (!force && (isLoading || (now - lastLoadTime < LOAD_DEBOUNCE_TIME))) {
+                console.log('请求被防抖拦截，距上次加载:', now - lastLoadTime, 'ms');
+                return;
+            }
+            
+            // 设置加载状态
+            isLoading = true;
+            lastLoadTime = now;
+            
             try {
-                console.log('开始加载用户资料...');
+                console.log('开始加载用户资料，角色:', role);
                 
-                // 获取用户信息
-                const userResponse = await fetch(`${API_BASE}/auth/me`, {
-                    headers: {
-                        'Authorization': `Bearer ${token}`
-                    }
+                // 显示加载状态
+                showLoadingState();
+                
+                // 并行请求用户信息和统计数据
+                const requests = [];
+                
+                // 用户基本信息请求
+                requests.push(
+                    fetch(`${API_BASE}/auth/me`, {
+                        headers: {
+                            'Authorization': `Bearer ${token}`
+                        }
+                    })
+                );
+                
+                // 统计数据请求
+                if (role === 'student') {
+                    requests.push(
+                        fetch(`${API_BASE}/student/dashboard`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    );
+                } else if (role === 'parent') {
+                    requests.push(
+                        fetch(`${API_BASE}/parent/dashboard`, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`
+                            }
+                        })
+                    );
+                }
+                
+                // 并行执行所有请求
+                const responses = await Promise.all(requests);
+                const [userResponse, statsResponse] = responses;
+                
+                console.log('API响应状态:', {
+                    user: userResponse.status,
+                    stats: statsResponse?.status
                 });
                 
-                console.log('用户信息API响应状态:', userResponse.status);
-                
+                // 处理用户信息
                 if (userResponse.ok) {
                     userInfo = await userResponse.json();
                     console.log('获取到用户信息:', userInfo);
-                    updateUserProfile(userInfo);
-                    // 更新localStorage中的用户信息
+                    
+                    // 处理统计数据
+                    let statsData = null;
+                    if (statsResponse?.ok) {
+                        statsData = await statsResponse.json();
+                        console.log('获取到统计数据:', statsData);
+                    } else {
+                        console.error('统计数据API调用失败:', statsResponse?.status, statsResponse?.statusText);
+                        // 使用默认统计数据
+                        statsData = getDefaultStatsData(role);
+                    }
+                    
+                    // 批量更新UI
+                    updateUserInterface(userInfo, statsData, role);
+                    
+                    // 更新localStorage
                     localStorage.setItem('user', JSON.stringify(userInfo));
-                    // 触发用户信息更新事件
+                    
+                    // 触发更新事件
                     window.dispatchEvent(new CustomEvent('userInfoUpdated', { detail: userInfo }));
-                    // 在console中输出更新时间供调试
-                    console.log('用户信息已更新于:', new Date().toLocaleTimeString());
+                    
+                    console.log('用户资料加载完成于:', new Date().toLocaleTimeString());
+                    
                 } else {
                     console.error('用户信息API调用失败:', userResponse.status, userResponse.statusText);
-                    // 显示默认用户数据
                     showDefaultUserData();
                     return;
-                }
-                
-                // 根据角色加载不同的统计数据
-                if (role === 'student') {
-                    await loadStudentStats();
-                } else if (role === 'parent') {
-                    await loadParentStats();
                 }
                 
             } catch (error) {
                 console.error('加载用户资料失败:', error);
                 showToast('加载用户资料失败，请检查网络连接');
-                
-                // 显示默认用户数据
                 showDefaultUserData();
+            } finally {
+                isLoading = false;
+                hideLoadingState();
             }
         }
         
@@ -1594,6 +1691,96 @@
             }
         }
 
+        // 加载状态管理
+        function showLoadingState() {
+            // 显示用户名加载状态
+            const userNameEl = document.getElementById('userName');
+            if (userNameEl) {
+                userNameEl.textContent = '加载中...';
+                userNameEl.style.opacity = '0.6';
+            }
+            
+            // 显示头像加载状态
+            const userAvatarEl = document.getElementById('userAvatar');
+            if (userAvatarEl) {
+                userAvatarEl.innerHTML = '⏳';
+                userAvatarEl.style.opacity = '0.6';
+            }
+            
+            // 显示统计数据加载状态
+            const statElements = document.querySelectorAll('.stat-number');
+            statElements.forEach(el => {
+                el.textContent = '...';
+                el.style.opacity = '0.6';
+            });
+        }
+        
+        function hideLoadingState() {
+            // 恢复正常透明度并添加淡入效果
+            const elements = [
+                document.getElementById('userName'),
+                document.getElementById('userAvatar'),
+                ...document.querySelectorAll('.stat-number')
+            ];
+            
+            elements.forEach(el => {
+                if (el) {
+                    el.style.opacity = '1';
+                    el.classList.add('fade-in');
+                    
+                    // 动画完成后移除类
+                    setTimeout(() => {
+                        el.classList.remove('fade-in');
+                    }, 300);
+                }
+            });
+        }
+        
+        // 获取默认统计数据
+        function getDefaultStatsData(role) {
+            if (role === 'student') {
+                return {
+                    daily_stats: {
+                        today_corrections: 0,
+                        accuracy_rate: 0,
+                        study_time: 0
+                    },
+                    recent_homework: [],
+                    error_summary: {
+                        unreviewed_count: 0
+                    }
+                };
+            } else if (role === 'parent') {
+                return {
+                    today_stats: { homeworkCount: 0, accuracy: 0 },
+                    children: [],
+                    weekly_report: { totalHomework: 0, avgAccuracy: 0, studyDays: 0 }
+                };
+            }
+            return {};
+        }
+        
+        // 批量更新UI接口
+        function updateUserInterface(userInfo, statsData, role) {
+            // 批量更新用户信息和统计数据
+            const updates = [];
+            
+            // 准备用户信息更新
+            updates.push(() => updateUserProfile(userInfo));
+            
+            // 准备统计数据更新
+            if (role === 'student') {
+                updates.push(() => updateStudentStats(statsData));
+            } else if (role === 'parent') {
+                updates.push(() => updateParentStats(statsData));
+            }
+            
+            // 批量执行更新，减少重排重绘
+            requestAnimationFrame(() => {
+                updates.forEach(update => update());
+            });
+        }
+
         function showDefaultUserData() {
             // 显示默认的空白用户数据
             const defaultUser = {
@@ -1608,20 +1795,10 @@
                 daily_used: 0
             };
             
-            const defaultStats = {
-                daily_stats: {
-                    today_corrections: 0,
-                    accuracy_rate: 0,
-                    study_time: 0
-                },
-                recent_homework: [],
-                error_summary: {
-                    unreviewed_count: 0
-                }
-            };
+            const role = getCurrentUserRole();
+            const defaultStats = getDefaultStatsData(role);
             
-            updateUserProfile(defaultUser);
-            updateUserStats(defaultStats);
+            updateUserInterface(defaultUser, defaultStats, role);
         }
 
         function updateUserProfile(user) {
@@ -1641,13 +1818,14 @@
             if (userNameEl) {
                 const newName = user.nickname || '用户';
                 console.log('准备更新用户名从:', userNameEl.textContent, '到:', newName);
-                userNameEl.textContent = newName;
-                console.log('用户名更新后实际值:', userNameEl.textContent);
                 
-                // 强制页面重绘确保更新生效
-                userNameEl.style.display = 'none';
-                userNameEl.offsetHeight; // 触发重排
-                userNameEl.style.display = '';
+                // 优化：只有在内容真的发生变化时才更新DOM
+                if (userNameEl.textContent !== newName) {
+                    userNameEl.textContent = newName;
+                    console.log('用户名已更新为:', newName);
+                } else {
+                    console.log('用户名无需更新，内容相同');
+                }
             } else {
                 console.error('找不到userName元素！');
             }
@@ -1674,29 +1852,10 @@
                 }
             }
             
-            // 更新头像
+            // 更新头像 - 优化版本
             if (userAvatarEl) {
                 console.log('更新头像，URL:', user.avatar_url);
-                
-                if (user.avatar_url && user.avatar_url.startsWith('emoji:')) {
-                    // 表情头像
-                    const emoji = user.avatar_url.replace('emoji:', '');
-                    userAvatarEl.innerHTML = emoji;
-                    console.log('表情头像已设置:', emoji);
-                } else if (user.avatar_url && !user.avatar_url.startsWith('emoji:')) {
-                    // 图片头像
-                    const fullUrl = user.avatar_url.startsWith('/') ? 
-                        `http://localhost:8000${user.avatar_url}` : user.avatar_url;
-                    // 添加时间戳强制刷新图片缓存
-                    const separator = fullUrl.includes('?') ? '&' : '?';
-                    const timestampUrl = `${fullUrl}${separator}t=${Date.now()}`;
-                    userAvatarEl.innerHTML = `<img src="${timestampUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="console.error('头像图片加载失败:', '${fullUrl}'); this.parentElement.textContent='👤';">`;
-                    console.log('图片头像已设置:', timestampUrl);
-                } else {
-                    // 默认头像
-                    userAvatarEl.innerHTML = '👤';
-                    console.log('使用默认头像');
-                }
+                setUserAvatar(userAvatarEl, user.avatar_url);
             } else {
                 console.error('找不到头像元素 userAvatar');
             }
@@ -1805,6 +1964,49 @@
             console.log('=== 家长统计数据更新完成 ===');
         }
         
+        // 优化的头像设置函数
+        function setUserAvatar(element, avatarUrl, isChild = false) {
+            if (!element) return;
+            
+            const defaultEmoji = isChild ? '👶' : '👤';
+            
+            if (avatarUrl && avatarUrl.startsWith('emoji:')) {
+                // 表情头像 - 直接设置，无需网络请求
+                const emoji = avatarUrl.replace('emoji:', '');
+                element.innerHTML = emoji;
+                console.log('表情头像已设置:', emoji);
+                
+            } else if (avatarUrl && avatarUrl.startsWith('data:image/')) {
+                // base64编码的图片数据 - 直接使用，无需网络请求
+                element.innerHTML = `<img src="${avatarUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='${defaultEmoji}';">`;
+                console.log('base64头像已设置');
+                
+            } else if (avatarUrl && (avatarUrl.startsWith('http') || avatarUrl.startsWith('/uploads/') || avatarUrl.includes('.jpg') || avatarUrl.includes('.png'))) {
+                // 图片头像 - 使用缓存，只在必要时添加时间戳
+                const fullUrl = avatarUrl.startsWith('/') ? `http://localhost:8000${avatarUrl}` : avatarUrl;
+                
+                // 检查是否需要强制刷新（仅在头像刚更新时）
+                const needRefresh = sessionStorage.getItem('avatarUpdated') === 'true';
+                let finalUrl = fullUrl;
+                
+                if (needRefresh) {
+                    const separator = fullUrl.includes('?') ? '&' : '?';
+                    finalUrl = `${fullUrl}${separator}t=${Date.now()}`;
+                    sessionStorage.removeItem('avatarUpdated'); // 清除标记
+                    console.log('强制刷新头像:', finalUrl);
+                } else {
+                    console.log('使用缓存头像:', finalUrl);
+                }
+                
+                element.innerHTML = `<img src="${finalUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="console.error('头像加载失败:', '${fullUrl}'); this.parentElement.innerHTML='${defaultEmoji}';">`;
+                
+            } else {
+                // 默认头像
+                element.innerHTML = defaultEmoji;
+                console.log('使用默认头像');
+            }
+        }
+
         function updateChildrenList(children) {
             console.log('=== 更新孩子列表 ===');
             console.log('孩子数据:', children);
@@ -1825,54 +2027,42 @@
                 return;
             }
             
-            // 生成孩子卡片
+            // 生成孩子卡片 - 使用优化后的头像逻辑
             children.forEach(child => {
-                // 修复头像显示逻辑 - 添加缓存破坏时间戳
-                let avatarDisplay;
-                if (child.avatar && child.avatar.startsWith('emoji:')) {
-                    // 表情头像
-                    avatarDisplay = child.avatar.replace('emoji:', '');
-                    console.log('孩子头像 - 表情:', avatarDisplay);
-                } else if (child.avatar && child.avatar.startsWith('data:image/')) {
-                    // base64编码的图片数据
-                    avatarDisplay = `<img src="${child.avatar}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
-                    console.log('孩子头像 - base64数据');
-                } else if (child.avatar && (child.avatar.startsWith('http') || child.avatar.startsWith('/uploads/') || child.avatar.includes('.jpg') || child.avatar.includes('.png'))) {
-                    // 图片头像 - 添加时间戳强制刷新缓存
-                    const fullUrl = child.avatar.startsWith('/') ? `http://localhost:8000${child.avatar}` : child.avatar;
-                    const separator = fullUrl.includes('?') ? '&' : '?';
-                    const timestampUrl = `${fullUrl}${separator}t=${Date.now()}`;
-                    avatarDisplay = `<img src="${timestampUrl}" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.parentElement.innerHTML='👶';">`;
-                    console.log('孩子头像 - 图片URL (带时间戳):', timestampUrl);
-                } else {
-                    // 默认头像或其他情况
-                    avatarDisplay = child.avatar === 'student' ? '🎓' : '👶';
-                    console.log('孩子头像 - 默认头像:', avatarDisplay);
-                }
-                
                 const statusClass = child.status === '已完成' ? '' : (child.status === '进行中' ? 'inactive' : 'inactive');
                 const scoreClass = child.todayScore >= 80 ? '' : 'low';
                 
-                const childHtml = `
-                    <div class="child-item" onclick="goToChildDetail(${child.id})">
-                        <div class="child-avatar">${avatarDisplay}</div>
-                        <div class="child-info">
-                            <div class="child-name">${child.name}</div>
-                            <div class="child-details">
-                                <span class="child-grade">${child.grade}</span>
-                                <span class="child-status">
-                                    <span class="status-dot ${statusClass}"></span>
-                                    ${child.status}
-                                </span>
-                            </div>
-                        </div>
-                        <div class="child-stats">
-                            <div class="child-score ${scoreClass}">${child.todayScore}分</div>
-                            <div class="child-time">今日</div>
+                // 创建孩子项元素
+                const childItem = document.createElement('div');
+                childItem.className = 'child-item';
+                childItem.onclick = () => goToChildDetail(child.id);
+                
+                // 创建头像元素
+                const childAvatar = document.createElement('div');
+                childAvatar.className = 'child-avatar';
+                setUserAvatar(childAvatar, child.avatar, true);
+                
+                // 组装HTML
+                childItem.innerHTML = `
+                    <div class="child-info">
+                        <div class="child-name">${child.name}</div>
+                        <div class="child-details">
+                            <span class="child-grade">${child.grade}</span>
+                            <span class="child-status">
+                                <span class="status-dot ${statusClass}"></span>
+                                ${child.status}
+                            </span>
                         </div>
                     </div>
+                    <div class="child-stats">
+                        <div class="child-score ${scoreClass}">${child.todayScore}分</div>
+                        <div class="child-time">今日</div>
+                    </div>
                 `;
-                childrenListEl.innerHTML += childHtml;
+                
+                // 插入头像元素
+                childItem.insertBefore(childAvatar, childItem.firstChild);
+                childrenListEl.appendChild(childItem);
             });
             
             // 显示孩子列表部分
@@ -2174,11 +2364,14 @@
                     showToast('头像更新成功');
                     closeAvatarModal();
                     
+                    // 设置头像更新标记，下次加载时会强制刷新缓存
+                    sessionStorage.setItem('avatarUpdated', 'true');
+                    
                     // 重新加载用户资料以更新头像显示
                     console.log('🔄 重新加载用户资料');
                     const role = AuthUtils.getCurrentUserRole();
                     if (role) {
-                        setTimeout(() => loadUserProfile(role), 500);
+                        setTimeout(() => loadUserProfile(role, true), 500); // 强制刷新
                     }
                 } else {
                     // 处理HTTP错误
