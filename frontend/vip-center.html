@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ZYJC智能批改 - VIP中心</title>
+    <link rel="stylesheet" href="/frontend/css/modern-theme.css">
     <style>
         * {
             margin: 0;
@@ -16,6 +17,7 @@
             background: #f5f5f5;
             color: #333;
             min-height: 100vh;
+            padding-bottom: 80px;
         }
         
         .container {
@@ -348,7 +350,7 @@
             background: #ffffff;
             border-radius: 16px;
             padding: 20px;
-            margin-bottom: 80px;
+            margin-bottom: 100px;
             box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
         
@@ -461,39 +463,16 @@
             color: #333;
         }
         
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: #ffffff;
-            border-top: 1px solid #eee;
+        /* 自定义底部导航样式已移除，使用modern-theme.css中的theme-bottom-nav样式 */
+        
+        /* 初始隐藏导航，避免角色检测前的闪烁 */
+        #bottomNav {
+            display: none;
+        }
+        
+        /* 当导航准备好时，JavaScript会设置display: flex */
+        #bottomNav.ready {
             display: flex;
-            padding: 8px 0;
-        }
-        
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .nav-item.active {
-            color: #FFD700;
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-        
-        .nav-text {
-            font-size: 10px;
         }
         
         /* 移动端适配 */
@@ -696,24 +675,8 @@
         </div>
         
         <!-- 底部导航 -->
-        <div class="bottom-nav">
-            
-            <div class="nav-item" onclick="goHome()">
-                <div class="nav-icon">🏡</div>
-                <div class="nav-text">主页</div>
-            </div>
-            <div class="nav-item" onclick="goToErrorBook()">
-                <div class="nav-icon">📚</div>
-                <div class="nav-text">错题本</div>
-            </div>
-            <div class="nav-item active">
-                <div class="nav-icon">💎</div>
-                <div class="nav-text">VIP</div>
-            </div>
-            <div class="nav-item" onclick="goToProfile()">
-                <div class="nav-icon">👤</div>
-                <div class="nav-text">我的</div>
-            </div>
+        <div class="theme-bottom-nav" id="bottomNav">
+            <!-- 导航项将根据用户角色动态生成 -->
         </div>
     </div>
 
@@ -728,10 +691,55 @@
         document.addEventListener('DOMContentLoaded', function() {
             initPage();
         });
+        
+        // 测试函数：强制显示导航（家长版本，使用theme样式）
+        function forceShowNavigation() {
+            console.log('强制显示导航');
+            const bottomNav = document.getElementById('bottomNav');
+            if (bottomNav) {
+                bottomNav.innerHTML = `
+                    <div class="theme-nav-item" onclick="goToParentHome()">
+                        <div class="theme-nav-icon">🏠</div>
+                        <div class="theme-nav-text">首页</div>
+                    </div>
+                    <div class="theme-nav-item" onclick="goToLearningReports()">
+                        <div class="theme-nav-icon">📊</div>
+                        <div class="theme-nav-text">学习报告</div>
+                    </div>
+                    <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                        <div class="theme-nav-icon">🔍</div>
+                        <div class="theme-nav-text">错题分析</div>
+                    </div>
+                    <div class="theme-nav-item" onclick="goToLearningProgress()">
+                        <div class="theme-nav-icon">📈</div>
+                        <div class="theme-nav-text">学习进度</div>
+                    </div>
+                    <div class="theme-nav-item" onclick="goToChildDetail()">
+                        <div class="theme-nav-icon">👶</div>
+                        <div class="theme-nav-text">孩子管理</div>
+                    </div>
+                    <div class="theme-nav-item active" onclick="goToProfile()">
+                        <div class="theme-nav-icon">👤</div>
+                        <div class="theme-nav-text">我的</div>
+                    </div>
+                `;
+                bottomNav.className = 'theme-bottom-nav ready';
+                console.log('家长导航已强制显示（我的为选中状态）');
+            }
+        }
+        
+        // 移除自动强制显示导航，避免干扰正常流程
 
         function initPage() {
-            // 检查登录状态
+            // 绑定支付方式选择
+            bindPaymentMethods();
+            
+            // 检查登录状态和角色
             token = localStorage.getItem('token');
+            const role = localStorage.getItem('role');
+            
+            console.log('初始化页面 - Token:', token ? 'OK' : 'NONE', 'Role:', role);
+            
             if (!token) {
                 showToast('请先登录');
                 setTimeout(() => {
@@ -740,11 +748,71 @@
                 return;
             }
             
-            // 绑定支付方式选择
-            bindPaymentMethods();
+            // 确保有角色信息后再生成导航
+            if (role) {
+                generateRoleBasedNavigation();
+            } else {
+                // 如果没有角色信息，设置默认角色为parent（因为当前是家长登录场景）
+                console.log('没有角色信息，设置默认角色为parent');
+                localStorage.setItem('role', 'parent');
+                generateRoleBasedNavigation();
+            }
             
             // 加载用户VIP状态
             loadVIPStatus();
+        }
+
+        function generateRoleBasedNavigation() {
+            const role = localStorage.getItem('role') || 'student';
+            const bottomNav = document.getElementById('bottomNav');
+            
+            console.log('生成导航，用户角色:', role);
+            console.log('bottomNav元素:', bottomNav);
+            
+            if (!bottomNav) {
+                console.error('未找到bottomNav元素');
+                return;
+            }
+            
+            let navItems = [];
+            
+            if (role === 'parent') {
+                // 家长导航（完全参照manage-children.html）- 6个导航项，我的为active
+                navItems = [
+                    { icon: '🏠', text: '首页', onclick: 'goToParentHome()' },
+                    { icon: '📊', text: '学习报告', onclick: 'goToLearningReports()' },
+                    { icon: '🔍', text: '错题分析', onclick: 'goToErrorAnalysis()' },
+                    { icon: '📈', text: '学习进度', onclick: 'goToLearningProgress()' },
+                    { icon: '👶', text: '孩子管理', onclick: 'goToChildDetail()' },
+                    { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+                ];
+            } else {
+                // 学生导航（参照student-home.html）- 5个导航项，我的为active
+                navItems = [
+                    { icon: '🏠', text: '首页', onclick: 'goToStudentHome()' },
+                    { icon: '📷', text: '拍照批改', onclick: 'goToHomeworkSubmit()' },
+                    { icon: '📚', text: '错题本', onclick: 'goToErrorBook()' },
+                    { icon: '💎', text: 'VIP', onclick: '' },
+                    { icon: '👤', text: '我的', onclick: 'goToProfile()', active: true }
+                ];
+            }
+            
+            // 生成导航HTML，使用theme样式类
+            const navHTML = navItems.map(item => `
+                <div class="theme-nav-item ${item.active ? 'active' : ''}" ${item.onclick ? `onclick="${item.onclick}"` : ''}>
+                    <div class="theme-nav-icon">${item.icon}</div>
+                    <div class="theme-nav-text">${item.text}</div>
+                </div>
+            `).join('');
+            
+            bottomNav.innerHTML = navHTML;
+            
+            // 添加ready类以显示导航
+            bottomNav.classList.add('ready');
+            
+            console.log('导航HTML已设置:', navHTML);
+            console.log('底部导航元素内容:', bottomNav.innerHTML);
+            console.log('导航已显示，角色:', role);
         }
 
         function bindPaymentMethods() {
@@ -935,14 +1003,7 @@
             window.history.back();
         }
 
-        function goHome() {
-            const role = localStorage.getItem('role') || 'student';
-            if (role === 'parent') {
-                window.location.href = '/frontend/parent-home.html';
-            } else {
-                window.location.href = '/frontend/student-home.html';
-            }
-        }
+        // goHome函数已分离为goToParentHome和goToStudentHome
 
         function goToErrorBook() {
             window.location.href = '/frontend/error-book.html';
@@ -950,6 +1011,34 @@
 
         function goToProfile() {
             window.location.href = '/frontend/profile.html';
+        }
+
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToStudentHome() {
+            window.location.href = '/frontend/student-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToHomeworkSubmit() {
+            window.location.href = '/frontend/homework-submit.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
         }
 
         function showToast(message, duration = 3000) {
