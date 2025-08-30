@@ -619,6 +619,63 @@
                 </div>
             </div>
             
+            <!-- 练习管理功能 -->
+            <div class="theme-card" style="margin-bottom: var(--space-6);">
+                <div class="theme-section-title">🎯 练习管理</div>
+                
+                <!-- 快速生成练习题 -->
+                <div class="theme-card" onclick="generatePracticeForChild()" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; cursor: pointer; margin-bottom: var(--space-4);">
+                    <div style="display: flex; align-items: center; padding: var(--space-4);">
+                        <div style="font-size: 40px; margin-right: var(--space-4);">✨</div>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">AI智能出题</div>
+                            <div style="font-size: 13px; opacity: 0.9;">为孩子生成个性化练习题，支持多学科和难度调节</div>
+                        </div>
+                        <div style="margin-left: auto; font-size: 20px;">→</div>
+                    </div>
+                </div>
+
+                <!-- 批量出题功能 -->
+                <div class="theme-card" onclick="goToBatchExercise()" style="background: linear-gradient(135deg, #48bb78 0%, #38a169 100%); color: white; cursor: pointer; margin-bottom: var(--space-4);">
+                    <div style="display: flex; align-items: center; padding: var(--space-4);">
+                        <div style="font-size: 40px; margin-right: var(--space-4);">📦</div>
+                        <div>
+                            <div style="font-size: 16px; font-weight: 600; margin-bottom: 4px;">批量智能出题</div>
+                            <div style="font-size: 13px; opacity: 0.9;">一次性生成多套练习，支持定时计划和批量管理</div>
+                        </div>
+                        <div style="margin-left: auto; font-size: 20px;">→</div>
+                    </div>
+                </div>
+
+                <!-- 练习完成状态 -->
+                <div class="theme-card" style="background: var(--bg-secondary); margin-bottom: var(--space-4);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                        <div style="font-size: 15px; font-weight: 600;">📋 练习完成情况</div>
+                        <button class="theme-btn theme-btn-sm theme-btn-secondary" onclick="refreshPracticeStatus()">刷新</button>
+                    </div>
+                    <div id="practiceStatusList">
+                        <div class="theme-loading">
+                            <div class="theme-loading-spinner"></div>
+                            <div>正在加载练习状态...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 练习提醒设置 -->
+                <div class="theme-card" style="background: var(--bg-secondary);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                        <div style="font-size: 15px; font-weight: 600;">⏰ 练习提醒</div>
+                        <button class="theme-btn theme-btn-sm theme-btn-primary" onclick="manageReminders()">设置提醒</button>
+                    </div>
+                    <div id="remindersList">
+                        <div class="theme-loading">
+                            <div class="theme-loading-spinner"></div>
+                            <div>正在加载提醒设置...</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- 功能入口 -->
             <div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: var(--space-4); margin-bottom: var(--space-6);">
                 <div class="theme-card" onclick="goToAllReports()" style="text-align: center; cursor: pointer; padding: var(--space-6) var(--space-4);">
@@ -715,6 +772,10 @@
 
     <!-- 引入认证工具类 -->
     <script src="/frontend/js/auth-utils.js?v=5"></script>
+    <!-- 引入性能优化工具 -->
+    <script src="/frontend/js/performance-optimizer.js"></script>
+    <!-- 引入错误处理工具 -->
+    <script src="/frontend/js/error-handler.js"></script>
 
     <script>
         let userInfo = null;
@@ -770,6 +831,8 @@
                 updateParentInfo(user);
             } catch (error) {
                 console.error('获取用户信息失败:', error);
+                // 使用错误处理系统显示用户友好错误
+                window.errorHandler.showFriendlyError(error, 'parent-profile');
             }
         }
 
@@ -800,6 +863,9 @@
                 
                 console.log('家长仪表板数据:', data);
                 
+                // 全局存储dashboard数据，供其他函数使用
+                window.dashboardData = data;
+                
                 // 确保即使数据为空也能正常显示
                 updateTodayStats(data?.today_stats);
                 updateChildrenList(data?.children);
@@ -807,8 +873,16 @@
                 updateReportSummary(data?.weekly_report);
                 updateStudyChart(data?.study_time_data);
                 updateActivityList(data?.recent_activities);
+                
+                // 加载新增的练习管理功能数据
+                refreshPracticeStatus();
+                loadRemindersList();
             } catch (error) {
                 console.error('获取家长仪表板数据失败:', error);
+                
+                // 使用错误处理系统显示用户友好错误
+                window.errorHandler.showFriendlyError(error, 'parent-dashboard');
+                
                 // 显示空数据而不是错误状态，让页面正常可用
                 updateTodayStats(null);
                 updateChildrenList(null);
@@ -818,6 +892,13 @@
                 updateActivityList(null);
                 
                 showToast('数据加载失败，显示空白状态');
+                
+                // 设置空数据，以便其他功能可以正常工作
+                window.dashboardData = { children: [] };
+                
+                // 即使主要数据加载失败，也尝试加载练习管理功能数据
+                refreshPracticeStatus();
+                loadRemindersList();
             }
         }
         
@@ -1090,6 +1171,397 @@
         
         // 定时刷新（每5分钟）
         setInterval(refreshData, 5 * 60 * 1000);
+
+        // === 新增练习管理功能 ===
+        
+        // 为孩子生成练习题
+        async function generatePracticeForChild() {
+            try {
+                // 获取孩子列表
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
+                });
+                
+                if (!data.children || data.children.length === 0) {
+                    showToast('请先添加孩子信息');
+                    return;
+                }
+                
+                // 如果只有一个孩子，直接跳转；否则显示选择界面
+                if (data.children.length === 1) {
+                    const childId = data.children[0].id;
+                    sessionStorage.setItem('selectedChildId', childId);
+                    sessionStorage.setItem('fromParent', 'true');
+                    window.location.href = '/frontend/exercise-config.html?child=' + childId;
+                } else {
+                    showChildSelector(data.children);
+                }
+            } catch (error) {
+                console.error('获取孩子列表失败:', error);
+                // 使用错误处理系统显示用户友好错误
+                window.errorHandler.showFriendlyError(error, 'parent-children');
+                showToast('获取孩子列表失败，请重试');
+            }
+        }
+        
+        // 显示孩子选择器
+        function showChildSelector(children) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 90%;
+                max-height: 80%;
+                overflow-y: auto;
+            `;
+            
+            let html = `
+                <h3 style="margin-bottom: 20px; text-align: center; color: #333;">选择要出题的孩子</h3>
+                <div style="display: flex; flex-direction: column; gap: 12px;">
+            `;
+            
+            children.forEach(child => {
+                html += `
+                    <div onclick="selectChildForPractice(${child.id})" style="
+                        display: flex;
+                        align-items: center;
+                        padding: 16px;
+                        border: 2px solid #e0e0e0;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        transition: all 0.2s ease;
+                    " onmouseover="this.style.borderColor='#667eea'; this.style.background='#f0f4ff'" 
+                       onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='white'">
+                        <div style="font-size: 32px; margin-right: 12px;">${getAvatarDisplay(child.avatar)}</div>
+                        <div>
+                            <div style="font-weight: 600; margin-bottom: 4px;">${child.name}</div>
+                            <div style="font-size: 12px; color: #666;">${child.grade || '年级未设置'}</div>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            html += `
+                </div>
+                <div style="text-align: center; margin-top: 20px;">
+                    <button onclick="closeChildSelector()" style="
+                        padding: 8px 16px;
+                        border: 1px solid #ccc;
+                        background: #f5f5f5;
+                        border-radius: 6px;
+                        cursor: pointer;
+                    ">取消</button>
+                </div>
+            `;
+            
+            content.innerHTML = html;
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 点击模态框外部关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            // 保存模态框引用到全局
+            window.currentModal = modal;
+        }
+        
+        // 选择孩子进行出题
+        function selectChildForPractice(childId) {
+            sessionStorage.setItem('selectedChildId', childId);
+            sessionStorage.setItem('fromParent', 'true');
+            closeChildSelector();
+            window.location.href = '/frontend/exercise-config.html?child=' + childId;
+        }
+        
+        // 关闭孩子选择器
+        function closeChildSelector() {
+            if (window.currentModal) {
+                document.body.removeChild(window.currentModal);
+                window.currentModal = null;
+            }
+        }
+        
+        // 刷新练习完成状态
+        async function refreshPracticeStatus() {
+            const statusList = document.getElementById('practiceStatusList');
+            statusList.innerHTML = `
+                <div class="theme-loading">
+                    <div class="theme-loading-spinner"></div>
+                    <div>正在刷新练习状态...</div>
+                </div>
+            `;
+            
+            try {
+                // 直接从现有的dashboard数据获取practice status，避免额外API调用
+                if (window.dashboardData && window.dashboardData.children) {
+                    let html = '';
+                    
+                    window.dashboardData.children.forEach(child => {
+                        // 计算今日完成数（基于todayScore大于0）
+                        const completedToday = child.todayScore > 0 ? 1 : 0;
+                        
+                        // 基于todayScore估算准确率
+                        const avgAccuracy = child.todayScore || 0;
+                        
+                        html += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: var(--bg-tertiary); margin-bottom: 8px;">
+                                <div style="display: flex; align-items: center;">
+                                    <div style="font-size: 24px; margin-right: 8px;">${getAvatarDisplay(child.avatar)}</div>
+                                    <div>
+                                        <div style="font-weight: 600; margin-bottom: 2px;">${child.name}</div>
+                                        <div style="font-size: 11px; color: var(--text-muted);">今日完成 ${completedToday} 套</div>
+                                    </div>
+                                </div>
+                                <div style="text-align: right;">
+                                    <div style="font-size: 12px; font-weight: 600; color: var(--primary);">${avgAccuracy}%</div>
+                                    <div style="font-size: 10px; color: var(--text-muted);">今日正确率</div>
+                                </div>
+                            </div>
+                        `;
+                    });
+                    
+                    if (html) {
+                        statusList.innerHTML = html;
+                    } else {
+                        statusList.innerHTML = `
+                            <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                                暂无练习数据
+                            </div>
+                        `;
+                    }
+                } else {
+                    statusList.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px;">
+                            暂无练习数据
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('刷新练习状态失败:', error);
+                
+                statusList.innerHTML = `
+                    <div style="text-align: center; color: var(--error); padding: 20px;">
+                        暂无练习数据
+                    </div>
+                `;
+            }
+        }
+        
+        // 管理练习提醒
+        function manageReminders() {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.5);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 1000;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                border-radius: 12px;
+                padding: 24px;
+                max-width: 400px;
+                width: 90%;
+                max-height: 80%;
+                overflow-y: auto;
+            `;
+            
+            content.innerHTML = `
+                <h3 style="margin-bottom: 20px; text-align: center; color: #333;">练习提醒设置</h3>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">提醒时间</label>
+                    <input type="time" id="reminderTime" value="19:00" style="
+                        width: 100%;
+                        padding: 8px 12px;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        font-size: 14px;
+                    ">
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: block; margin-bottom: 8px; font-weight: 500;">重复频率</label>
+                    <select id="reminderFrequency" style="
+                        width: 100%;
+                        padding: 8px 12px;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        font-size: 14px;
+                    ">
+                        <option value="daily">每天</option>
+                        <option value="weekdays">仅工作日</option>
+                        <option value="weekends">仅周末</option>
+                        <option value="custom">自定义</option>
+                    </select>
+                </div>
+                <div style="margin-bottom: 20px;">
+                    <label style="display: flex; align-items: center; cursor: pointer;">
+                        <input type="checkbox" id="enableReminder" checked style="margin-right: 8px;">
+                        <span>启用提醒</span>
+                    </label>
+                </div>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="saveReminders()" style="
+                        padding: 8px 20px;
+                        background: var(--primary, #667eea);
+                        color: white;
+                        border: none;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">保存设置</button>
+                    <button onclick="closeReminders()" style="
+                        padding: 8px 20px;
+                        background: #f5f5f5;
+                        color: #666;
+                        border: 1px solid #ddd;
+                        border-radius: 6px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">取消</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 点击模态框外部关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    document.body.removeChild(modal);
+                }
+            });
+            
+            window.currentReminderModal = modal;
+        }
+        
+        // 保存提醒设置
+        async function saveReminders() {
+            const time = document.getElementById('reminderTime').value;
+            const frequency = document.getElementById('reminderFrequency').value;
+            const enabled = document.getElementById('enableReminder').checked;
+            
+            try {
+                // 使用本地存储保存提醒设置
+                const storedReminders = localStorage.getItem('parentReminders');
+                const reminders = storedReminders ? JSON.parse(storedReminders) : [];
+                
+                // 创建新的提醒记录
+                const newReminder = {
+                    id: Date.now(),
+                    time,
+                    frequency,
+                    enabled,
+                    created_at: new Date().toISOString()
+                };
+                
+                // 添加到现有提醒列表
+                reminders.push(newReminder);
+                
+                // 保存到localStorage
+                localStorage.setItem('parentReminders', JSON.stringify(reminders));
+                
+                showToast('提醒设置已保存');
+                closeReminders();
+                loadRemindersList(); // 重新加载提醒列表
+            } catch (error) {
+                console.error('保存提醒设置失败:', error);
+                showToast('保存失败，请重试');
+            }
+        }
+        
+        // 关闭提醒设置
+        function closeReminders() {
+            if (window.currentReminderModal) {
+                document.body.removeChild(window.currentReminderModal);
+                window.currentReminderModal = null;
+            }
+        }
+        
+        // 加载提醒列表
+        async function loadRemindersList() {
+            const remindersList = document.getElementById('remindersList');
+            
+            try {
+                // 使用本地存储的提醒数据，避免调用不存在的API
+                const storedReminders = localStorage.getItem('parentReminders');
+                const reminders = storedReminders ? JSON.parse(storedReminders) : [];
+                
+                if (reminders && reminders.length > 0) {
+                    let html = '';
+                    reminders.forEach(reminder => {
+                        const statusColor = reminder.enabled ? 'var(--success, #4caf50)' : 'var(--text-muted, #999)';
+                        const statusText = reminder.enabled ? '已启用' : '已禁用';
+                        
+                        html += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--bg-secondary);">
+                                <div>
+                                    <div style="font-size: 14px; margin-bottom: 2px;">⏰ ${reminder.time}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted);">${getFrequencyText(reminder.frequency)}</div>
+                                </div>
+                                <div style="font-size: 11px; color: ${statusColor}; font-weight: 500;">${statusText}</div>
+                            </div>
+                        `;
+                    });
+                    remindersList.innerHTML = html;
+                } else {
+                    remindersList.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px;">
+                            还没有设置任何提醒
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('加载提醒列表失败:', error);
+                remindersList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px;">
+                        还没有设置任何提醒
+                    </div>
+                `;
+            }
+        }
+        
+        // 获取频率显示文本
+        function getFrequencyText(frequency) {
+            const freqMap = {
+                'daily': '每天',
+                'weekdays': '仅工作日', 
+                'weekends': '仅周末',
+                'custom': '自定义'
+            };
+            return freqMap[frequency] || '未知';
+        }
+
+        // 批量出题导航函数
+        function goToBatchExercise() {
+            window.location.href = '/frontend/batch-exercise-config.html';
+        }
 
         function showToast(message) {
             const toast = document.createElement('div');

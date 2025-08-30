@@ -75,8 +75,9 @@ class ChildReportResponse(BaseModel):
     learning_trends: List[Dict[str, Any]]
     recommendations: List[str]
 
-@router.get("/dashboard", response_model=ParentDashboardResponse, summary="获取家长端仪表板")
+@router.get("/dashboard", summary="获取家长端仪表板")
 def get_parent_dashboard(
+    include_practice_status: bool = Query(default=False, description="包含练习状态数据"),
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
@@ -280,7 +281,8 @@ def get_parent_dashboard(
             "time": "今天上午"
         })
     
-    return {
+    # 如果请求包含练习状态数据，添加practice_status字段
+    response_data = {
         "today_stats": today_stats,
         "children": children,
         "notifications": notifications,
@@ -288,6 +290,53 @@ def get_parent_dashboard(
         "study_time_data": study_time_data,
         "recent_activities": recent_activities
     }
+    
+    if include_practice_status:
+        # 生成练习状态数据（与practice-status端点相同的逻辑）
+        practice_children = []
+        week_start = datetime.now() - timedelta(days=7)
+        
+        for relation in parent_child_relations:
+            child_user = db.query(User).filter(User.id == relation.child_id).first()
+            if not child_user:
+                continue
+                
+            # 获取最近的练习记录（本周内）
+            recent_practices = db.query(Homework).filter(
+                Homework.user_id == relation.child_id,
+                Homework.created_at >= week_start
+            ).order_by(Homework.created_at.desc()).all()
+            
+            # 转换为前端需要的格式
+            practice_data = []
+            for hw in recent_practices:
+                accuracy = int(hw.accuracy_rate * 100) if hw.accuracy_rate is not None else 0
+                practice_data.append({
+                    'id': hw.id,
+                    'created_at': hw.created_at.isoformat(),
+                    'accuracy': accuracy,
+                    'subject': hw.subject,
+                    'total_questions': hw.total_questions or 0,
+                    'wrong_count': hw.wrong_count or 0,
+                    'status': hw.status
+                })
+            
+            child_info = {
+                'id': child_user.id,
+                'name': relation.nickname or child_user.nickname or f"用户{child_user.id}",
+                'avatar': child_user.avatar_url,
+                'grade': child_user.grade or "未设置",
+                'recent_practices': practice_data
+            }
+            practice_children.append(child_info)
+        
+        response_data['practice_status'] = {
+            'children': practice_children,
+            'total_children': len(practice_children),
+            'generated_at': datetime.now().isoformat()
+        }
+    
+    return response_data
 
 @router.get("/children/{child_id}/report", response_model=ChildReportResponse, summary="获取孩子学习报告")
 def get_child_report(
@@ -1380,6 +1429,79 @@ def get_child_error_analysis(
         "aiRecommendations": ai_recommendations  # 新增AI建议数据
     }
 
+@router.get("/test-endpoint", summary="测试端点")
+def test_endpoint():
+    """临时测试端点，用于验证路由是否工作"""
+    return {"message": "测试端点工作正常", "timestamp": "2025-08-30"}
+
+@router.get("/practice-status", summary="获取练习完成状态")
+def get_practice_status(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    获取家长关联的所有孩子的练习完成状态
+    
+    包括：
+    - 每个孩子的最近练习记录
+    - 今日完成情况
+    - 本周准确率统计
+    """
+    from app.models.parent_child import ParentChild
+    from app.models.homework import Homework
+    from sqlalchemy import func, and_
+    from datetime import datetime, timedelta
+    
+    # 获取关联的孩子
+    parent_child_relations = db.query(ParentChild).filter(
+        ParentChild.parent_id == current_user.id,
+        ParentChild.is_active == True
+    ).all()
+    
+    children = []
+    today = datetime.now().date()
+    week_start = datetime.now() - timedelta(days=7)
+    
+    for relation in parent_child_relations:
+        child_user = db.query(User).filter(User.id == relation.child_id).first()
+        if not child_user:
+            continue
+            
+        # 获取最近的练习记录（本周内）
+        recent_practices = db.query(Homework).filter(
+            Homework.user_id == relation.child_id,
+            Homework.created_at >= week_start
+        ).order_by(Homework.created_at.desc()).all()
+        
+        # 转换为前端需要的格式
+        practice_data = []
+        for hw in recent_practices:
+            accuracy = int(hw.accuracy_rate * 100) if hw.accuracy_rate is not None else 0
+            practice_data.append({
+                'id': hw.id,
+                'created_at': hw.created_at.isoformat(),
+                'accuracy': accuracy,
+                'subject': hw.subject,
+                'total_questions': hw.total_questions or 0,
+                'wrong_count': hw.wrong_count or 0,
+                'status': hw.status
+            })
+        
+        child_info = {
+            'id': child_user.id,
+            'name': relation.nickname or child_user.nickname or f"用户{child_user.id}",
+            'avatar': child_user.avatar_url,
+            'grade': child_user.grade or "未设置",
+            'recent_practices': practice_data
+        }
+        children.append(child_info)
+    
+    return {
+        'children': children,
+        'total_children': len(children),
+        'generated_at': datetime.now().isoformat()
+    }
+
 @router.get("/children/{child_id}/progress", summary="获取孩子学习进度")
 def get_child_learning_progress(
     child_id: int,
@@ -1568,3 +1690,122 @@ def get_child_learning_progress(
         "goals": goals,
         "achievements": achievements
     }
+
+# 提醒相关的模型
+class ReminderRequest(BaseModel):
+    """提醒设置请求"""
+    time: str = Field(..., description="提醒时间 (HH:MM格式)")
+    frequency: str = Field(..., description="频率: daily/weekdays/weekends/custom")
+    enabled: bool = Field(True, description="是否启用")
+
+class ReminderResponse(BaseModel):
+    """提醒设置响应"""
+    id: int
+    time: str
+    frequency: str
+    enabled: bool
+    created_at: str
+    updated_at: str
+
+@router.get("/reminders", summary="获取提醒设置列表")
+def get_reminders(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    获取当前家长的所有提醒设置
+    """
+    try:
+        # 这里应该从数据库获取提醒设置，暂时返回模拟数据
+        # 实际实现时需要创建 parent_reminders 表
+        
+        # 模拟从数据库获取的提醒设置
+        mock_reminders = [
+            {
+                "id": 1,
+                "time": "19:00",
+                "frequency": "daily",
+                "enabled": True,
+                "created_at": datetime.now().isoformat(),
+                "updated_at": datetime.now().isoformat()
+            }
+        ]
+        
+        return {
+            "reminders": mock_reminders,
+            "total": len(mock_reminders),
+            "parent_id": current_user.id
+        }
+        
+    except Exception as e:
+        print(f"获取提醒设置失败: {e}")
+        return {
+            "reminders": [],
+            "total": 0,
+            "parent_id": current_user.id
+        }
+
+@router.post("/reminders", summary="保存提醒设置")
+def save_reminder(
+    reminder_data: ReminderRequest,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    保存或更新提醒设置
+    
+    - **time**: 提醒时间 (HH:MM格式)
+    - **frequency**: 频率 (daily/weekdays/weekends/custom)
+    - **enabled**: 是否启用
+    """
+    try:
+        # 这里应该保存到数据库，暂时返回成功响应
+        # 实际实现时需要：
+        # 1. 创建 parent_reminders 表
+        # 2. 保存或更新提醒设置
+        # 3. 返回保存后的数据
+        
+        saved_reminder = {
+            "id": 1,  # 应该是数据库生成的ID
+            "parent_id": current_user.id,
+            "time": reminder_data.time,
+            "frequency": reminder_data.frequency,
+            "enabled": reminder_data.enabled,
+            "created_at": datetime.now().isoformat(),
+            "updated_at": datetime.now().isoformat()
+        }
+        
+        return {
+            "message": "提醒设置保存成功",
+            "reminder": saved_reminder,
+            "success": True
+        }
+        
+    except Exception as e:
+        print(f"保存提醒设置失败: {e}")
+        raise HTTPException(status_code=500, detail=f"保存提醒设置失败: {str(e)}")
+
+@router.delete("/reminders/{reminder_id}", summary="删除提醒设置")
+def delete_reminder(
+    reminder_id: int,
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    删除指定的提醒设置
+    
+    - **reminder_id**: 提醒ID
+    """
+    try:
+        # 这里应该从数据库删除提醒设置
+        # 实际实现时需要验证提醒属于当前用户
+        
+        return {
+            "message": "提醒设置删除成功",
+            "reminder_id": reminder_id,
+            "success": True
+        }
+        
+    except Exception as e:
+        print(f"删除提醒设置失败: {e}")
+        raise HTTPException(status_code=500, detail=f"删除提醒设置失败: {str(e)}")

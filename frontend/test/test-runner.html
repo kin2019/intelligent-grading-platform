@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能教育平台 - 单元测试运行器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .test-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .test-controls {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 25px;
+            justify-content: center;
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .test-results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: #f8f9fa;
+            border-radius: 8px;
+            padding: 20px;
+            border-left: 4px solid #e2e8f0;
+        }
+
+        .result-card.passed {
+            border-left-color: #10b981;
+            background: #f0fdf4;
+        }
+
+        .result-card.failed {
+            border-left-color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .result-card.running {
+            border-left-color: #f59e0b;
+            background: #fffbeb;
+        }
+
+        .result-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .result-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 8px;
+            background: white;
+            border-radius: 6px;
+        }
+
+        .stat-number {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .issues-list {
+            margin-top: 15px;
+        }
+
+        .issue-item {
+            background: white;
+            border-radius: 4px;
+            padding: 8px 12px;
+            margin: 5px 0;
+            font-size: 0.9rem;
+            border-left: 3px solid #ef4444;
+        }
+
+        .console-output {
+            background: #1a1a1a;
+            color: #00ff00;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 0.85rem;
+            padding: 15px;
+            border-radius: 6px;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #667eea;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 24px;
+            height: 24px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-right: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .summary-card {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border-radius: 12px;
+            padding: 25px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .summary-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+        }
+
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .summary-item {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 15px;
+        }
+
+        .summary-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .summary-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        @media (max-width: 768px) {
+            .test-controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .test-results {
+                grid-template-columns: 1fr;
+            }
+            
+            .summary-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧪 单元测试运行器</h1>
+            <p>步骤8.4：全面测试 - 单元测试执行</p>
+        </div>
+
+        <div class="test-card">
+            <div class="test-controls">
+                <button class="btn btn-primary" onclick="runAllTests()" id="runAllBtn">
+                    🚀 运行所有测试
+                </button>
+                <button class="btn btn-secondary" onclick="runQualityTests()" id="qualityBtn">
+                    📊 质量优化器测试
+                </button>
+                <button class="btn btn-secondary" onclick="runPerformanceTests()" id="performanceBtn">
+                    ⚡ 性能优化器测试
+                </button>
+                <button class="btn btn-secondary" onclick="runErrorTests()" id="errorBtn">
+                    🛡️ 错误处理器测试
+                </button>
+                <button class="btn btn-secondary" onclick="runIntegrationTests()" id="integrationBtn">
+                    🔗 集成测试
+                </button>
+                <button class="btn btn-secondary" onclick="runUXTests()" id="uxBtn">
+                    🎨 用户体验测试
+                </button>
+                <button class="btn btn-secondary" onclick="clearResults()" id="clearBtn">
+                    🗑️ 清空结果
+                </button>
+            </div>
+
+            <div class="loading" id="loadingIndicator">
+                <div class="loading-spinner"></div>
+                正在运行测试...
+            </div>
+
+            <div id="testSummary"></div>
+
+            <div class="test-results" id="testResults">
+                <!-- 测试结果将在这里显示 -->
+            </div>
+
+            <div id="consoleOutput"></div>
+        </div>
+    </div>
+
+    <!-- 引入被测试的组件 -->
+    <script src="/frontend/js/exercise-quality-optimizer.js"></script>
+    <script src="/frontend/js/performance-optimizer.js"></script>
+    <script src="/frontend/js/error-handler.js"></script>
+
+    <!-- 引入测试文件 -->
+    <script src="/frontend/test/quality-optimizer-tests.js"></script>
+    <script src="/frontend/test/performance-optimizer-tests.js"></script>
+    <script src="/frontend/test/error-handler-tests.js"></script>
+    <script src="/frontend/test/integration-tests.js"></script>
+    <script src="/frontend/test/ux-tests.js"></script>
+
+    <script>
+        // 全局测试状态
+        let testResults = {
+            quality: null,
+            performance: null,
+            error: null,
+            integration: null,
+            ux: null
+        };
+
+        let consoleMessages = [];
+
+        // 拦截console.log用于显示
+        const originalLog = console.log;
+        const originalError = console.error;
+
+        console.log = function(...args) {
+            consoleMessages.push({ type: 'log', message: args.join(' '), timestamp: Date.now() });
+            originalLog.apply(console, args);
+            updateConsoleOutput();
+        };
+
+        console.error = function(...args) {
+            consoleMessages.push({ type: 'error', message: args.join(' '), timestamp: Date.now() });
+            originalError.apply(console, args);
+            updateConsoleOutput();
+        };
+
+        // 更新控制台输出显示
+        function updateConsoleOutput() {
+            const outputEl = document.getElementById('consoleOutput');
+            if (consoleMessages.length === 0) {
+                outputEl.innerHTML = '';
+                return;
+            }
+
+            const html = `
+                <div class="console-output">
+                    ${consoleMessages.slice(-50).map(msg => {
+                        const time = new Date(msg.timestamp).toLocaleTimeString();
+                        const color = msg.type === 'error' ? '#ff6b6b' : '#00ff00';
+                        return `<div style="color: ${color};">[${time}] ${msg.message}</div>`;
+                    }).join('')}
+                </div>
+            `;
+            outputEl.innerHTML = html;
+        }
+
+        // 显示加载状态
+        function setLoading(loading) {
+            const loadingEl = document.getElementById('loadingIndicator');
+            const buttons = document.querySelectorAll('.btn');
+            
+            if (loading) {
+                loadingEl.classList.add('show');
+                buttons.forEach(btn => btn.disabled = true);
+            } else {
+                loadingEl.classList.remove('show');
+                buttons.forEach(btn => btn.disabled = false);
+            }
+        }
+
+        // 运行所有测试
+        async function runAllTests() {
+            console.log('🚀 开始运行所有单元测试');
+            setLoading(true);
+            consoleMessages = []; // 清空控制台消息
+            
+            try {
+                // 按顺序运行所有测试
+                await runQualityTests(false);
+                await runPerformanceTests(false);
+                await runErrorTests(false);
+                await runIntegrationTests(false);
+                await runUXTests(false);
+                
+                // 显示总结
+                showOverallSummary();
+                
+            } catch (error) {
+                console.error('运行测试时发生错误:', error);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 运行质量优化器测试
+        async function runQualityTests(standalone = true) {
+            if (standalone) {
+                setLoading(true);
+                consoleMessages = [];
+            }
+            
+            console.log('📊 开始质量优化器测试');
+            
+            try {
+                if (typeof runQualityOptimizerTests === 'function') {
+                    testResults.quality = await runQualityOptimizerTests();
+                    updateTestResult('quality', testResults.quality);
+                } else {
+                    console.error('质量优化器测试函数未找到');
+                    updateTestResult('quality', { error: '测试函数未找到' });
+                }
+            } catch (error) {
+                console.error('质量优化器测试失败:', error);
+                updateTestResult('quality', { error: error.message });
+            } finally {
+                if (standalone) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        // 运行性能优化器测试
+        async function runPerformanceTests(standalone = true) {
+            if (standalone) {
+                setLoading(true);
+                consoleMessages = [];
+            }
+            
+            console.log('⚡ 开始性能优化器测试');
+            
+            try {
+                if (typeof runPerformanceOptimizerTests === 'function') {
+                    testResults.performance = await runPerformanceOptimizerTests();
+                    updateTestResult('performance', testResults.performance);
+                } else {
+                    console.error('性能优化器测试函数未找到');
+                    updateTestResult('performance', { error: '测试函数未找到' });
+                }
+            } catch (error) {
+                console.error('性能优化器测试失败:', error);
+                updateTestResult('performance', { error: error.message });
+            } finally {
+                if (standalone) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        // 运行错误处理器测试
+        async function runErrorTests(standalone = true) {
+            if (standalone) {
+                setLoading(true);
+                consoleMessages = [];
+            }
+            
+            console.log('🛡️ 开始错误处理器测试');
+            
+            try {
+                if (typeof runErrorHandlerTests === 'function') {
+                    testResults.error = await runErrorHandlerTests();
+                    updateTestResult('error', testResults.error);
+                } else {
+                    console.error('错误处理器测试函数未找到');
+                    updateTestResult('error', { error: '测试函数未找到' });
+                }
+            } catch (error) {
+                console.error('错误处理器测试失败:', error);
+                updateTestResult('error', { error: error.message });
+            } finally {
+                if (standalone) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        // 运行集成测试
+        async function runIntegrationTests(standalone = true) {
+            if (standalone) {
+                setLoading(true);
+                consoleMessages = [];
+            }
+            
+            console.log('🔗 开始集成测试');
+            
+            try {
+                if (typeof runIntegrationTests === 'function') {
+                    testResults.integration = await window.runIntegrationTests();
+                    updateTestResult('integration', testResults.integration);
+                } else {
+                    console.error('集成测试函数未找到');
+                    updateTestResult('integration', { error: '测试函数未找到' });
+                }
+            } catch (error) {
+                console.error('集成测试失败:', error);
+                updateTestResult('integration', { error: error.message });
+            } finally {
+                if (standalone) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        // 运行用户体验测试
+        async function runUXTests(standalone = true) {
+            if (standalone) {
+                setLoading(true);
+                consoleMessages = [];
+            }
+            
+            console.log('🎨 开始用户体验测试');
+            
+            try {
+                if (typeof window.runUXTests === 'function') {
+                    testResults.ux = await window.runUXTests();
+                    updateTestResult('ux', testResults.ux);
+                } else {
+                    console.error('用户体验测试函数未找到');
+                    updateTestResult('ux', { error: '测试函数未找到' });
+                }
+            } catch (error) {
+                console.error('用户体验测试失败:', error);
+                updateTestResult('ux', { error: error.message });
+            } finally {
+                if (standalone) {
+                    setLoading(false);
+                }
+            }
+        }
+
+        // 更新测试结果显示
+        function updateTestResult(type, result) {
+            const resultsContainer = document.getElementById('testResults');
+            const typeNames = {
+                quality: '质量优化器',
+                performance: '性能优化器',
+                error: '错误处理器',
+                integration: '集成测试',
+                ux: '用户体验测试'
+            };
+            
+            const typeIcons = {
+                quality: '📊',
+                performance: '⚡',
+                error: '🛡️',
+                integration: '🔗',
+                ux: '🎨'
+            };
+            
+            let cardClass = 'result-card';
+            let statusIcon = '⏳';
+            let statusText = '运行中';
+            
+            if (result.error) {
+                cardClass += ' failed';
+                statusIcon = '❌';
+                statusText = '错误';
+            } else if (result.failed > 0) {
+                cardClass += ' failed';
+                statusIcon = '❌';
+                statusText = `${result.failed} 失败`;
+            } else {
+                cardClass += ' passed';
+                statusIcon = '✅';
+                statusText = '全部通过';
+            }
+            
+            const html = `
+                <div class="${cardClass}" id="result-${type}">
+                    <div class="result-title">
+                        ${typeIcons[type]} ${typeNames[type]} ${statusIcon}
+                    </div>
+                    
+                    ${result.error ? `
+                        <div style="color: #ef4444; margin: 10px 0;">
+                            错误: ${result.error}
+                        </div>
+                    ` : `
+                        <div class="result-stats">
+                            <div class="stat-item">
+                                <div class="stat-number" style="color: #10b981;">${result.passed}</div>
+                                <div class="stat-label">通过</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" style="color: ${result.failed > 0 ? '#ef4444' : '#6b7280'};">${result.failed}</div>
+                                <div class="stat-label">失败</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-number" style="color: #3b82f6;">${result.total}</div>
+                                <div class="stat-label">总计</div>
+                            </div>
+                        </div>
+                        
+                        <div style="text-align: center; color: #666; font-size: 0.9rem;">
+                            成功率: ${result.successRate ? result.successRate.toFixed(1) : '0'}%
+                        </div>
+                    `}
+                    
+                    ${result.issues && result.issues.length > 0 ? `
+                        <div class="issues-list">
+                            <strong style="color: #ef4444;">发现的问题:</strong>
+                            ${result.issues.map(issue => `
+                                <div class="issue-item">${issue}</div>
+                            `).join('')}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+            
+            // 更新或添加结果卡片
+            const existingCard = document.getElementById(`result-${type}`);
+            if (existingCard) {
+                existingCard.outerHTML = html;
+            } else {
+                resultsContainer.innerHTML += html;
+            }
+        }
+
+        // 显示总体测试总结
+        function showOverallSummary() {
+            const summaryContainer = document.getElementById('testSummary');
+            
+            if (!testResults.quality && !testResults.performance && !testResults.error) {
+                summaryContainer.innerHTML = '';
+                return;
+            }
+            
+            let totalTests = 0;
+            let totalPassed = 0;
+            let totalFailed = 0;
+            let totalIssues = 0;
+            
+            Object.values(testResults).forEach(result => {
+                if (result && !result.error) {
+                    totalTests += result.total || 0;
+                    totalPassed += result.passed || 0;
+                    totalFailed += result.failed || 0;
+                    totalIssues += (result.issues || []).length;
+                }
+            });
+            
+            const overallSuccessRate = totalTests > 0 ? ((totalPassed / totalTests) * 100).toFixed(1) : 0;
+            
+            const html = `
+                <div class="summary-card">
+                    <div class="summary-title">📊 测试总结报告</div>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <div class="summary-number">${totalTests}</div>
+                            <div class="summary-label">总测试数</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number">${totalPassed}</div>
+                            <div class="summary-label">通过</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number">${totalFailed}</div>
+                            <div class="summary-label">失败</div>
+                        </div>
+                        <div class="summary-item">
+                            <div class="summary-number">${overallSuccessRate}%</div>
+                            <div class="summary-label">成功率</div>
+                        </div>
+                    </div>
+                    ${totalIssues > 0 ? `<div style="margin-top: 15px; font-size: 0.9rem; opacity: 0.9;">发现 ${totalIssues} 个问题需要修复</div>` : ''}
+                </div>
+            `;
+            
+            summaryContainer.innerHTML = html;
+        }
+
+        // 清空测试结果
+        function clearResults() {
+            document.getElementById('testResults').innerHTML = '';
+            document.getElementById('testSummary').innerHTML = '';
+            document.getElementById('consoleOutput').innerHTML = '';
+            consoleMessages = [];
+            testResults = { quality: null, performance: null, error: null, integration: null, ux: null };
+            console.log('📋 测试结果已清空');
+        }
+
+        // 页面加载时的初始化
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🧪 智能教育平台测试运行器已准备就绪');
+            console.log('📋 可用测试套件:');
+            console.log('  - 📊 质量优化器测试 (exercise-quality-optimizer.js)');
+            console.log('  - ⚡ 性能优化器测试 (performance-optimizer.js)');
+            console.log('  - 🛡️ 错误处理器测试 (error-handler.js)');
+            console.log('  - 🔗 集成测试 (integration-tests.js)');
+            console.log('  - 🎨 用户体验测试 (ux-tests.js)');
+            console.log('🚀 点击"运行所有测试"开始全面测试，或单独运行各模块测试');
+            console.log('📊 测试覆盖: 单元测试 → 集成测试 → 用户体验测试');
+        });
+    </script>
+</body>
+</html>

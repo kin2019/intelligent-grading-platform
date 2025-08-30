@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.models.user import User
 from app.models.homework import Homework, ErrorQuestion
 from app.models.study_plan import StudyPlan
+from app.models.exercise import ExerciseGeneration, GeneratedExercise as DBGeneratedExercise, ExerciseTemplate as DBExerciseTemplate
 from app.services.ai_recommendation_service import StudentProfile
 
 
@@ -812,7 +813,7 @@ class AIExerciseGenerator:
         """生成通用练习题"""
         
         subject = error_analysis.get('subject', '通用')
-        question = f"{subject}练习题 {question_num}：基于错误类型"{original_error.get('error_type', '未知')}"的{difficulty}级别练习"
+        question = f"{subject}练习题 {question_num}：基于错误类型【{original_error.get('error_type', '未知')}】的{difficulty}级别练习"
         answer = f"参考答案 {question_num}"
         analysis = f"这是一道{subject}基础练习题，重点训练相关概念和方法。" if include_analysis else ""
         
@@ -922,3 +923,334 @@ class AIExerciseGenerator:
     def _init_chemistry_templates(self) -> List[ExerciseTemplate]:
         """初始化化学题模板"""
         return []
+    
+    # ==================== 新增方法：基于年级和学科生成题目 ====================
+    
+    def generate_by_grade_and_subject(self, user_id: int, grade: str, subject: str, 
+                                    generation_config: Dict[str, Any]) -> List[GeneratedExercise]:
+        """
+        基于年级和学科生成练习题集
+        
+        Args:
+            user_id: 用户ID
+            grade: 年级
+            subject: 学科
+            generation_config: 生成配置
+            
+        Returns:
+            生成的练习题列表
+        """
+        try:
+            # 获取用户学习画像
+            user_profile = self._get_user_profile_by_id(user_id)
+            
+            # 构建虚拟的"原始错题"用于分析
+            virtual_error = {
+                'user_id': user_id,
+                'subject': subject,
+                'grade': grade,
+                'question_text': f'{subject}基础练习',
+                'error_type': 'practice',
+                'knowledge_points': self._get_grade_subject_knowledge_points(grade, subject)
+            }
+            
+            # 使用现有的生成逻辑
+            return self.generate_exercises(virtual_error, generation_config)
+            
+        except Exception as e:
+            print(f"基于年级学科生成题目失败: {e}")
+            return self._generate_fallback_exercises_by_subject(grade, subject, generation_config)
+    
+    def generate_exercise_set(self, user_profile: Dict[str, Any], 
+                            exercise_config: Dict[str, Any]) -> Dict[str, Any]:
+        """
+        生成完整的练习题集
+        
+        Args:
+            user_profile: 用户画像
+            exercise_config: 练习配置
+            
+        Returns:
+            包含题目列表和元数据的字典
+        """
+        try:
+            start_time = datetime.now()
+            
+            # 提取配置参数
+            subject = exercise_config.get('subject')
+            grade = exercise_config.get('grade')
+            question_count = exercise_config.get('question_count', 10)
+            difficulty_level = exercise_config.get('difficulty_level', 'same')
+            question_types = exercise_config.get('question_types', ['similar'])
+            
+            # 生成题目
+            exercises = self.generate_by_grade_and_subject(
+                user_profile.get('user_id'),
+                grade,
+                subject,
+                exercise_config
+            )
+            
+            generation_time = (datetime.now() - start_time).total_seconds()
+            
+            # 返回完整结果
+            return {
+                'exercises': exercises,
+                'metadata': {
+                    'generation_time': generation_time,
+                    'total_questions': len(exercises),
+                    'subject': subject,
+                    'grade': grade,
+                    'difficulty_level': difficulty_level,
+                    'success_rate': 1.0 if exercises else 0.0,
+                    'generated_at': datetime.now().isoformat()
+                }
+            }
+            
+        except Exception as e:
+            print(f"生成练习题集失败: {e}")
+            return {
+                'exercises': [],
+                'metadata': {
+                    'generation_time': 0,
+                    'total_questions': 0,
+                    'subject': exercise_config.get('subject'),
+                    'grade': exercise_config.get('grade'),
+                    'success_rate': 0.0,
+                    'error_message': str(e),
+                    'generated_at': datetime.now().isoformat()
+                }
+            }
+    
+    def validate_generated_exercises(self, exercises: List[GeneratedExercise]) -> Dict[str, Any]:
+        """
+        验证生成题目的质量
+        
+        Args:
+            exercises: 生成的题目列表
+            
+        Returns:
+            验证结果
+        """
+        validation_result = {
+            'is_valid': True,
+            'total_count': len(exercises),
+            'valid_count': 0,
+            'quality_score': 0.0,
+            'issues': []
+        }
+        
+        if not exercises:
+            validation_result['is_valid'] = False
+            validation_result['issues'].append('没有生成任何题目')
+            return validation_result
+        
+        valid_exercises = 0
+        total_quality = 0.0
+        
+        for i, exercise in enumerate(exercises):
+            issues = []
+            
+            # 检查必需字段
+            if not exercise.question_text or not exercise.question_text.strip():
+                issues.append(f'题目{i+1}: 题目内容为空')
+            
+            if not exercise.correct_answer or not exercise.correct_answer.strip():
+                issues.append(f'题目{i+1}: 答案为空')
+            
+            if len(exercise.question_text) < 10:
+                issues.append(f'题目{i+1}: 题目内容过短')
+            
+            if len(exercise.question_text) > 500:
+                issues.append(f'题目{i+1}: 题目内容过长')
+            
+            # 计算质量分数
+            quality_score = 10.0
+            if issues:
+                quality_score = max(0, quality_score - len(issues) * 2)
+            
+            if not issues:
+                valid_exercises += 1
+            else:
+                validation_result['issues'].extend(issues)
+            
+            total_quality += quality_score
+        
+        validation_result['valid_count'] = valid_exercises
+        validation_result['quality_score'] = total_quality / len(exercises) if exercises else 0
+        validation_result['is_valid'] = valid_exercises >= len(exercises) * 0.8  # 80%以上有效
+        
+        return validation_result
+    
+    def _get_user_profile_by_id(self, user_id: int) -> Dict[str, Any]:
+        """根据用户ID获取用户画像"""
+        try:
+            user = self.db.query(User).filter(User.id == user_id).first()
+            if not user:
+                return {'user_id': user_id, 'grade': '三年级', 'learning_ability': 'medium'}
+            
+            # 获取用户的学习数据
+            thirty_days_ago = datetime.now() - timedelta(days=30)
+            recent_homework = self.db.query(Homework).filter(
+                Homework.user_id == user_id,
+                Homework.created_at >= thirty_days_ago
+            ).all()
+            
+            # 计算学习能力
+            if recent_homework:
+                accuracy_rates = [hw.accuracy_rate for hw in recent_homework if hw.accuracy_rate]
+                avg_accuracy = sum(accuracy_rates) / len(accuracy_rates) if accuracy_rates else 0.7
+                learning_ability = self._assess_learning_ability(avg_accuracy, len(recent_homework) / 30.0)
+            else:
+                learning_ability = 'medium'
+            
+            return {
+                'user_id': user_id,
+                'grade': user.grade or '三年级',
+                'learning_ability': learning_ability,
+                'recent_homework_count': len(recent_homework)
+            }
+            
+        except Exception as e:
+            print(f"获取用户画像失败: {e}")
+            return {'user_id': user_id, 'grade': '三年级', 'learning_ability': 'medium'}
+    
+    def _get_grade_subject_knowledge_points(self, grade: str, subject: str) -> List[str]:
+        """获取年级学科的知识点"""
+        knowledge_points_map = {
+            '一年级': {
+                '数学': ['10以内加减法', '认识图形', '比较大小', '数的组成'],
+                '语文': ['拼音认读', '简单汉字', '词语搭配', '短句理解'],
+                '英语': ['字母认识', '基本单词', '简单问候']
+            },
+            '二年级': {
+                '数学': ['100以内加减法', '乘法口诀', '长度单位', '时间认识'],
+                '语文': ['词语理解', '句子补充', '短文阅读', '标点使用'],
+                '英语': ['单词认读', '简单对话', '颜色数字']
+            },
+            '三年级': {
+                '数学': ['万以内加减法', '两三位数乘除法', '分数初步', '面积周长'],
+                '语文': ['段落理解', '词语辨析', '作文片段', '古诗背诵'],
+                '英语': ['语法基础', '时态认识', '日常对话']
+            },
+            '四年级': {
+                '数学': ['大数认识', '小数概念', '图形计算', '统计图表'],
+                '语文': ['阅读理解', '写作技巧', '修辞手法', '文言启蒙'],
+                '英语': ['句型变换', '阅读理解', '写作基础']
+            },
+            '五年级': {
+                '数学': ['分数运算', '小数运算', '几何图形', '应用题综合'],
+                '语文': ['现代文阅读', '作文提升', '语法知识', '古诗词'],
+                '英语': ['语法深化', '完形填空', '写作提升']
+            },
+            '六年级': {
+                '数学': ['分数百分数', '比例应用', '立体图形', '概率统计'],
+                '语文': ['文学常识', '议论说明', '综合写作', '古文理解'],
+                '英语': ['阅读技巧', '写作高级', '语法综合']
+            }
+        }
+        
+        return knowledge_points_map.get(grade, {}).get(subject, ['基础知识', '基本技能'])
+    
+    def _generate_fallback_exercises_by_subject(self, grade: str, subject: str, 
+                                              generation_config: Dict[str, Any]) -> List[GeneratedExercise]:
+        """基于学科的后备题目生成"""
+        exercises = []
+        question_count = generation_config.get('question_count', 5)
+        difficulty = generation_config.get('difficulty_level', 'same')
+        
+        knowledge_points = self._get_grade_subject_knowledge_points(grade, subject)
+        
+        for i in range(question_count):
+            exercise_num = i + 1
+            knowledge_point = knowledge_points[i % len(knowledge_points)]
+            
+            if subject == '数学':
+                question, answer = self._generate_math_fallback_question(grade, knowledge_point, difficulty)
+            elif subject == '语文':
+                question, answer = self._generate_chinese_fallback_question(grade, knowledge_point, difficulty)
+            elif subject == '英语':
+                question, answer = self._generate_english_fallback_question(grade, knowledge_point, difficulty)
+            else:
+                question = f"{subject} {grade} 练习题 {exercise_num}：请完成关于 {knowledge_point} 的练习。"
+                answer = f"{knowledge_point} 参考答案 {exercise_num}"
+            
+            exercise = GeneratedExercise(
+                number=exercise_num,
+                subject=subject,
+                question_text=question,
+                correct_answer=answer,
+                analysis=f"这道题考查 {knowledge_point}，属于{grade}阶段的基础知识。",
+                difficulty=difficulty,
+                knowledge_points=[knowledge_point],
+                question_type='practice'
+            )
+            exercises.append(exercise)
+        
+        return exercises
+    
+    def _generate_math_fallback_question(self, grade: str, knowledge_point: str, difficulty: str) -> Tuple[str, str]:
+        """生成数学后备题目"""
+        if '加减法' in knowledge_point:
+            if grade in ['一年级', '二年级']:
+                a = random.randint(1, 50)
+                b = random.randint(1, 50)
+                if random.choice([True, False]):
+                    question = f"计算：{a} + {b} = ?"
+                    answer = str(a + b)
+                else:
+                    if a < b:
+                        a, b = b, a
+                    question = f"计算：{a} - {b} = ?"
+                    answer = str(a - b)
+            else:
+                a = random.randint(100, 999)
+                b = random.randint(100, 999)
+                question = f"计算：{a} + {b} = ?"
+                answer = str(a + b)
+        elif '乘法' in knowledge_point:
+            a = random.randint(2, 9)
+            b = random.randint(2, 9)
+            question = f"计算：{a} × {b} = ?"
+            answer = str(a * b)
+        else:
+            question = f"请完成关于 {knowledge_point} 的数学练习。"
+            answer = "参考答案"
+        
+        return question, answer
+    
+    def _generate_chinese_fallback_question(self, grade: str, knowledge_point: str, difficulty: str) -> Tuple[str, str]:
+        """生成语文后备题目"""
+        if '拼音' in knowledge_point:
+            words = ['学校', '老师', '同学', '书包', '铅笔']
+            word = random.choice(words)
+            question = f"请给下面的汉字标注拼音：{word}"
+            answer = "请查字典标注正确拼音"
+        elif '词语' in knowledge_point:
+            question = "请写出下列词语的反义词：高兴"
+            answer = "难过"
+        elif '古诗' in knowledge_point:
+            question = "请默写《静夜思》的前两句"
+            answer = "床前明月光，疑是地上霜"
+        else:
+            question = f"请完成关于 {knowledge_point} 的语文练习。"
+            answer = "参考答案"
+        
+        return question, answer
+    
+    def _generate_english_fallback_question(self, grade: str, knowledge_point: str, difficulty: str) -> Tuple[str, str]:
+        """生成英语后备题目"""
+        if '单词' in knowledge_point:
+            question = "请写出下列单词的中文意思：apple"
+            answer = "苹果"
+        elif '字母' in knowledge_point:
+            question = "请按顺序写出英文字母A-E"
+            answer = "A B C D E"
+        elif '语法' in knowledge_point:
+            question = "请选择正确答案：I _____ a student. (A. am B. is C. are)"
+            answer = "A. am"
+        else:
+            question = f"请完成关于 {knowledge_point} 的英语练习。"
+            answer = "参考答案"
+        
+        return question, answer

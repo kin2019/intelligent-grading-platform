@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>智能出题配置 - 智能教育平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .config-card {
+            background: white;
+            border-radius: 16px;
+            padding: 40px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .form-section {
+            margin-bottom: 35px;
+        }
+
+        .section-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+        }
+
+        .section-title::before {
+            content: '';
+            width: 4px;
+            height: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            margin-right: 12px;
+            border-radius: 2px;
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 25px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 8px;
+            color: #4a5568;
+            font-size: 0.95rem;
+        }
+
+        .form-select, .form-input {
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .checkbox-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .checkbox-item:hover {
+            border-color: #cbd5e0;
+            background: #f7fafc;
+        }
+
+        .checkbox-item.selected {
+            border-color: #667eea;
+            background: #f0f4ff;
+        }
+
+        .checkbox-item input {
+            margin-right: 10px;
+            transform: scale(1.2);
+        }
+
+        .range-group {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 10px;
+        }
+
+        .range-input {
+            flex: 1;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .range-input::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #667eea;
+            cursor: pointer;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .range-value {
+            min-width: 60px;
+            text-align: center;
+            font-weight: 600;
+            color: #667eea;
+            font-size: 1.1rem;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin-top: 40px;
+        }
+
+        .btn {
+            padding: 14px 32px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 140px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-primary:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .loading::after {
+            content: '';
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 2px solid #e2e8f0;
+            border-top: 2px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fed7d7;
+            color: #c53030;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .success-message {
+            background: #c6f6d5;
+            color: #2d7738;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .config-card {
+                padding: 25px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .form-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .button-group {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .btn {
+                width: 100%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 智能出题配置</h1>
+            <p>设置您的题目生成参数，AI将为您生成个性化练习题</p>
+        </div>
+
+        <div class="config-card">
+            <form id="exerciseConfigForm">
+                <!-- 基础设置 -->
+                <div class="form-section">
+                    <h3 class="section-title">📚 基础设置</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="subject">学科选择</label>
+                            <select id="subject" class="form-select" required>
+                                <option value="">请选择学科...</option>
+                            </select>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label class="form-label" for="grade">年级选择</label>
+                            <select id="grade" class="form-select" required>
+                                <option value="">请选择年级...</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="title">题目集标题</label>
+                            <input type="text" id="title" class="form-input" 
+                                   placeholder="例如：加法练习题" maxlength="200">
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="description">题目集描述</label>
+                            <input type="text" id="description" class="form-input" 
+                                   placeholder="例如：基础加法运算练习" maxlength="500">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 题目设置 -->
+                <div class="form-section">
+                    <h3 class="section-title">⚙️ 题目设置</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">题目数量: <span class="range-value" id="questionCountValue">5</span></label>
+                            <div class="range-group">
+                                <span>1</span>
+                                <input type="range" id="questionCount" class="range-input" 
+                                       min="1" max="50" value="5">
+                                <span>50</span>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="difficulty">难度等级</label>
+                            <select id="difficulty" class="form-select" required>
+                                <option value="">请选择难度...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 题型选择 -->
+                <div class="form-section">
+                    <h3 class="section-title">📝 题型选择</h3>
+                    <div class="checkbox-group" id="questionTypes">
+                        <!-- 动态加载题型选项 -->
+                    </div>
+                </div>
+
+                <!-- 高级设置 -->
+                <div class="form-section">
+                    <h3 class="section-title">🔧 高级设置</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="includeAnswers" checked>
+                                <label for="includeAnswers">包含标准答案</label>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="checkbox-item">
+                                <input type="checkbox" id="includeAnalysis" checked>
+                                <label for="includeAnalysis">包含解题分析</label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 导出设置 -->
+                <div class="form-section">
+                    <h3 class="section-title">📄 导出设置</h3>
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label" for="exportFormat">导出格式</label>
+                            <select id="exportFormat" class="form-select">
+                                <option value="text">文本格式 (.txt)</option>
+                                <option value="word">Word文档 (.docx)</option>
+                                <option value="pdf">PDF文档 (.pdf)</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="paperSize">纸张大小</label>
+                            <select id="paperSize" class="form-select">
+                                <option value="A4">A4</option>
+                                <option value="A3">A3</option>
+                                <option value="Letter">Letter</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 提交按钮 -->
+                <div class="button-group">
+                    <button type="button" class="btn btn-secondary" onclick="resetForm()">
+                        🔄 重置配置
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="generateBtn">
+                        ✨ 开始生成题目
+                    </button>
+                </div>
+
+                <div class="loading" id="loadingMessage">
+                    正在生成题目，请稍候...
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+                <div class="success-message" id="successMessage"></div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 引入性能优化工具 -->
+    <script src="/frontend/js/performance-optimizer.js"></script>
+    <!-- 引入错误处理工具 -->
+    <script src="/frontend/js/error-handler.js"></script>
+
+    <script>
+        // API配置
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const authToken = localStorage.getItem('authToken') || 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU3MTQ2Mjg0fQ.1FiO0fqJiioUF1UGzpJF6Qu2qoqNS_Lo0KRvLPMuff8';
+        
+        // 设置全局API配置给性能优化器使用
+        window.API_BASE = API_BASE;
+
+        // API请求工具函数 - 使用错误处理系统的重试机制
+        async function apiRequest(endpoint, options = {}) {
+            return window.errorHandler.retryApiRequest(async () => {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            }, {
+                maxRetries: 2,
+                retryDelay: 1500,
+                context: 'exercise-config'
+            });
+        }
+
+        // 显示消息 - 增强的错误处理
+        function showMessage(message, type = 'success') {
+            const errorEl = document.getElementById('errorMessage');
+            const successEl = document.getElementById('successMessage');
+            
+            // 隐藏所有消息
+            errorEl.style.display = 'none';
+            successEl.style.display = 'none';
+
+            if (type === 'error') {
+                // 使用错误处理系统显示用户友好的错误
+                const errorId = window.errorHandler.showFriendlyError(new Error(message), 'exercise-config');
+                console.log(`显示用户友好错误，ID: ${errorId}`);
+                
+                // 同时也在页面内显示
+                errorEl.textContent = message;
+                errorEl.style.display = 'block';
+            } else {
+                successEl.textContent = message;
+                successEl.style.display = 'block';
+            }
+
+            // 3秒后自动隐藏成功消息
+            if (type === 'success') {
+                setTimeout(() => {
+                    successEl.style.display = 'none';
+                }, 3000);
+            }
+        }
+
+        // 设置加载状态 - 使用错误处理系统的加载指示器
+        function setLoading(loading) {
+            const loadingEl = document.getElementById('loadingMessage');
+            const submitBtn = document.getElementById('generateBtn');
+
+            if (loading) {
+                loadingEl.style.display = 'block';
+                submitBtn.disabled = true;
+                submitBtn.textContent = '生成中...';
+                
+                // 使用错误处理系统的高级加载指示器
+                window.errorHandler.createLoadingIndicator('exercise-generation', {
+                    message: '正在生成练习题...',
+                    position: 'top',
+                    backdrop: false,
+                    progress: true,
+                    cancellable: false
+                });
+            } else {
+                loadingEl.style.display = 'none';
+                submitBtn.disabled = false;
+                submitBtn.textContent = '✨ 开始生成题目';
+                
+                // 隐藏高级加载指示器
+                window.errorHandler.hideLoadingIndicator('exercise-generation');
+            }
+        }
+
+        // 优化的配置数据加载 - 使用批量请求和缓存，增强错误处理
+        async function loadAllConfigData() {
+            try {
+                console.log('🚀 开始加载配置数据（优化版本）...');
+                const startTime = Date.now();
+                
+                // 显示加载进度
+                window.errorHandler.createLoadingIndicator('config-loading', {
+                    message: '正在加载配置数据...',
+                    position: 'center',
+                    backdrop: true,
+                    progress: true,
+                    cancellable: false
+                });
+                
+                // 使用性能优化器的批量请求
+                const requests = [
+                    { endpoint: '/exercise/config/subjects', key: 'subjects' },
+                    { endpoint: '/exercise/config/grades', key: 'grades' },
+                    { endpoint: '/exercise/config/difficulty-levels', key: 'difficulty_levels' },
+                    { endpoint: '/exercise/config/question-types', key: 'question_types' }
+                ];
+                
+                // 更新进度
+                window.errorHandler.updateLoadingProgress('config-loading', 25, '连接服务器...');
+                
+                const results = await window.performanceOptimizer.batchApiRequest(requests);
+                
+                // 更新进度
+                window.errorHandler.updateLoadingProgress('config-loading', 75, '处理配置数据...');
+                
+                // 处理结果
+                let loadedCount = 0;
+                let cachedCount = 0;
+                
+                results.forEach((result, index) => {
+                    if (result.error) {
+                        console.error(`❌ 加载${requests[index].key}失败:`, result.error);
+                        return;
+                    }
+                    
+                    const { data, fromCache } = result;
+                    if (fromCache) cachedCount++;
+                    loadedCount++;
+                    
+                    // 根据类型填充UI
+                    switch (requests[index].key) {
+                        case 'subjects':
+                            populateSubjects(data);
+                            break;
+                        case 'grades':
+                            populateGrades(data);
+                            break;
+                        case 'difficulty_levels':
+                            populateDifficultyLevels(data);
+                            break;
+                        case 'question_types':
+                            populateQuestionTypes(data);
+                            break;
+                    }
+                });
+                
+                // 完成进度
+                window.errorHandler.updateLoadingProgress('config-loading', 100, '配置数据加载完成！');
+                
+                const duration = Date.now() - startTime;
+                console.log(`✅ 配置数据加载完成: ${loadedCount}/4 成功, ${cachedCount} 来自缓存 (${duration}ms)`);
+                
+                // 显示性能提示
+                if (cachedCount > 0) {
+                    showMessage(`配置加载完成，${cachedCount}项来自缓存，加载速度提升 ${Math.round((cachedCount/4)*100)}%`, 'success');
+                }
+                
+                // 隐藏加载指示器
+                setTimeout(() => {
+                    window.errorHandler.hideLoadingIndicator('config-loading');
+                }, 1000);
+                
+            } catch (error) {
+                console.error('❌ 批量加载配置数据失败:', error);
+                
+                // 隐藏加载指示器
+                window.errorHandler.hideLoadingIndicator('config-loading');
+                
+                // 使用错误处理系统显示用户友好错误
+                window.errorHandler.showFriendlyError(error, 'exercise-config');
+                showMessage('配置数据加载失败: ' + error.message, 'error');
+            }
+        }
+        
+        // 填充学科选择
+        function populateSubjects(data) {
+            const select = document.getElementById('subject');
+            select.innerHTML = '<option value="">请选择学科...</option>'; // 清空现有选项
+            
+            if (data.subjects) {
+                data.subjects.forEach(subject => {
+                    const option = document.createElement('option');
+                    option.value = subject;
+                    option.textContent = subject;
+                    select.appendChild(option);
+                });
+                console.log('📚 学科列表已填充');
+            }
+        }
+        
+        // 填充年级选择
+        function populateGrades(data) {
+            const select = document.getElementById('grade');
+            select.innerHTML = '<option value="">请选择年级...</option>'; // 清空现有选项
+            
+            if (data.grades) {
+                data.grades.forEach(grade => {
+                    const option = document.createElement('option');
+                    option.value = grade;
+                    option.textContent = grade;
+                    select.appendChild(option);
+                });
+                console.log('🎓 年级列表已填充');
+            }
+        }
+        
+        // 填充难度等级选择
+        function populateDifficultyLevels(data) {
+            const select = document.getElementById('difficulty');
+            select.innerHTML = '<option value="">请选择难度...</option>'; // 清空现有选项
+            
+            if (data.difficulty_levels) {
+                Object.entries(data.difficulty_levels).forEach(([key, config]) => {
+                    const option = document.createElement('option');
+                    option.value = key;
+                    option.textContent = `${config.name} - ${config.description}`;
+                    select.appendChild(option);
+                });
+                console.log('⚙️ 难度等级已填充');
+            }
+        }
+        
+        // 填充题型选择
+        function populateQuestionTypes(data) {
+            const container = document.getElementById('questionTypes');
+            container.innerHTML = ''; // 清空现有内容
+            
+            if (data.question_types) {
+                Object.entries(data.question_types).forEach(([key, config]) => {
+                    const div = document.createElement('div');
+                    div.className = 'checkbox-item';
+                    
+                    div.innerHTML = `
+                        <input type="checkbox" id="type_${key}" name="questionTypes" value="${key}" ${key === 'similar' ? 'checked' : ''}>
+                        <label for="type_${key}">
+                            <strong>${config.name}</strong><br>
+                            <small style="color: #718096;">${config.description}</small>
+                        </label>
+                    `;
+                    
+                    container.appendChild(div);
+
+                    // 添加点击事件
+                    div.addEventListener('click', (e) => {
+                        if (e.target.tagName !== 'INPUT') {
+                            const checkbox = div.querySelector('input');
+                            checkbox.checked = !checkbox.checked;
+                        }
+                        div.classList.toggle('selected', div.querySelector('input').checked);
+                    });
+
+                    // 初始状态
+                    if (key === 'similar') {
+                        div.classList.add('selected');
+                    }
+                });
+                console.log('📝 题型选择已填充');
+            }
+        }
+
+        // 题目数量滑块事件
+        document.getElementById('questionCount').addEventListener('input', (e) => {
+            document.getElementById('questionCountValue').textContent = e.target.value;
+        });
+
+        // 表单提交处理
+        document.getElementById('exerciseConfigForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            setLoading(true);
+            
+            try {
+                // 收集表单数据
+                const formData = new FormData(e.target);
+                const selectedTypes = Array.from(document.querySelectorAll('input[name="questionTypes"]:checked'))
+                    .map(cb => cb.value);
+
+                if (selectedTypes.length === 0) {
+                    throw new Error('请至少选择一种题型');
+                }
+
+                const config = {
+                    subject: document.getElementById('subject').value,
+                    grade: document.getElementById('grade').value,
+                    title: document.getElementById('title').value || `${document.getElementById('subject').value} ${document.getElementById('grade').value} 练习题`,
+                    description: document.getElementById('description').value || `AI生成的${document.getElementById('subject').value}练习题`,
+                    question_count: parseInt(document.getElementById('questionCount').value),
+                    difficulty_level: document.getElementById('difficulty').value,
+                    question_types: selectedTypes,
+                    include_answers: document.getElementById('includeAnswers').checked,
+                    include_analysis: document.getElementById('includeAnalysis').checked
+                };
+
+                // 验证必填字段
+                if (!config.subject || !config.grade || !config.difficulty_level) {
+                    throw new Error('请填写完整的基础设置信息');
+                }
+
+                // 使用性能优化器缓存配置
+                window.performanceOptimizer.cacheExerciseConfig(config);
+                console.log('💾 练习配置已缓存');
+
+                // 发送生成请求（使用性能优化的API请求和错误处理）
+                window.errorHandler.updateLoadingProgress('exercise-generation', 50, '正在生成题目...');
+                
+                const response = await window.errorHandler.retryExerciseGeneration(config);
+                
+                // 更新进度到100%
+                window.errorHandler.updateLoadingProgress('exercise-generation', 100, '题目生成完成！');
+
+                showMessage(`题目生成任务已启动！生成ID: ${response.generation_id}`, 'success');
+                
+                // 存储配置和生成ID，用于跳转到预览页面
+                sessionStorage.setItem('lastGenerationId', response.generation_id);
+                sessionStorage.setItem('exportConfig', JSON.stringify({
+                    format: document.getElementById('exportFormat').value,
+                    paper_size: document.getElementById('paperSize').value,
+                    include_answers: config.include_answers,
+                    include_analysis: config.include_analysis
+                }));
+
+                // 显示性能统计
+                const metrics = window.performanceOptimizer.getPerformanceMetrics();
+                console.log('📊 当前性能统计:', metrics);
+
+                // 3秒后跳转到预览页面
+                setTimeout(() => {
+                    window.location.href = `exercise-preview.html?id=${response.generation_id}`;
+                }, 3000);
+
+            } catch (error) {
+                // 使用错误处理系统显示用户友好错误
+                window.errorHandler.showFriendlyError(error, 'exercise-generation');
+                showMessage('生成题目失败: ' + error.message, 'error');
+            } finally {
+                setLoading(false);
+            }
+        });
+
+        // 重置表单
+        function resetForm() {
+            document.getElementById('exerciseConfigForm').reset();
+            document.getElementById('questionCountValue').textContent = '5';
+            
+            // 重置题型选择
+            document.querySelectorAll('.checkbox-item').forEach(item => {
+                const checkbox = item.querySelector('input');
+                checkbox.checked = checkbox.value === 'similar';
+                item.classList.toggle('selected', checkbox.checked);
+            });
+
+            // 隐藏消息
+            document.getElementById('errorMessage').style.display = 'none';
+            document.getElementById('successMessage').style.display = 'none';
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                console.log('🚀 配置页面初始化开始（性能优化版本）...');
+                
+                // 等待性能优化器准备就绪
+                if (window.performanceOptimizer) {
+                    // 使用优化的批量加载
+                    await loadAllConfigData();
+                    
+                    // 尝试恢复用户偏好
+                    restoreUserPreferences();
+                    
+                    console.log('✅ 配置页面初始化完成（性能优化版本）');
+                    
+                    // 显示性能统计
+                    setTimeout(() => {
+                        const metrics = window.performanceOptimizer.getPerformanceMetrics();
+                        if (metrics.cacheHits > 0) {
+                            showMessage(`性能提示：缓存命中率 ${metrics.cacheEfficiency}，加载速度提升显著`, 'success');
+                        }
+                    }, 1000);
+                } else {
+                    throw new Error('性能优化器未加载');
+                }
+                
+            } catch (error) {
+                console.error('❌ 页面初始化失败:', error);
+                showMessage('页面初始化失败: ' + error.message, 'error');
+            }
+        });
+
+        // 恢复用户偏好
+        function restoreUserPreferences() {
+            try {
+                const prefs = window.performanceOptimizer.get('user_exercise_preferences');
+                if (prefs) {
+                    console.log('🔄 恢复用户偏好设置');
+                    
+                    // 恢复学科选择
+                    if (prefs.subject) {
+                        const subjectSelect = document.getElementById('subject');
+                        if (subjectSelect) {
+                            subjectSelect.value = prefs.subject;
+                        }
+                    }
+                    
+                    // 恢复年级选择
+                    if (prefs.grade) {
+                        const gradeSelect = document.getElementById('grade');
+                        if (gradeSelect) {
+                            gradeSelect.value = prefs.grade;
+                        }
+                    }
+                    
+                    // 恢复难度选择
+                    if (prefs.difficulty) {
+                        const difficultySelect = document.getElementById('difficulty');
+                        if (difficultySelect) {
+                            difficultySelect.value = prefs.difficulty;
+                        }
+                    }
+                    
+                    // 恢复题型选择
+                    if (prefs.favorite_types && Array.isArray(prefs.favorite_types)) {
+                        prefs.favorite_types.forEach(type => {
+                            const checkbox = document.getElementById(`type_${type}`);
+                            if (checkbox) {
+                                checkbox.checked = true;
+                                const parent = checkbox.closest('.checkbox-item');
+                                if (parent) {
+                                    parent.classList.add('selected');
+                                }
+                            }
+                        });
+                    }
+                }
+            } catch (error) {
+                console.error('恢复用户偏好失败:', error);
+            }
+        }
+
+        // 监听导出进度事件
+        window.addEventListener('exportProgress', (e) => {
+            const { taskId, progress, message } = e.detail;
+            console.log(`📤 导出进度 [${taskId}]: ${progress}% - ${message}`);
+            
+            // 这里可以添加进度条UI更新逻辑
+            if (progress === 100) {
+                showMessage(`导出完成: ${message}`, 'success');
+            } else if (progress > 0) {
+                showMessage(`导出进度: ${progress}% - ${message}`, 'info');
+            }
+        });
+    </script>
+</body>
+</html>

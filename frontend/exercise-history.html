@@ -1,0 +1,1466 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>生成历史 - 智能教育平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-info h1 {
+            font-size: 2.2rem;
+            margin-bottom: 10px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            font-size: 0.95rem;
+            color: #6b7280;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 16px;
+            background: #f8fafc;
+            border-radius: 20px;
+        }
+
+        .search-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 300px;
+            padding: 12px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+        }
+
+        .main-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .panel-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .filter-bar {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 25px;
+        }
+
+        .filter-select {
+            padding: 8px 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .filter-select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .view-toggle {
+            display: flex;
+            gap: 2px;
+            background: #f1f5f9;
+            border-radius: 8px;
+            padding: 4px;
+        }
+
+        .view-btn {
+            padding: 8px 12px;
+            border: none;
+            background: transparent;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.85rem;
+        }
+
+        .view-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .history-list {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .history-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .history-item {
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            cursor: pointer;
+        }
+
+        .history-item:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.08);
+            transform: translateY(-2px);
+        }
+
+        .history-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .history-item:hover::before {
+            opacity: 1;
+        }
+
+        .item-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 16px;
+        }
+
+        .item-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #2d3748;
+            margin-bottom: 6px;
+            line-height: 1.3;
+        }
+
+        .item-subtitle {
+            font-size: 0.85rem;
+            color: #718096;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-badge {
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #2d7738;
+        }
+
+        .status-processing {
+            background: #fed7aa;
+            color: #c2410c;
+        }
+
+        .status-failed {
+            background: #fecaca;
+            color: #dc2626;
+        }
+
+        .status-pending {
+            background: #e0e7ff;
+            color: #4338ca;
+        }
+
+        .item-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin: 16px 0;
+        }
+
+        .stat-box {
+            text-align: center;
+            padding: 8px;
+            background: #f8fafc;
+            border-radius: 6px;
+        }
+
+        .stat-number {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 2px;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #718096;
+            text-transform: uppercase;
+        }
+
+        .item-actions {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 16px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            min-width: auto;
+        }
+
+        .progress-info {
+            background: #f0f9ff;
+            border: 1px solid #bae6fd;
+            border-radius: 8px;
+            padding: 12px;
+            margin: 12px 0;
+            display: none;
+        }
+
+        .progress-info.show {
+            display: block;
+        }
+
+        .progress-bar {
+            width: 100%;
+            height: 6px;
+            background: #e0f2fe;
+            border-radius: 3px;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 3px;
+            transition: width 0.3s ease;
+        }
+
+        .progress-text {
+            font-size: 0.8rem;
+            color: #0369a1;
+            text-align: center;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 18px;
+            color: #2d3748;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .stats-overview {
+            display: grid;
+            gap: 16px;
+        }
+
+        .overview-item {
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            border-radius: 10px;
+            padding: 18px;
+            text-align: center;
+        }
+
+        .overview-number {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 6px;
+        }
+
+        .overview-label {
+            font-size: 0.9rem;
+            color: #6b7280;
+            font-weight: 500;
+        }
+
+        .quick-filters {
+            display: grid;
+            gap: 8px;
+        }
+
+        .filter-tag {
+            padding: 10px 16px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .filter-tag:hover, .filter-tag.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 80px 20px;
+            color: #667eea;
+        }
+
+        .loading-spinner::after {
+            content: '';
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            border: 3px solid #f1f5f9;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 12px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 80px 20px;
+            color: #9ca3af;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 12px;
+            color: #6b7280;
+            font-size: 1.3rem;
+        }
+
+        .empty-icon {
+            font-size: 4rem;
+            margin-bottom: 20px;
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #fecaca;
+            color: #dc2626;
+            padding: 16px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            margin-top: 30px;
+        }
+
+        .page-btn {
+            padding: 8px 12px;
+            border: 2px solid #e2e8f0;
+            background: white;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .page-btn:hover, .page-btn.active {
+            background: #667eea;
+            border-color: #667eea;
+            color: white;
+        }
+
+        .page-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 1.8rem;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-panel {
+                flex-direction: column;
+            }
+
+            .search-input {
+                min-width: auto;
+            }
+
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .main-panel {
+                padding: 20px;
+            }
+
+            .filter-bar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .view-toggle {
+                justify-content: center;
+            }
+
+            .history-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .item-stats {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .item-actions {
+                justify-content: stretch;
+            }
+
+            .action-btn {
+                flex: 1;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1>📚 生成历史</h1>
+                    <div class="header-meta">
+                        <div class="meta-item">
+                            <span>📊</span>
+                            <span>总记录: <span id="totalRecords">0</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <span>✅</span>
+                            <span>已完成: <span id="completedRecords">0</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📝</span>
+                            <span>题目总数: <span id="totalQuestions">0</span></span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📅</span>
+                            <span>最近: <span id="lastGenerated">-</span></span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="search-panel">
+                    <input type="text" id="searchInput" class="search-input" 
+                           placeholder="🔍 搜索题目标题、学科、年级..." 
+                           onkeyup="handleSearch(event)">
+                    <button class="btn btn-secondary" onclick="clearSearch()">
+                        清除
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshHistory()" id="refreshBtn">
+                        🔄 刷新
+                    </button>
+                    <button class="btn btn-success" onclick="goToConfig()">
+                        ✨ 新建题目
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="content-area">
+            <!-- 历史记录面板 -->
+            <div class="main-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">📋 生成记录</h2>
+                    <div class="view-toggle">
+                        <button class="view-btn active" onclick="switchView('list')" id="listViewBtn">
+                            📋 列表
+                        </button>
+                        <button class="view-btn" onclick="switchView('grid')" id="gridViewBtn">
+                            🔲 网格
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 筛选栏 -->
+                <div class="filter-bar">
+                    <select id="statusFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">全部状态</option>
+                        <option value="completed">已完成</option>
+                        <option value="processing">处理中</option>
+                        <option value="pending">等待中</option>
+                        <option value="failed">失败</option>
+                    </select>
+                    <select id="subjectFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">全部学科</option>
+                    </select>
+                    <select id="gradeFilter" class="filter-select" onchange="applyFilters()">
+                        <option value="">全部年级</option>
+                    </select>
+                    <select id="sortOrder" class="filter-select" onchange="applyFilters()">
+                        <option value="newest">最新优先</option>
+                        <option value="oldest">最旧优先</option>
+                        <option value="name">按标题</option>
+                        <option value="questions">按题目数</option>
+                    </select>
+                </div>
+
+                <div class="loading-spinner" id="loadingSpinner">
+                    正在加载历史记录...
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <!-- 列表视图 -->
+                <div class="history-list" id="historyList">
+                    <!-- 记录将在这里动态加载 -->
+                </div>
+
+                <!-- 网格视图 -->
+                <div class="history-grid" id="historyGrid" style="display: none;">
+                    <!-- 记录将在这里动态加载 -->
+                </div>
+
+                <!-- 分页 -->
+                <div class="pagination" id="pagination" style="display: none;">
+                    <!-- 分页控件将在这里动态生成 -->
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <div class="empty-icon">📭</div>
+                    <h3>暂无生成记录</h3>
+                    <p>您还没有生成过任何题目</p>
+                    <p>点击上方"新建题目"开始您的第一次生成</p>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 统计概览 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">📊 统计概览</h3>
+                    <div class="stats-overview">
+                        <div class="overview-item">
+                            <div class="overview-number" id="overviewTotal">0</div>
+                            <div class="overview-label">总生成次数</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-number" id="overviewQuestions">0</div>
+                            <div class="overview-label">累计题目数</div>
+                        </div>
+                        <div class="overview-item">
+                            <div class="overview-number" id="overviewSuccess">0%</div>
+                            <div class="overview-label">成功率</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 快速筛选 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">⚡ 快速筛选</h3>
+                    <div class="quick-filters">
+                        <div class="filter-tag active" onclick="quickFilter('all')">
+                            🔍 全部记录
+                        </div>
+                        <div class="filter-tag" onclick="quickFilter('today')">
+                            📅 今日生成
+                        </div>
+                        <div class="filter-tag" onclick="quickFilter('week')">
+                            📆 本周生成
+                        </div>
+                        <div class="filter-tag" onclick="quickFilter('completed')">
+                            ✅ 已完成
+                        </div>
+                        <div class="filter-tag" onclick="quickFilter('processing')">
+                            ⏳ 处理中
+                        </div>
+                        <div class="filter-tag" onclick="quickFilter('failed')">
+                            ❌ 失败记录
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 热门学科 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">🔥 热门学科</h3>
+                    <div id="popularSubjects">
+                        <!-- 动态加载热门学科 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // API配置
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const authToken = localStorage.getItem('authToken') || 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU3MTQ2Mjg0fQ.1FiO0fqJiioUF1UGzpJF6Qu2qoqNS_Lo0KRvLPMuff8';
+
+        // 全局状态
+        let currentRecords = [];
+        let filteredRecords = [];
+        let currentView = 'list';
+        let currentPage = 1;
+        let itemsPerPage = 10;
+        let totalPages = 1;
+        let searchQuery = '';
+
+        // API请求工具函数
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                throw error;
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // 设置加载状态
+        function setLoading(loading) {
+            const spinner = document.getElementById('loadingSpinner');
+            const list = document.getElementById('historyList');
+            const grid = document.getElementById('historyGrid');
+            const empty = document.getElementById('emptyState');
+
+            if (loading) {
+                spinner.style.display = 'block';
+                list.style.display = 'none';
+                grid.style.display = 'none';
+                empty.style.display = 'none';
+            } else {
+                spinner.style.display = 'none';
+                if (currentView === 'list') {
+                    list.style.display = 'flex';
+                } else {
+                    grid.style.display = 'grid';
+                }
+            }
+        }
+
+        // 格式化时间
+        function formatTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diff = now - date;
+            const minutes = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+
+            if (minutes < 1) return '刚刚';
+            if (minutes < 60) return `${minutes}分钟前`;
+            if (hours < 24) return `${hours}小时前`;
+            if (days < 7) return `${days}天前`;
+            return date.toLocaleDateString();
+        }
+
+        // 获取状态类名
+        function getStatusClass(status) {
+            const classes = {
+                'completed': 'status-completed',
+                'processing': 'status-processing',
+                'pending': 'status-pending',
+                'failed': 'status-failed'
+            };
+            return classes[status] || 'status-completed';
+        }
+
+        // 获取状态文本
+        function getStatusText(status) {
+            const texts = {
+                'completed': '已完成',
+                'processing': '生成中',
+                'pending': '等待中',
+                'failed': '失败'
+            };
+            return texts[status] || status;
+        }
+
+        // 加载历史记录
+        async function loadHistory() {
+            try {
+                setLoading(true);
+                
+                // 调用API获取记录列表
+                const params = new URLSearchParams({
+                    page: currentPage,
+                    limit: itemsPerPage
+                });
+
+                // 实际应该调用后端API
+                // const data = await apiRequest(`/exercise/generations?${params}`);
+                
+                // 临时使用模拟数据
+                const data = await generateMockHistory();
+                
+                currentRecords = data.records;
+                filteredRecords = currentRecords;
+                totalPages = Math.ceil(data.pagination.total_count / itemsPerPage);
+                
+                await loadFilterOptions();
+                calculateOverviewStats();
+                updateHeaderStats();
+                renderHistory();
+                renderPagination();
+                
+                if (currentRecords.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+            } catch (error) {
+                showError('加载历史记录失败: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 生成模拟历史数据
+        async function generateMockHistory() {
+            const subjects = ['数学', '语文', '英语', '物理', '化学'];
+            const grades = ['三年级', '四年级', '五年级', '六年级', '初一', '初二'];
+            const statuses = ['completed', 'processing', 'pending', 'failed'];
+            
+            const records = [];
+            for (let i = 1; i <= 25; i++) {
+                const randomSubject = subjects[Math.floor(Math.random() * subjects.length)];
+                const randomGrade = grades[Math.floor(Math.random() * grades.length)];
+                const randomStatus = statuses[Math.floor(Math.random() * statuses.length)];
+                const questionCount = Math.floor(Math.random() * 20) + 5;
+                
+                records.push({
+                    id: i,
+                    title: `${randomSubject}${randomGrade}练习题 ${i}`,
+                    subject: randomSubject,
+                    grade: randomGrade,
+                    status: randomStatus,
+                    question_count: questionCount,
+                    total_questions: questionCount,
+                    difficulty_level: 'same',
+                    created_at: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString(),
+                    updated_at: new Date(Date.now() - Math.random() * 24 * 60 * 60 * 1000).toISOString(),
+                    progress_percent: randomStatus === 'completed' ? 100 : 
+                                    randomStatus === 'processing' ? Math.floor(Math.random() * 80) + 10 : 0,
+                    generation_time: randomStatus === 'completed' ? Math.random() * 30 + 5 : null,
+                    error_message: randomStatus === 'failed' ? '生成超时，请重试' : null
+                });
+            }
+
+            return {
+                records: records.slice((currentPage - 1) * itemsPerPage, currentPage * itemsPerPage),
+                pagination: {
+                    total_count: records.length,
+                    page: currentPage,
+                    limit: itemsPerPage,
+                    total_pages: Math.ceil(records.length / itemsPerPage)
+                }
+            };
+        }
+
+        // 加载筛选选项
+        async function loadFilterOptions() {
+            // 提取学科和年级选项
+            const subjects = [...new Set(currentRecords.map(r => r.subject))];
+            const grades = [...new Set(currentRecords.map(r => r.grade))];
+
+            // 更新学科筛选
+            const subjectFilter = document.getElementById('subjectFilter');
+            subjectFilter.innerHTML = '<option value="">全部学科</option>';
+            subjects.forEach(subject => {
+                const option = document.createElement('option');
+                option.value = subject;
+                option.textContent = subject;
+                subjectFilter.appendChild(option);
+            });
+
+            // 更新年级筛选
+            const gradeFilter = document.getElementById('gradeFilter');
+            gradeFilter.innerHTML = '<option value="">全部年级</option>';
+            grades.forEach(grade => {
+                const option = document.createElement('option');
+                option.value = grade;
+                option.textContent = grade;
+                gradeFilter.appendChild(option);
+            });
+        }
+
+        // 计算概览统计
+        function calculateOverviewStats() {
+            const total = currentRecords.length;
+            const completed = currentRecords.filter(r => r.status === 'completed').length;
+            const totalQuestions = currentRecords.reduce((sum, r) => sum + (r.total_questions || 0), 0);
+            const successRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+            document.getElementById('overviewTotal').textContent = total;
+            document.getElementById('overviewQuestions').textContent = totalQuestions;
+            document.getElementById('overviewSuccess').textContent = successRate + '%';
+
+            // 更新热门学科
+            const subjectCounts = {};
+            currentRecords.forEach(record => {
+                subjectCounts[record.subject] = (subjectCounts[record.subject] || 0) + 1;
+            });
+
+            const popularSubjects = Object.entries(subjectCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 5);
+
+            const container = document.getElementById('popularSubjects');
+            container.innerHTML = popularSubjects.map(([subject, count]) => `
+                <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #f1f5f9;">
+                    <span>${subject}</span>
+                    <span style="color: #667eea; font-weight: 600;">${count}次</span>
+                </div>
+            `).join('');
+        }
+
+        // 更新头部统计
+        function updateHeaderStats() {
+            const total = currentRecords.length;
+            const completed = currentRecords.filter(r => r.status === 'completed').length;
+            const totalQuestions = currentRecords.reduce((sum, r) => sum + (r.total_questions || 0), 0);
+            const lastRecord = currentRecords.length > 0 ? 
+                formatTime(Math.max(...currentRecords.map(r => new Date(r.created_at)))) : '-';
+
+            document.getElementById('totalRecords').textContent = total;
+            document.getElementById('completedRecords').textContent = completed;
+            document.getElementById('totalQuestions').textContent = totalQuestions;
+            document.getElementById('lastGenerated').textContent = lastRecord;
+        }
+
+        // 渲染历史记录
+        function renderHistory() {
+            if (currentView === 'list') {
+                renderListView();
+            } else {
+                renderGridView();
+            }
+        }
+
+        // 渲染列表视图
+        function renderListView() {
+            const container = document.getElementById('historyList');
+            
+            if (filteredRecords.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const html = filteredRecords.map(record => `
+                <div class="history-item" onclick="viewRecord('${record.id}')">
+                    <div class="item-header">
+                        <div class="item-info">
+                            <div class="item-title">${record.title}</div>
+                            <div class="item-subtitle">
+                                <span>📚 ${record.subject}</span>
+                                <span>🎓 ${record.grade}</span>
+                                <span>⏰ ${formatTime(record.created_at)}</span>
+                            </div>
+                        </div>
+                        <div class="status-badge ${getStatusClass(record.status)}">
+                            ${getStatusText(record.status)}
+                        </div>
+                    </div>
+
+                    ${record.status === 'processing' ? `
+                    <div class="progress-info show">
+                        <div class="progress-bar">
+                            <div class="progress-fill" style="width: ${record.progress_percent}%"></div>
+                        </div>
+                        <div class="progress-text">生成进度: ${record.progress_percent}%</div>
+                    </div>
+                    ` : ''}
+
+                    ${record.status === 'failed' && record.error_message ? `
+                    <div style="background: #fef2f2; border-left: 4px solid #f87171; padding: 12px; margin: 12px 0; font-size: 0.9rem; color: #dc2626;">
+                        ❌ ${record.error_message}
+                    </div>
+                    ` : ''}
+
+                    <div class="item-stats">
+                        <div class="stat-box">
+                            <div class="stat-number">${record.total_questions}</div>
+                            <div class="stat-label">题目数</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${record.difficulty_level}</div>
+                            <div class="stat-label">难度</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${record.generation_time ? record.generation_time.toFixed(1) + 's' : '-'}</div>
+                            <div class="stat-label">用时</div>
+                        </div>
+                    </div>
+
+                    <div class="item-actions" onclick="event.stopPropagation()">
+                        ${record.status === 'completed' ? `
+                        <button class="btn btn-success action-btn" onclick="previewRecord('${record.id}')">
+                            👁️ 预览
+                        </button>
+                        <button class="btn btn-primary action-btn" onclick="downloadRecord('${record.id}')">
+                            📥 下载
+                        </button>
+                        ` : ''}
+                        
+                        ${record.status === 'failed' ? `
+                        <button class="btn btn-primary action-btn" onclick="retryGeneration('${record.id}')">
+                            🔄 重试
+                        </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-secondary action-btn" onclick="duplicateRecord('${record.id}')">
+                            📋 复制
+                        </button>
+                        
+                        <button class="btn btn-secondary action-btn" onclick="deleteRecord('${record.id}')">
+                            🗑️ 删除
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 渲染网格视图
+        function renderGridView() {
+            const container = document.getElementById('historyGrid');
+            
+            if (filteredRecords.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const html = filteredRecords.map(record => `
+                <div class="history-item" onclick="viewRecord('${record.id}')">
+                    <div class="item-header">
+                        <div class="item-info">
+                            <div class="item-title">${record.title}</div>
+                            <div class="item-subtitle">
+                                <span>${record.subject} • ${record.grade}</span>
+                            </div>
+                        </div>
+                        <div class="status-badge ${getStatusClass(record.status)}">
+                            ${getStatusText(record.status)}
+                        </div>
+                    </div>
+
+                    <div class="item-stats">
+                        <div class="stat-box">
+                            <div class="stat-number">${record.total_questions}</div>
+                            <div class="stat-label">题目</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${record.difficulty_level}</div>
+                            <div class="stat-label">难度</div>
+                        </div>
+                        <div class="stat-box">
+                            <div class="stat-number">${formatTime(record.created_at)}</div>
+                            <div class="stat-label">时间</div>
+                        </div>
+                    </div>
+
+                    <div class="item-actions" onclick="event.stopPropagation()">
+                        ${record.status === 'completed' ? `
+                        <button class="btn btn-success action-btn" onclick="previewRecord('${record.id}')">
+                            预览
+                        </button>
+                        ` : ''}
+                        
+                        <button class="btn btn-secondary action-btn" onclick="duplicateRecord('${record.id}')">
+                            复制
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 渲染分页
+        function renderPagination() {
+            const container = document.getElementById('pagination');
+            
+            if (totalPages <= 1) {
+                container.style.display = 'none';
+                return;
+            }
+
+            container.style.display = 'flex';
+
+            let html = '';
+            
+            // 上一页
+            html += `<button class="page-btn" ${currentPage <= 1 ? 'disabled' : ''} onclick="changePage(${currentPage - 1})">‹</button>`;
+            
+            // 页码
+            for (let i = Math.max(1, currentPage - 2); i <= Math.min(totalPages, currentPage + 2); i++) {
+                html += `<button class="page-btn ${i === currentPage ? 'active' : ''}" onclick="changePage(${i})">${i}</button>`;
+            }
+            
+            // 下一页
+            html += `<button class="page-btn" ${currentPage >= totalPages ? 'disabled' : ''} onclick="changePage(${currentPage + 1})">›</button>`;
+
+            container.innerHTML = html;
+        }
+
+        // 切换视图
+        function switchView(view) {
+            currentView = view;
+            
+            document.getElementById('listViewBtn').classList.toggle('active', view === 'list');
+            document.getElementById('gridViewBtn').classList.toggle('active', view === 'grid');
+            
+            document.getElementById('historyList').style.display = view === 'list' ? 'flex' : 'none';
+            document.getElementById('historyGrid').style.display = view === 'grid' ? 'grid' : 'none';
+            
+            renderHistory();
+        }
+
+        // 应用筛选
+        function applyFilters() {
+            const statusFilter = document.getElementById('statusFilter').value;
+            const subjectFilter = document.getElementById('subjectFilter').value;
+            const gradeFilter = document.getElementById('gradeFilter').value;
+            const sortOrder = document.getElementById('sortOrder').value;
+
+            filteredRecords = currentRecords.filter(record => {
+                if (statusFilter && record.status !== statusFilter) return false;
+                if (subjectFilter && record.subject !== subjectFilter) return false;
+                if (gradeFilter && record.grade !== gradeFilter) return false;
+                if (searchQuery && !record.title.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                    !record.subject.toLowerCase().includes(searchQuery.toLowerCase()) &&
+                    !record.grade.toLowerCase().includes(searchQuery.toLowerCase())) return false;
+                return true;
+            });
+
+            // 排序
+            filteredRecords.sort((a, b) => {
+                switch (sortOrder) {
+                    case 'newest':
+                        return new Date(b.created_at) - new Date(a.created_at);
+                    case 'oldest':
+                        return new Date(a.created_at) - new Date(b.created_at);
+                    case 'name':
+                        return a.title.localeCompare(b.title);
+                    case 'questions':
+                        return (b.total_questions || 0) - (a.total_questions || 0);
+                    default:
+                        return 0;
+                }
+            });
+
+            renderHistory();
+
+            if (filteredRecords.length === 0 && currentRecords.length > 0) {
+                document.getElementById('emptyState').style.display = 'block';
+                document.getElementById('historyList').style.display = 'none';
+                document.getElementById('historyGrid').style.display = 'none';
+            } else {
+                document.getElementById('emptyState').style.display = 'none';
+            }
+        }
+
+        // 处理搜索
+        function handleSearch(event) {
+            if (event.key === 'Enter') {
+                searchQuery = event.target.value.trim();
+                applyFilters();
+            }
+        }
+
+        // 清除搜索
+        function clearSearch() {
+            document.getElementById('searchInput').value = '';
+            searchQuery = '';
+            applyFilters();
+        }
+
+        // 快速筛选
+        function quickFilter(type) {
+            // 移除所有active类
+            document.querySelectorAll('.filter-tag').forEach(tag => {
+                tag.classList.remove('active');
+            });
+            
+            // 添加active类到当前标签
+            event.target.classList.add('active');
+
+            // 重置筛选器
+            document.getElementById('statusFilter').value = '';
+            document.getElementById('subjectFilter').value = '';
+            document.getElementById('gradeFilter').value = '';
+
+            const now = new Date();
+            const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+            const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+
+            filteredRecords = currentRecords.filter(record => {
+                const recordDate = new Date(record.created_at);
+                
+                switch (type) {
+                    case 'all':
+                        return true;
+                    case 'today':
+                        return recordDate >= today;
+                    case 'week':
+                        return recordDate >= weekAgo;
+                    case 'completed':
+                        return record.status === 'completed';
+                    case 'processing':
+                        return record.status === 'processing';
+                    case 'failed':
+                        return record.status === 'failed';
+                    default:
+                        return true;
+                }
+            });
+
+            renderHistory();
+        }
+
+        // 换页
+        function changePage(page) {
+            if (page < 1 || page > totalPages) return;
+            
+            currentPage = page;
+            loadHistory();
+        }
+
+        // 查看记录详情
+        function viewRecord(recordId) {
+            const record = currentRecords.find(r => r.id == recordId);
+            if (!record) return;
+
+            if (record.status === 'completed') {
+                window.location.href = `exercise-preview.html?id=${record.id}`;
+            } else {
+                alert(`记录状态: ${getStatusText(record.status)}\n${record.error_message || '等待处理完成'}`);
+            }
+        }
+
+        // 预览记录
+        function previewRecord(recordId) {
+            window.location.href = `exercise-preview.html?id=${recordId}`;
+        }
+
+        // 下载记录
+        function downloadRecord(recordId) {
+            window.location.href = `exercise-downloads.html`;
+        }
+
+        // 重试生成
+        async function retryGeneration(recordId) {
+            if (!confirm('确定要重新生成这个题目吗？')) return;
+
+            try {
+                // 实际应该调用重试API
+                // await apiRequest(`/exercise/generation/${recordId}/retry`, { method: 'POST' });
+                
+                // 模拟重试
+                const record = currentRecords.find(r => r.id == recordId);
+                if (record) {
+                    record.status = 'processing';
+                    record.progress_percent = 0;
+                    record.error_message = null;
+                    renderHistory();
+                    
+                    alert('重新生成任务已提交，请稍后查看进度');
+                }
+            } catch (error) {
+                showError('重新生成失败: ' + error.message);
+            }
+        }
+
+        // 复制记录
+        function duplicateRecord(recordId) {
+            const record = currentRecords.find(r => r.id == recordId);
+            if (!record) return;
+
+            // 构建配置URL
+            const params = new URLSearchParams({
+                subject: record.subject,
+                grade: record.grade,
+                title: record.title + ' (副本)',
+                difficulty: record.difficulty_level,
+                count: record.total_questions
+            });
+
+            window.location.href = `exercise-config.html?${params}`;
+        }
+
+        // 删除记录
+        async function deleteRecord(recordId) {
+            if (!confirm('确定要删除这个生成记录吗？此操作不可恢复。')) return;
+
+            try {
+                // 实际应该调用删除API
+                // await apiRequest(`/exercise/generation/${recordId}`, { method: 'DELETE' });
+                
+                // 从列表中移除
+                currentRecords = currentRecords.filter(r => r.id != recordId);
+                filteredRecords = filteredRecords.filter(r => r.id != recordId);
+                
+                calculateOverviewStats();
+                updateHeaderStats();
+                renderHistory();
+                
+                if (currentRecords.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                }
+                
+            } catch (error) {
+                showError('删除失败: ' + error.message);
+            }
+        }
+
+        // 刷新历史记录
+        async function refreshHistory() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '刷新中...';
+
+            try {
+                await loadHistory();
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 刷新';
+            }
+        }
+
+        // 导航到配置页面
+        function goToConfig() {
+            window.location.href = 'exercise-config.html';
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            try {
+                await loadHistory();
+                console.log('历史记录页面初始化完成');
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+            }
+        });
+
+        // 定时更新处理中的记录
+        setInterval(() => {
+            const processingRecords = currentRecords.filter(r => r.status === 'processing');
+            if (processingRecords.length > 0) {
+                let needUpdate = false;
+                processingRecords.forEach(record => {
+                    if (record.progress_percent < 100) {
+                        record.progress_percent = Math.min(record.progress_percent + Math.random() * 5, 100);
+                        needUpdate = true;
+                    }
+                    if (record.progress_percent >= 100) {
+                        record.status = 'completed';
+                        record.generation_time = Math.random() * 30 + 5;
+                        needUpdate = true;
+                    }
+                });
+                
+                if (needUpdate) {
+                    renderHistory();
+                    calculateOverviewStats();
+                    updateHeaderStats();
+                }
+            }
+        }, 3000);
+    </script>
+</body>
+</html>

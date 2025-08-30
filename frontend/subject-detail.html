@@ -223,6 +223,106 @@
             color: #666;
         }
         
+        /* 智能练习区域 */
+        .smart-exercise-section {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+        }
+        
+        .exercise-options {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+        
+        .exercise-card {
+            display: flex;
+            align-items: center;
+            padding: 18px;
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            border-radius: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            color: white;
+            box-shadow: 0 4px 16px rgba(76, 175, 80, 0.2);
+        }
+        
+        .exercise-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.3);
+        }
+        
+        .card-icon {
+            font-size: 24px;
+            margin-right: 16px;
+        }
+        
+        .card-content {
+            flex: 1;
+        }
+        
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+        
+        .card-desc {
+            font-size: 13px;
+            opacity: 0.9;
+        }
+        
+        .card-arrow {
+            font-size: 18px;
+            font-weight: bold;
+        }
+        
+        .exercise-stats {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .stat-card {
+            display: flex;
+            align-items: center;
+            padding: 16px;
+            background: #f8f9fa;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        
+        .stat-card:hover {
+            background: #e9ecef;
+            border-color: #4CAF50;
+        }
+        
+        .stat-icon {
+            font-size: 20px;
+            margin-right: 12px;
+        }
+        
+        .stat-info {
+            flex: 1;
+        }
+        
+        .stat-value {
+            font-size: 18px;
+            font-weight: 600;
+            color: #4CAF50;
+            margin-bottom: 2px;
+        }
+        
+        .stat-text {
+            font-size: 12px;
+            color: #666;
+        }
+        
         /* 知识点分析 */
         .knowledge-points {
             background: #ffffff;
@@ -367,6 +467,39 @@
                 </div>
             </div>
             
+            <!-- 智能练习区域 -->
+            <div class="smart-exercise-section">
+                <div class="section-title">
+                    🤖 智能练习
+                </div>
+                <div class="exercise-options">
+                    <div class="exercise-card main-card" onclick="goToExerciseConfig()">
+                        <div class="card-icon">✨</div>
+                        <div class="card-content">
+                            <div class="card-title">智能出题</div>
+                            <div class="card-desc">AI为您生成个性化练习题</div>
+                        </div>
+                        <div class="card-arrow">→</div>
+                    </div>
+                    <div class="exercise-stats">
+                        <div class="stat-card" onclick="goToExerciseHistory()">
+                            <div class="stat-icon">📚</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="exerciseCount">0</div>
+                                <div class="stat-text">练习记录</div>
+                            </div>
+                        </div>
+                        <div class="stat-card" onclick="goToExerciseDownloads()">
+                            <div class="stat-icon">📥</div>
+                            <div class="stat-info">
+                                <div class="stat-value" id="downloadCount">0</div>
+                                <div class="stat-text">下载文件</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
             <!-- 知识点分析 -->
             <div class="knowledge-points">
                 <div class="section-title">
@@ -428,6 +561,9 @@
             
             // 加载学科详情数据
             loadSubjectDetail();
+            
+            // 加载智能练习统计数据
+            loadExerciseStats();
         }
 
         async function loadSubjectDetail() {
@@ -617,6 +753,64 @@
             setTimeout(() => {
                 document.body.removeChild(toast);
             }, duration);
+        }
+
+        // 智能练习相关函数
+        async function loadExerciseStats() {
+            try {
+                // 调用智能出题API获取统计数据
+                const exerciseToken = localStorage.getItem('authToken') || token;
+                
+                // 获取用户的练习记录数量
+                const response = await fetch(`${API_BASE}/exercise/generations?limit=100`, {
+                    headers: {
+                        'Authorization': `Bearer ${exerciseToken}`
+                    }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    const totalRecords = data.pagination ? data.pagination.total_count : 0;
+                    document.getElementById('exerciseCount').textContent = totalRecords;
+                    
+                    // 计算下载文件数量（已完成的记录）
+                    const completedRecords = data.records ? 
+                        data.records.filter(record => record.status === 'completed').length : 0;
+                    document.getElementById('downloadCount').textContent = completedRecords;
+                } else {
+                    // 如果API调用失败，使用模拟数据或0
+                    document.getElementById('exerciseCount').textContent = '0';
+                    document.getElementById('downloadCount').textContent = '0';
+                }
+            } catch (error) {
+                console.log('加载智能练习统计数据失败:', error);
+                // 静默失败，不影响主要功能
+                document.getElementById('exerciseCount').textContent = '0';
+                document.getElementById('downloadCount').textContent = '0';
+            }
+        }
+
+        function goToExerciseConfig() {
+            // 跳转到智能出题配置页面，并传递当前学科参数
+            const grade = localStorage.getItem('studentGrade') || '三年级';
+            const params = new URLSearchParams({
+                subject: subjectName,
+                grade: grade,
+                title: `${subjectName}智能练习题`,
+                description: `基于${subjectName}学习进度的个性化练习`
+            });
+            
+            window.location.href = `exercise-config.html?${params}`;
+        }
+
+        function goToExerciseHistory() {
+            // 跳转到练习历史页面
+            window.location.href = 'exercise-history.html';
+        }
+
+        function goToExerciseDownloads() {
+            // 跳转到下载管理页面
+            window.location.href = 'exercise-downloads.html';
         }
     </script>
     

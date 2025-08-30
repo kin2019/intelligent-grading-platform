@@ -468,6 +468,28 @@
             font-size: 12px;
             cursor: pointer;
             flex-shrink: 0;
+            transition: all 0.2s ease;
+        }
+        
+        .recommendation-action:hover {
+            background: #388E3C;
+            transform: scale(1.05);
+        }
+        
+        /* 智能出题推荐特殊样式 */
+        .exercise-recommendation {
+            background: linear-gradient(135deg, rgba(76, 175, 80, 0.1) 0%, rgba(156, 39, 176, 0.1) 100%);
+            border-left: 4px solid #4CAF50;
+        }
+        
+        .exercise-recommendation .recommendation-action {
+            background: linear-gradient(135deg, #4CAF50 0%, #388E3C 100%);
+            font-weight: 500;
+        }
+        
+        .exercise-recommendation .recommendation-action:hover {
+            background: linear-gradient(135deg, #388E3C 0%, #2E7D32 100%);
+            box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
         }
         
         /* 空状态 */
@@ -1073,13 +1095,31 @@
         function updateRecommendations(recommendations) {
             const recommendationsContainer = document.getElementById('recommendations');
             
-            const recommendationItems = recommendations.map((rec, index) => `
-                <div class="recommendation-item">
-                    <div class="recommendation-icon">💡</div>
-                    <div class="recommendation-text">${rec}</div>
-                    <button class="recommendation-action" onclick="applyRecommendation(${index})">应用</button>
-                </div>
-            `).join('');
+            // 生成基于学习进度的智能出题推荐
+            const exerciseRecommendations = generateExerciseRecommendations();
+            
+            // 合并原有推荐和智能出题推荐
+            const allRecommendations = [...exerciseRecommendations, ...recommendations];
+            
+            const recommendationItems = allRecommendations.map((rec, index) => {
+                if (rec.type === 'exercise') {
+                    return `
+                        <div class="recommendation-item exercise-recommendation">
+                            <div class="recommendation-icon">✨</div>
+                            <div class="recommendation-text">${rec.text}</div>
+                            <button class="recommendation-action" onclick="goToExerciseConfig('${rec.subject}', '${rec.difficulty}')">${rec.actionText}</button>
+                        </div>
+                    `;
+                } else {
+                    return `
+                        <div class="recommendation-item">
+                            <div class="recommendation-icon">💡</div>
+                            <div class="recommendation-text">${rec}</div>
+                            <button class="recommendation-action" onclick="applyRecommendation(${index})">应用</button>
+                        </div>
+                    `;
+                }
+            }).join('');
             
             recommendationsContainer.innerHTML = `
                 <div class="section-title">🤖 AI智能推荐</div>
@@ -1236,6 +1276,70 @@
         function viewSubjectDetail(subject) {
             // 跳转到学科详情页面，传递学科参数
             window.location.href = `/frontend/subject-detail.html?subject=${encodeURIComponent(subject)}`;
+        }
+
+        function generateExerciseRecommendations() {
+            const exerciseRecommendations = [];
+            
+            if (!currentPlanData || !currentPlanData.subjects) {
+                return exerciseRecommendations;
+            }
+            
+            // 基于学科进度生成推荐
+            currentPlanData.subjects.forEach(subject => {
+                const progress = subject.progress || 0;
+                const completed = subject.completed || 0;
+                const total = subject.total || 0;
+                
+                if (progress < 0.8 && total > 0) {
+                    // 进度不足80%的学科，推荐基础练习
+                    exerciseRecommendations.push({
+                        type: 'exercise',
+                        subject: subject.subject,
+                        difficulty: 'easy',
+                        text: `${subject.subject}掌握度${Math.round(progress * 100)}%，建议进行基础练习巩固`,
+                        actionText: '生成练习'
+                    });
+                } else if (progress >= 0.8 && completed > 0) {
+                    // 进度良好的学科，推荐提升练习
+                    exerciseRecommendations.push({
+                        type: 'exercise',
+                        subject: subject.subject,
+                        difficulty: 'medium',
+                        text: `${subject.subject}基础扎实，可尝试进阶练习提升能力`,
+                        actionText: '提升练习'
+                    });
+                }
+            });
+            
+            // 如果没有特定学科推荐，提供通用推荐
+            if (exerciseRecommendations.length === 0 && currentPlanData.subjects.length > 0) {
+                const randomSubject = currentPlanData.subjects[0];
+                exerciseRecommendations.push({
+                    type: 'exercise',
+                    subject: randomSubject.subject,
+                    difficulty: 'same',
+                    text: `开始智能练习，AI将根据您的学习情况生成个性化题目`,
+                    actionText: '立即开始'
+                });
+            }
+            
+            // 限制推荐数量，避免过多
+            return exerciseRecommendations.slice(0, 2);
+        }
+
+        function goToExerciseConfig(subject, difficulty) {
+            // 跳转到智能出题配置页面，传递推荐参数
+            const grade = localStorage.getItem('studentGrade') || '三年级';
+            const params = new URLSearchParams({
+                subject: subject,
+                grade: grade,
+                difficulty_level: difficulty,
+                title: `${subject}智能练习题`,
+                description: `基于学习计划推荐的${subject}练习`
+            });
+            
+            window.location.href = `exercise-config.html?${params}`;
         }
 
         function applyRecommendation(index) {

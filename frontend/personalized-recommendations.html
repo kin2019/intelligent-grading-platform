@@ -1,0 +1,1091 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>个性化题目推荐 - 智能教育平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .recommendation-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .recommendation-card {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .recommendation-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .card-icon {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin-right: 15px;
+            color: white;
+        }
+
+        .card-title {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .weak-points-list {
+            list-style: none;
+            margin-bottom: 20px;
+        }
+
+        .weak-point-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .weak-point-item:last-child {
+            border-bottom: none;
+        }
+
+        .weak-point-subject {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            margin-right: 12px;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .weak-point-details {
+            flex: 1;
+        }
+
+        .weak-point-title {
+            font-weight: 500;
+            margin-bottom: 2px;
+        }
+
+        .weak-point-stats {
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .error-rate {
+            color: #d32f2f;
+            font-weight: 600;
+        }
+
+        .progress-recommendations {
+            margin-bottom: 25px;
+        }
+
+        .progress-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 15px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            border-left: 4px solid #4caf50;
+        }
+
+        .progress-icon {
+            width: 40px;
+            height: 40px;
+            background: #4caf50;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 15px;
+            color: white;
+            font-size: 18px;
+        }
+
+        .progress-content {
+            flex: 1;
+        }
+
+        .progress-title {
+            font-weight: 500;
+            margin-bottom: 4px;
+        }
+
+        .progress-description {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .difficulty-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .difficulty-easy {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .difficulty-medium {
+            background: #fff3e0;
+            color: #f57c00;
+        }
+
+        .difficulty-hard {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .practice-suggestions {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .suggestion-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 25px;
+        }
+
+        .suggestion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+        }
+
+        .suggestion-card {
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+            position: relative;
+        }
+
+        .suggestion-card:hover {
+            border-color: #667eea;
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.15);
+        }
+
+        .suggestion-card.recommended {
+            border-color: #4caf50;
+            background: linear-gradient(135deg, #f8fff8 0%, #f1f8f1 100%);
+        }
+
+        .suggestion-card.recommended::after {
+            content: '推荐';
+            position: absolute;
+            top: -1px;
+            right: 12px;
+            background: #4caf50;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 0 0 8px 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .suggestion-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #2d3748;
+        }
+
+        .suggestion-description {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 15px;
+            line-height: 1.5;
+        }
+
+        .suggestion-stats {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .suggestion-count {
+            font-size: 0.85rem;
+            color: #667eea;
+            font-weight: 500;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #f7fafc;
+            color: #4a5568;
+            border: 1px solid #e2e8f0;
+        }
+
+        .btn-secondary:hover {
+            background: #edf2f7;
+            border-color: #cbd5e0;
+        }
+
+        .analytics-dashboard {
+            background: white;
+            border-radius: 16px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+        }
+
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 25px;
+            margin-top: 25px;
+        }
+
+        .analytics-card {
+            background: #f8f9fa;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .analytics-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #667eea;
+            margin-bottom: 8px;
+        }
+
+        .analytics-label {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .analytics-trend {
+            font-size: 0.8rem;
+            padding: 2px 8px;
+            border-radius: 12px;
+        }
+
+        .trend-up {
+            background: #e8f5e8;
+            color: #2e7d32;
+        }
+
+        .trend-down {
+            background: #ffebee;
+            color: #d32f2f;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: white;
+        }
+
+        .loading-spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255,255,255,0.3);
+            border-top: 4px solid white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-bottom: 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            background: white;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+
+        .empty-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-text {
+            font-size: 18px;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .empty-hint {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .empty-action {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .recommendation-grid {
+                grid-template-columns: 1fr;
+                gap: 20px;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+
+            .recommendation-card, .practice-suggestions, .analytics-dashboard {
+                padding: 20px;
+            }
+
+            .suggestion-grid {
+                grid-template-columns: 1fr;
+                gap: 15px;
+            }
+
+            .analytics-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎯 个性化题目推荐</h1>
+            <p>基于您的错题记录和学习进度，AI为您量身定制练习方案</p>
+        </div>
+
+        <!-- 加载状态 -->
+        <div class="loading" id="loadingState">
+            <div class="loading-spinner"></div>
+            <div>正在分析您的学习数据...</div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div id="mainContent" style="display: none;">
+            <!-- 学习分析概览 -->
+            <div class="analytics-dashboard">
+                <div class="card-header">
+                    <div class="card-icon">📊</div>
+                    <div class="card-title">学习分析概览</div>
+                </div>
+                <div class="analytics-grid" id="analyticsGrid">
+                    <!-- 动态生成分析卡片 -->
+                </div>
+            </div>
+
+            <!-- 薄弱知识点和学习进度 -->
+            <div class="recommendation-grid">
+                <!-- 薄弱知识点分析 -->
+                <div class="recommendation-card">
+                    <div class="card-header">
+                        <div class="card-icon">⚠️</div>
+                        <div class="card-title">薄弱知识点分析</div>
+                    </div>
+                    <ul class="weak-points-list" id="weakPointsList">
+                        <!-- 动态生成薄弱知识点 -->
+                    </ul>
+                </div>
+
+                <!-- 学习进度推荐 -->
+                <div class="recommendation-card">
+                    <div class="card-header">
+                        <div class="card-icon">📈</div>
+                        <div class="card-title">学习进度建议</div>
+                    </div>
+                    <div class="progress-recommendations" id="progressRecommendations">
+                        <!-- 动态生成进度建议 -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- 智能练习推荐 -->
+            <div class="practice-suggestions">
+                <div class="suggestion-header">
+                    <div class="card-icon">💡</div>
+                    <div class="card-title">智能练习推荐</div>
+                </div>
+                <div class="suggestion-grid" id="practiceGrid">
+                    <!-- 动态生成练习建议 -->
+                </div>
+            </div>
+        </div>
+
+        <!-- 空状态 -->
+        <div class="empty-state" id="emptyState" style="display: none;">
+            <div class="empty-icon">📚</div>
+            <div class="empty-text">暂无学习数据</div>
+            <div class="empty-hint">完成一些练习和错题记录后，我们将为您生成个性化推荐</div>
+            <button class="empty-action" onclick="goToPractice()">开始练习</button>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:8000/api/v1';
+        let token = localStorage.getItem('authToken') || localStorage.getItem('token');
+        let userData = {};
+        let errorData = [];
+        let exerciseHistory = [];
+
+        // 学科映射
+        const subjectMapping = {
+            'math': '数学',
+            'chinese': '语文', 
+            'english': '英语',
+            'physics': '物理',
+            'chemistry': '化学',
+            'biology': '生物'
+        };
+
+        // 错误类型映射
+        const errorTypeMapping = {
+            '计算错误': { icon: '🔢', color: '#ff6b6b' },
+            '语法错误': { icon: '📝', color: '#4ecdc4' },
+            '知识错误': { icon: '💡', color: '#45b7d1' },
+            '运算错误': { icon: '🧮', color: '#96ceb4' },
+            '基础概念': { icon: '📐', color: '#feca57' },
+            '词汇错误': { icon: '📖', color: '#ff9ff3' },
+            '翻译错误': { icon: '🌐', color: '#54a0ff' }
+        };
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            initPage();
+        });
+
+        async function initPage() {
+            if (!token) {
+                showError('请先登录');
+                setTimeout(() => {
+                    window.location.href = '/frontend/login.html';
+                }, 2000);
+                return;
+            }
+
+            try {
+                await loadUserData();
+                await loadErrorData();
+                await loadExerciseHistory();
+                
+                if (errorData.length === 0 && exerciseHistory.length === 0) {
+                    showEmptyState();
+                } else {
+                    generateRecommendations();
+                }
+            } catch (error) {
+                console.error('初始化失败:', error);
+                showError('数据加载失败，请刷新页面重试');
+            } finally {
+                hideLoading();
+            }
+        }
+
+        // 加载用户数据
+        async function loadUserData() {
+            try {
+                const response = await fetch(`${API_BASE}/auth/me`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    userData = await response.json();
+                }
+            } catch (error) {
+                console.error('加载用户数据失败:', error);
+            }
+        }
+
+        // 加载错题数据
+        async function loadErrorData() {
+            try {
+                const response = await fetch(`${API_BASE}/student/error-book`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    errorData = data.recent_errors || [];
+                }
+            } catch (error) {
+                console.error('加载错题数据失败:', error);
+            }
+        }
+
+        // 加载练习历史
+        async function loadExerciseHistory() {
+            try {
+                const response = await fetch(`${API_BASE}/exercise/history`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                if (response.ok) {
+                    const data = await response.json();
+                    exerciseHistory = data.exercises || [];
+                }
+            } catch (error) {
+                console.error('加载练习历史失败:', error);
+            }
+        }
+
+        // 生成个性化推荐
+        function generateRecommendations() {
+            const analysis = analyzeUserData();
+            
+            renderAnalyticsDashboard(analysis);
+            renderWeakPoints(analysis.weakPoints);
+            renderProgressRecommendations(analysis.progressLevel);
+            renderPracticeRecommendations(analysis);
+            
+            showMainContent();
+        }
+
+        // 分析用户数据
+        function analyzeUserData() {
+            const analysis = {
+                totalErrors: errorData.length,
+                totalExercises: exerciseHistory.length,
+                weakPoints: [],
+                subjectStats: {},
+                errorTypeStats: {},
+                progressLevel: 'beginner',
+                recentActivity: [],
+                recommendedDifficulty: 'medium',
+                focusAreas: []
+            };
+
+            // 分析错题数据
+            if (errorData.length > 0) {
+                // 按学科统计错误
+                errorData.forEach(error => {
+                    const subject = getSubjectDisplayName(error.subject);
+                    if (!analysis.subjectStats[subject]) {
+                        analysis.subjectStats[subject] = {
+                            total: 0,
+                            reviewed: 0,
+                            unreviewed: 0,
+                            errorTypes: {}
+                        };
+                    }
+                    
+                    analysis.subjectStats[subject].total++;
+                    if (error.is_reviewed) {
+                        analysis.subjectStats[subject].reviewed++;
+                    } else {
+                        analysis.subjectStats[subject].unreviewed++;
+                    }
+
+                    // 统计错误类型
+                    const errorType = error.error_type || '未分类';
+                    if (!analysis.subjectStats[subject].errorTypes[errorType]) {
+                        analysis.subjectStats[subject].errorTypes[errorType] = 0;
+                    }
+                    analysis.subjectStats[subject].errorTypes[errorType]++;
+                    
+                    if (!analysis.errorTypeStats[errorType]) {
+                        analysis.errorTypeStats[errorType] = 0;
+                    }
+                    analysis.errorTypeStats[errorType]++;
+                });
+
+                // 识别薄弱知识点
+                analysis.weakPoints = identifyWeakPoints(analysis.subjectStats);
+            }
+
+            // 分析练习历史
+            if (exerciseHistory.length > 0) {
+                analysis.progressLevel = determineProgressLevel(exerciseHistory);
+                analysis.recommendedDifficulty = getRecommendedDifficulty(analysis);
+            }
+
+            // 生成重点关注领域
+            analysis.focusAreas = generateFocusAreas(analysis);
+
+            return analysis;
+        }
+
+        // 识别薄弱知识点
+        function identifyWeakPoints(subjectStats) {
+            const weakPoints = [];
+            
+            Object.entries(subjectStats).forEach(([subject, stats]) => {
+                if (stats.total >= 2) { // 至少有2个错误才认为是薄弱点
+                    const errorRate = (stats.unreviewed / stats.total * 100).toFixed(1);
+                    const mainErrorTypes = Object.entries(stats.errorTypes)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 2)
+                        .map(([type, count]) => ({ type, count }));
+
+                    weakPoints.push({
+                        subject,
+                        totalErrors: stats.total,
+                        unreviewedErrors: stats.unreviewed,
+                        errorRate: parseFloat(errorRate),
+                        mainErrorTypes,
+                        priority: stats.unreviewed > 5 ? 'high' : stats.unreviewed > 2 ? 'medium' : 'low'
+                    });
+                }
+            });
+
+            return weakPoints.sort((a, b) => b.errorRate - a.errorRate);
+        }
+
+        // 确定学习进度水平
+        function determineProgressLevel(history) {
+            if (history.length < 5) return 'beginner';
+            if (history.length < 15) return 'intermediate';
+            return 'advanced';
+        }
+
+        // 获取推荐难度
+        function getRecommendedDifficulty(analysis) {
+            const avgErrorRate = analysis.weakPoints.length > 0 
+                ? analysis.weakPoints.reduce((sum, wp) => sum + wp.errorRate, 0) / analysis.weakPoints.length 
+                : 0;
+
+            if (avgErrorRate > 70) return 'easy';
+            if (avgErrorRate > 40) return 'medium';
+            return 'hard';
+        }
+
+        // 生成重点关注领域
+        function generateFocusAreas(analysis) {
+            const areas = [];
+            
+            // 基于错误类型推荐
+            Object.entries(analysis.errorTypeStats)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .forEach(([errorType, count]) => {
+                    if (count >= 2) {
+                        areas.push({
+                            type: 'error-type',
+                            name: errorType,
+                            count,
+                            priority: count > 5 ? 'high' : count > 2 ? 'medium' : 'low'
+                        });
+                    }
+                });
+
+            // 基于学科推荐
+            analysis.weakPoints.slice(0, 2).forEach(wp => {
+                areas.push({
+                    type: 'subject',
+                    name: wp.subject,
+                    count: wp.unreviewedErrors,
+                    priority: wp.priority
+                });
+            });
+
+            return areas;
+        }
+
+        // 渲染分析概览
+        function renderAnalyticsDashboard(analysis) {
+            const grid = document.getElementById('analyticsGrid');
+            
+            const cards = [
+                {
+                    value: analysis.totalErrors,
+                    label: '总错题数量',
+                    trend: analysis.totalErrors > 10 ? 'down' : 'up',
+                    trendText: analysis.totalErrors > 10 ? '需要关注' : '表现良好'
+                },
+                {
+                    value: analysis.totalExercises,
+                    label: '完成练习',
+                    trend: 'up',
+                    trendText: '持续进步'
+                },
+                {
+                    value: analysis.weakPoints.length,
+                    label: '薄弱知识点',
+                    trend: analysis.weakPoints.length > 3 ? 'down' : 'up',
+                    trendText: analysis.weakPoints.length > 3 ? '需要加强' : '掌握良好'
+                },
+                {
+                    value: Object.keys(analysis.subjectStats).length,
+                    label: '涉及学科',
+                    trend: 'up',
+                    trendText: '全面发展'
+                }
+            ];
+
+            grid.innerHTML = cards.map(card => `
+                <div class="analytics-card">
+                    <div class="analytics-value">${card.value}</div>
+                    <div class="analytics-label">${card.label}</div>
+                    <div class="analytics-trend trend-${card.trend}">${card.trendText}</div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染薄弱知识点
+        function renderWeakPoints(weakPoints) {
+            const list = document.getElementById('weakPointsList');
+            
+            if (weakPoints.length === 0) {
+                list.innerHTML = `
+                    <div style="text-align: center; padding: 20px; color: #4caf50;">
+                        🎉 暂无明显薄弱知识点，继续保持！
+                    </div>
+                `;
+                return;
+            }
+
+            list.innerHTML = weakPoints.slice(0, 5).map(wp => `
+                <li class="weak-point-item">
+                    <div class="weak-point-subject">${wp.subject}</div>
+                    <div class="weak-point-details">
+                        <div class="weak-point-title">
+                            ${wp.mainErrorTypes[0]?.type || '综合错误'} 
+                            <span class="difficulty-badge difficulty-${wp.priority === 'high' ? 'hard' : wp.priority === 'medium' ? 'medium' : 'easy'}">
+                                ${wp.priority === 'high' ? '急需改进' : wp.priority === 'medium' ? '需要关注' : '轻微薄弱'}
+                            </span>
+                        </div>
+                        <div class="weak-point-stats">
+                            错误率 <span class="error-rate">${wp.errorRate}%</span> | 
+                            ${wp.unreviewedErrors} 道未复习 | 
+                            ${wp.totalErrors} 道错题
+                        </div>
+                    </div>
+                </li>
+            `).join('');
+        }
+
+        // 渲染学习进度建议
+        function renderProgressRecommendations(progressLevel) {
+            const container = document.getElementById('progressRecommendations');
+            
+            const recommendations = {
+                'beginner': [
+                    {
+                        icon: '🌱',
+                        title: '基础巩固阶段',
+                        description: '专注于基础概念的理解和记忆，建议每天练习15-30分钟'
+                    },
+                    {
+                        icon: '📚',
+                        title: '循序渐进学习',
+                        description: '从简单题目开始，逐步提升难度，不要急于求成'
+                    }
+                ],
+                'intermediate': [
+                    {
+                        icon: '⚡',
+                        title: '技能提升阶段',
+                        description: '可以尝试中等难度题目，加强解题技巧的训练'
+                    },
+                    {
+                        icon: '🎯',
+                        title: '专项突破',
+                        description: '针对薄弱环节进行专项练习，提高解题准确率'
+                    }
+                ],
+                'advanced': [
+                    {
+                        icon: '🚀',
+                        title: '挑战提升阶段',
+                        description: '可以挑战高难度题目，培养综合分析能力'
+                    },
+                    {
+                        icon: '🧠',
+                        title: '创新思维',
+                        description: '尝试一题多解，培养发散思维和创新能力'
+                    }
+                ]
+            };
+
+            const items = recommendations[progressLevel] || recommendations['beginner'];
+            
+            container.innerHTML = items.map(item => `
+                <div class="progress-item">
+                    <div class="progress-icon">${item.icon}</div>
+                    <div class="progress-content">
+                        <div class="progress-title">${item.title}</div>
+                        <div class="progress-description">${item.description}</div>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 渲染练习推荐
+        function renderPracticeRecommendations(analysis) {
+            const grid = document.getElementById('practiceGrid');
+            
+            const recommendations = generatePracticeRecommendations(analysis);
+            
+            grid.innerHTML = recommendations.map((rec, index) => `
+                <div class="suggestion-card ${index === 0 ? 'recommended' : ''}" onclick="selectRecommendation(${index})">
+                    <div class="suggestion-title">${rec.title}</div>
+                    <div class="suggestion-description">${rec.description}</div>
+                    <div class="suggestion-stats">
+                        <span class="suggestion-count">${rec.questionCount} 道题目</span>
+                        <span class="difficulty-badge difficulty-${rec.difficulty}">
+                            ${rec.difficulty === 'easy' ? '简单' : rec.difficulty === 'medium' ? '中等' : '困难'}
+                        </span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="startPractice(${index}); event.stopPropagation();">
+                            🚀 开始练习
+                        </button>
+                        <button class="btn btn-secondary" onclick="viewDetails(${index}); event.stopPropagation();">
+                            📋 查看详情
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        // 生成练习推荐
+        function generatePracticeRecommendations(analysis) {
+            const recommendations = [];
+            
+            // 基于薄弱知识点的推荐
+            if (analysis.weakPoints.length > 0) {
+                const topWeakPoint = analysis.weakPoints[0];
+                recommendations.push({
+                    title: `${topWeakPoint.subject}专项强化`,
+                    description: `针对您在${topWeakPoint.subject}中的薄弱环节进行专项练习，重点解决${topWeakPoint.mainErrorTypes[0]?.type || '常见问题'}`,
+                    questionCount: 10,
+                    difficulty: analysis.recommendedDifficulty,
+                    subject: topWeakPoint.subject,
+                    type: 'weakness-focus',
+                    config: {
+                        subject: Object.keys(subjectMapping).find(key => subjectMapping[key] === topWeakPoint.subject) || 'math',
+                        difficulty_level: analysis.recommendedDifficulty,
+                        question_count: 10,
+                        focus_area: topWeakPoint.mainErrorTypes[0]?.type
+                    }
+                });
+            }
+
+            // 综合复习推荐
+            if (Object.keys(analysis.subjectStats).length > 1) {
+                recommendations.push({
+                    title: '综合知识复习',
+                    description: '涵盖多个学科的综合练习，帮助您巩固各科知识点',
+                    questionCount: 15,
+                    difficulty: 'medium',
+                    type: 'comprehensive-review',
+                    config: {
+                        question_count: 15,
+                        difficulty_level: 'medium',
+                        mixed_subjects: true
+                    }
+                });
+            }
+
+            // 错误类型专项
+            const topErrorType = Object.entries(analysis.errorTypeStats)
+                .sort((a, b) => b[1] - a[1])[0];
+            
+            if (topErrorType && topErrorType[1] >= 3) {
+                recommendations.push({
+                    title: `${topErrorType[0]}专项训练`,
+                    description: `专门针对${topErrorType[0]}进行强化训练，提高此类题目的解题准确率`,
+                    questionCount: 12,
+                    difficulty: analysis.recommendedDifficulty,
+                    type: 'error-type-focus',
+                    config: {
+                        error_type: topErrorType[0],
+                        question_count: 12,
+                        difficulty_level: analysis.recommendedDifficulty
+                    }
+                });
+            }
+
+            // 每日基础练习
+            recommendations.push({
+                title: '每日基础练习',
+                description: '适合日常练习的基础题目，保持学习状态和手感',
+                questionCount: 8,
+                difficulty: 'easy',
+                type: 'daily-practice',
+                config: {
+                    question_count: 8,
+                    difficulty_level: 'easy',
+                    mixed_subjects: true
+                }
+            });
+
+            return recommendations.slice(0, 4);
+        }
+
+        // 选择推荐
+        function selectRecommendation(index) {
+            document.querySelectorAll('.suggestion-card').forEach((card, i) => {
+                card.classList.toggle('recommended', i === index);
+            });
+        }
+
+        // 开始练习
+        function startPractice(index) {
+            const recommendations = generatePracticeRecommendations(analyzeUserData());
+            const recommendation = recommendations[index];
+            
+            // 存储推荐配置
+            sessionStorage.setItem('recommendedConfig', JSON.stringify(recommendation.config));
+            sessionStorage.setItem('recommendationType', recommendation.type);
+            sessionStorage.setItem('recommendationTitle', recommendation.title);
+            
+            // 跳转到练习配置页面
+            window.location.href = '/frontend/exercise-config.html?from=recommendation';
+        }
+
+        // 查看详情
+        function viewDetails(index) {
+            const recommendations = generatePracticeRecommendations(analyzeUserData());
+            const recommendation = recommendations[index];
+            
+            alert(`练习详情：\n\n标题：${recommendation.title}\n描述：${recommendation.description}\n题目数量：${recommendation.questionCount}\n难度：${recommendation.difficulty}\n类型：${recommendation.type}`);
+        }
+
+        // 获取学科显示名称
+        function getSubjectDisplayName(rawSubject) {
+            if (!rawSubject) return '未知学科';
+            
+            if (['数学', '语文', '英语', '物理', '化学', '生物'].includes(rawSubject)) {
+                return rawSubject;
+            }
+            
+            return subjectMapping[rawSubject] || rawSubject;
+        }
+
+        // 显示主要内容
+        function showMainContent() {
+            document.getElementById('mainContent').style.display = 'block';
+        }
+
+        // 显示空状态
+        function showEmptyState() {
+            document.getElementById('emptyState').style.display = 'block';
+        }
+
+        // 隐藏加载状态
+        function hideLoading() {
+            document.getElementById('loadingState').style.display = 'none';
+        }
+
+        // 显示错误
+        function showError(message) {
+            hideLoading();
+            alert('错误：' + message);
+        }
+
+        // 去练习
+        function goToPractice() {
+            window.location.href = '/frontend/exercise-config.html';
+        }
+    </script>
+</body>
+</html>

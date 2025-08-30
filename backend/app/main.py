@@ -93,6 +93,7 @@ if __name__ == "__main__":
     
     logger.info(f"启动服务器，环境: {settings.ENVIRONMENT}")
     logger.info(f"服务地址: http://localhost:{settings.PORT}")
+    # Force reload for endpoint registration
     
     uvicorn.run(
         "app.main:app",

@@ -45,6 +45,7 @@ class User(Base):
     
     # 关联关系
     study_plans = relationship("StudyPlan", back_populates="user", cascade="all, delete-orphan")
+    exercise_generations = relationship("ExerciseGeneration", back_populates="user", cascade="all, delete-orphan")
     
     def __repr__(self):
         return f"<User(id={self.id}, nickname={self.nickname}, role={self.role})>"

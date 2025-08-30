@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from app.api.v1 import auth, homework, student, image, parent, teacher, payment, user, bind, support
+from app.api.v1 import auth, homework, student, image, parent, teacher, payment, user, bind, support, exercise
 
 api_router = APIRouter()
 
@@ -24,7 +24,7 @@ api_router.include_router(
     tags=["学生端"]
 )
 
-# 家长端相关路由
+# 家长端相关路由 
 api_router.include_router(
     parent.router,
     prefix="/parent",
@@ -71,6 +71,13 @@ api_router.include_router(
     support.router,
     prefix="/support",
     tags=["客服支持"]
+)
+
+# 智能出题相关路由
+api_router.include_router(
+    exercise.router,
+    prefix="/exercise",
+    tags=["智能出题"]
 )
 
 # 临时移除问题模块

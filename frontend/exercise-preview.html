@@ -1,0 +1,1573 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>题目预览 - 智能教育平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            border-radius: 12px;
+            padding: 25px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            margin-bottom: 25px;
+        }
+
+        .header-content {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-info h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+            color: #2d3748;
+        }
+
+        .header-meta {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            font-size: 0.9rem;
+            color: #718096;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .status-completed {
+            background: #c6f6d5;
+            color: #2d7738;
+        }
+
+        .status-pending {
+            background: #fed7d7;
+            color: #c53030;
+        }
+
+        .control-panel {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #4a5568;
+            border: 2px solid #e2e8f0;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .content-area {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 25px;
+        }
+
+        .exercises-panel {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 25px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .panel-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #2d3748;
+        }
+
+        .toggle-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .toggle-btn {
+            padding: 6px 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 6px;
+            background: white;
+            color: #718096;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.8rem;
+        }
+
+        .toggle-btn.active {
+            background: #4f46e5;
+            border-color: #4f46e5;
+            color: white;
+        }
+
+        .exercise-item {
+            border: 2px solid #f1f5f9;
+            border-radius: 12px;
+            padding: 25px;
+            margin-bottom: 20px;
+            transition: all 0.3s ease;
+        }
+
+        .exercise-item:hover {
+            border-color: #cbd5e0;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+
+        .exercise-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+        }
+
+        .exercise-number {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .exercise-type {
+            color: #718096;
+            font-size: 0.8rem;
+            padding: 4px 8px;
+            background: #f7fafc;
+            border-radius: 4px;
+        }
+
+        .exercise-question {
+            font-size: 1.1rem;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .exercise-answer {
+            background: #f0fff4;
+            border: 2px solid #9ae6b4;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 10px 0;
+            display: none;
+        }
+
+        .exercise-answer.show {
+            display: block;
+        }
+
+        .answer-label {
+            font-size: 0.9rem;
+            color: #2d7738;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .answer-content {
+            font-size: 1rem;
+            color: #2d3748;
+        }
+
+        .exercise-analysis {
+            background: #f7fafc;
+            border-left: 4px solid #4f46e5;
+            padding: 15px;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .exercise-analysis.show {
+            display: block;
+        }
+
+        .analysis-label {
+            font-size: 0.9rem;
+            color: #4f46e5;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .analysis-content {
+            font-size: 0.95rem;
+            color: #4a5568;
+            line-height: 1.5;
+        }
+
+        .sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .sidebar-card {
+            background: white;
+            border-radius: 12px;
+            padding: 20px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .sidebar-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #2d3748;
+        }
+
+        .action-grid {
+            display: grid;
+            gap: 10px;
+        }
+
+        .action-btn {
+            justify-content: center;
+            padding: 12px;
+            font-size: 0.9rem;
+        }
+
+        .progress-info {
+            background: linear-gradient(135deg, #ebf4ff, #dbeafe);
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .progress-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+            font-size: 0.9rem;
+        }
+
+        .progress-row:last-child {
+            margin-bottom: 0;
+            font-weight: 600;
+            color: #1e40af;
+        }
+
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 40px;
+            color: #4f46e5;
+        }
+
+        .loading-spinner::after {
+            content: '';
+            display: inline-block;
+            width: 30px;
+            height: 30px;
+            border: 3px solid #e5e7eb;
+            border-top: 3px solid #4f46e5;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-top: 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error-message {
+            background: #fef2f2;
+            border: 2px solid #fed7d7;
+            color: #c53030;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            display: none;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #718096;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+            color: #4a5568;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 15px;
+            }
+
+            .header-content {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .control-panel {
+                justify-content: stretch;
+            }
+
+            .control-panel .btn {
+                flex: 1;
+                justify-content: center;
+            }
+
+            .content-area {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                order: -1;
+            }
+
+            .exercises-panel {
+                padding: 20px;
+            }
+
+            .exercise-item {
+                padding: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- 页面头部 -->
+        <div class="header">
+            <div class="header-content">
+                <div class="header-info">
+                    <h1 id="exerciseTitle">正在加载题目信息...</h1>
+                    <div class="header-meta">
+                        <div class="meta-item">
+                            <span>📚</span>
+                            <span id="exerciseSubject">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>🎓</span>
+                            <span id="exerciseGrade">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span>📝</span>
+                            <span id="exerciseCount">-</span> 道题
+                        </div>
+                        <div class="meta-item">
+                            <span>⏱️</span>
+                            <span id="exerciseTime">-</span>
+                        </div>
+                        <div class="meta-item">
+                            <span class="status-badge" id="exerciseStatus">加载中</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="control-panel">
+                    <button class="btn btn-secondary" onclick="goBack()">
+                        ← 返回配置
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshExercises()" id="refreshBtn">
+                        🔄 刷新
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 主要内容区域 -->
+        <div class="content-area">
+            <!-- 题目列表面板 -->
+            <div class="exercises-panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">📋 题目列表</h2>
+                    <div class="toggle-group">
+                        <button class="toggle-btn active" onclick="toggleAnswers()" id="answersToggle">
+                            显示答案
+                        </button>
+                        <button class="toggle-btn" onclick="toggleAnalysis()" id="analysisToggle">
+                            显示解析
+                        </button>
+                    </div>
+                </div>
+
+                <div class="loading-spinner" id="loadingSpinner">
+                    正在加载题目...
+                </div>
+
+                <div class="error-message" id="errorMessage"></div>
+
+                <div id="exercisesList">
+                    <!-- 题目列表将在这里动态加载 -->
+                </div>
+
+                <div class="empty-state" id="emptyState" style="display: none;">
+                    <h3>📭 暂无题目</h3>
+                    <p>题目还在生成中，请稍候刷新页面</p>
+                </div>
+            </div>
+
+            <!-- 侧边栏 -->
+            <div class="sidebar">
+                <!-- 题目统计 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">📊 题目统计</h3>
+                    <div class="progress-info">
+                        <div class="progress-row">
+                            <span>题目总数:</span>
+                            <span id="totalCount">0</span>
+                        </div>
+                        <div class="progress-row">
+                            <span>生成耗时:</span>
+                            <span id="generationTime">-</span>
+                        </div>
+                        <div class="progress-row">
+                            <span>难度等级:</span>
+                            <span id="difficultyLevel">-</span>
+                        </div>
+                        <div class="progress-row">
+                            <span>完成度:</span>
+                            <span id="completionRate">100%</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 操作面板 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">🛠️ 操作面板</h3>
+                    <div class="action-grid">
+                        <button class="btn btn-success action-btn" onclick="exportExercises('word')" id="exportWordBtn">
+                            📄 导出Word
+                        </button>
+                        <button class="btn btn-success action-btn" onclick="exportExercises('pdf')" id="exportPdfBtn">
+                            📑 导出PDF
+                        </button>
+                        <button class="btn btn-success action-btn" onclick="exportExercises('text')" id="exportTextBtn">
+                            📝 导出文本
+                        </button>
+                        <button class="btn btn-primary action-btn" onclick="shareToWechat()" id="shareBtn">
+                            📱 微信分享
+                        </button>
+                        <button class="btn btn-secondary action-btn" onclick="viewHistory()">
+                            📚 查看历史
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 快捷操作 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">⚡ 快捷操作</h3>
+                    <div class="action-grid">
+                        <button class="btn btn-secondary action-btn" onclick="generateSimilar()">
+                            🔄 生成类似题目
+                        </button>
+                        <button class="btn btn-secondary action-btn" onclick="printExercises()">
+                            🖨️ 打印题目
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 质量优化 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">🔧 质量优化</h3>
+                    <div class="action-grid">
+                        <button class="btn btn-primary action-btn" onclick="showQualityReport()" title="查看题目质量分析报告 (Ctrl+Q)">
+                            📊 质量报告
+                        </button>
+                        <button class="btn btn-secondary action-btn" onclick="applyQualityOptimizations()" id="optimizeBtn">
+                            ✨ 重新优化
+                        </button>
+                    </div>
+                    <div style="margin-top: 15px; font-size: 0.8rem; color: #666; line-height: 1.4;">
+                        <div>• 自动去重检测</div>
+                        <div>• 难度智能评估</div>
+                        <div>• 数学公式渲染</div>
+                        <div>• 快捷键: Ctrl+Q</div>
+                    </div>
+                </div>
+
+                <!-- 性能监控 -->
+                <div class="sidebar-card">
+                    <h3 class="sidebar-title">⚡ 性能监控</h3>
+                    <div id="performanceMetrics" style="font-size: 0.8rem; line-height: 1.6;">
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>缓存命中率:</span>
+                            <span id="cacheEfficiency" style="font-weight: 600; color: #10b981;">计算中...</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>API请求数:</span>
+                            <span id="apiRequests" style="font-weight: 600; color: #3b82f6;">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 4px;">
+                            <span>导出任务:</span>
+                            <span id="exportTasks" style="font-weight: 600; color: #8b5cf6;">0</span>
+                        </div>
+                        <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                            <span>批量请求:</span>
+                            <span id="batchedRequests" style="font-weight: 600; color: #f59e0b;">0</span>
+                        </div>
+                    </div>
+                    <div class="action-grid" style="margin-top: 12px;">
+                        <button class="btn btn-secondary action-btn" onclick="showPerformanceReport()" title="查看详细性能报告 (Ctrl+P)">
+                            📈 性能报告
+                        </button>
+                        <button class="btn btn-secondary action-btn" onclick="clearPerformanceCache()" title="清理缓存数据">
+                            🗑️ 清理缓存
+                        </button>
+                    </div>
+                    <div style="margin-top: 12px; font-size: 0.75rem; color: #999; text-align: center;">
+                        <span>自动更新每30秒</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入质量优化工具 -->
+    <script src="/frontend/js/exercise-quality-optimizer.js"></script>
+    <!-- 引入性能优化工具 -->
+    <script src="/frontend/js/performance-optimizer.js"></script>
+
+    <script>
+        // API配置
+        const API_BASE = 'http://localhost:8000/api/v1';
+        const authToken = localStorage.getItem('authToken') || 
+            'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxIiwiZXhwIjoxNzU3MTQ2Mjg0fQ.1FiO0fqJiioUF1UGzpJF6Qu2qoqNS_Lo0KRvLPMuff8';
+
+        // 全局状态
+        let currentGenerationId = null;
+        let currentExercises = [];
+        let showAnswers = false;
+        let showAnalysis = false;
+        let exportConfig = {};
+        let qualityOptimizer = null; // 质量优化实例
+
+        // 获取URL参数
+        function getUrlParameter(name) {
+            const urlParams = new URLSearchParams(window.location.search);
+            return urlParams.get(name);
+        }
+
+        // API请求工具函数
+        async function apiRequest(endpoint, options = {}) {
+            try {
+                const response = await fetch(`${API_BASE}${endpoint}`, {
+                    headers: {
+                        'Authorization': `Bearer ${authToken}`,
+                        'Content-Type': 'application/json',
+                        ...options.headers
+                    },
+                    ...options
+                });
+
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                return await response.json();
+            } catch (error) {
+                console.error('API请求失败:', error);
+                throw error;
+            }
+        }
+
+        // 显示错误消息
+        function showError(message) {
+            const errorEl = document.getElementById('errorMessage');
+            errorEl.textContent = message;
+            errorEl.style.display = 'block';
+            
+            setTimeout(() => {
+                errorEl.style.display = 'none';
+            }, 5000);
+        }
+
+        // 设置加载状态
+        function setLoading(loading) {
+            const spinner = document.getElementById('loadingSpinner');
+            const list = document.getElementById('exercisesList');
+            const empty = document.getElementById('emptyState');
+
+            if (loading) {
+                spinner.style.display = 'block';
+                list.style.display = 'none';
+                empty.style.display = 'none';
+            } else {
+                spinner.style.display = 'none';
+                list.style.display = 'block';
+            }
+        }
+
+        // 格式化时间
+        function formatTime(seconds) {
+            if (!seconds) return '-';
+            if (seconds < 60) return `${seconds.toFixed(1)}秒`;
+            return `${(seconds / 60).toFixed(1)}分钟`;
+        }
+
+        // 加载生成记录信息
+        async function loadGenerationInfo() {
+            try {
+                const data = await apiRequest(`/exercise/generation/${currentGenerationId}`);
+                
+                // 更新页面头部信息
+                document.getElementById('exerciseTitle').textContent = data.title || '练习题';
+                document.getElementById('exerciseSubject').textContent = data.subject || '-';
+                document.getElementById('exerciseGrade').textContent = data.grade || '-';
+                document.getElementById('exerciseCount').textContent = data.total_questions || 0;
+                document.getElementById('exerciseTime').textContent = new Date(data.created_at).toLocaleString();
+                
+                // 更新状态标识
+                const statusEl = document.getElementById('exerciseStatus');
+                statusEl.textContent = data.status === 'completed' ? '已完成' : '生成中';
+                statusEl.className = `status-badge ${data.status === 'completed' ? 'status-completed' : 'status-pending'}`;
+
+                // 更新统计信息
+                document.getElementById('totalCount').textContent = data.total_questions || 0;
+                document.getElementById('generationTime').textContent = formatTime(data.generation_time);
+                document.getElementById('difficultyLevel').textContent = data.difficulty_level || '-';
+
+                return data;
+            } catch (error) {
+                showError('加载题目信息失败: ' + error.message);
+                throw error;
+            }
+        }
+
+        // 加载题目列表
+        async function loadExercises() {
+            try {
+                setLoading(true);
+                const exercises = await apiRequest(`/exercise/generation/${currentGenerationId}/exercises`);
+                
+                currentExercises = exercises;
+                renderExercises();
+                
+                if (exercises.length === 0) {
+                    document.getElementById('emptyState').style.display = 'block';
+                    document.getElementById('exercisesList').style.display = 'none';
+                }
+            } catch (error) {
+                showError('加载题目列表失败: ' + error.message);
+            } finally {
+                setLoading(false);
+            }
+        }
+
+        // 渲染题目列表
+        function renderExercises() {
+            const container = document.getElementById('exercisesList');
+            
+            if (currentExercises.length === 0) {
+                container.innerHTML = '';
+                return;
+            }
+
+            const html = currentExercises.map(exercise => {
+                // 计算题目难度信息
+                const difficultyInfo = qualityOptimizer ? qualityOptimizer.evaluateDifficulty(exercise) : null;
+                const difficultyBadge = difficultyInfo ? 
+                    `<span class="difficulty-badge" style="background: ${difficultyInfo.difficulty_level.color}; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.7rem;">
+                        ${difficultyInfo.difficulty_level.name} · ${difficultyInfo.estimated_time}分钟
+                    </span>` : '';
+
+                return `
+                <div class="exercise-item" data-exercise-id="${exercise.id || exercise.number}">
+                    <div class="exercise-header">
+                        <div class="exercise-number">题目 ${exercise.number}</div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div class="exercise-type">${exercise.question_type || '练习题'}</div>
+                            ${difficultyBadge}
+                        </div>
+                    </div>
+                    
+                    <div class="exercise-question math-content">
+                        ${exercise.question_text || '题目内容加载中...'}
+                    </div>
+
+                    <div class="exercise-answer ${showAnswers ? 'show' : ''}">
+                        <div class="answer-label">💡 标准答案</div>
+                        <div class="answer-content math-content">${exercise.correct_answer || '暂无答案'}</div>
+                    </div>
+
+                    <div class="exercise-analysis ${showAnalysis ? 'show' : ''}">
+                        <div class="analysis-label">📖 解题分析</div>
+                        <div class="analysis-content math-content">${exercise.analysis || '暂无分析'}</div>
+                    </div>
+
+                    ${difficultyInfo ? `
+                    <div class="quality-info" style="background: #f8f9fa; padding: 10px; margin-top: 10px; border-radius: 6px; font-size: 0.8rem;">
+                        <strong>难度分析:</strong> 
+                        公式复杂度 ${(difficultyInfo.difficulty_factors.formula * 100).toFixed(0)}%, 
+                        步骤复杂度 ${(difficultyInfo.difficulty_factors.steps * 100).toFixed(0)}%, 
+                        概念复杂度 ${(difficultyInfo.difficulty_factors.concepts * 100).toFixed(0)}%
+                    </div>
+                    ` : ''}
+                </div>
+                `;
+            }).join('');
+
+            container.innerHTML = html;
+        }
+
+        // 切换答案显示
+        function toggleAnswers() {
+            showAnswers = !showAnswers;
+            const toggle = document.getElementById('answersToggle');
+            toggle.textContent = showAnswers ? '隐藏答案' : '显示答案';
+            toggle.classList.toggle('active', showAnswers);
+            
+            document.querySelectorAll('.exercise-answer').forEach(el => {
+                el.classList.toggle('show', showAnswers);
+            });
+        }
+
+        // 切换解析显示
+        function toggleAnalysis() {
+            showAnalysis = !showAnalysis;
+            const toggle = document.getElementById('analysisToggle');
+            toggle.textContent = showAnalysis ? '隐藏解析' : '显示解析';
+            toggle.classList.toggle('active', showAnalysis);
+            
+            document.querySelectorAll('.exercise-analysis').forEach(el => {
+                el.classList.toggle('show', showAnalysis);
+            });
+        }
+
+        // 刷新题目
+        async function refreshExercises() {
+            const btn = document.getElementById('refreshBtn');
+            btn.disabled = true;
+            btn.textContent = '刷新中...';
+
+            try {
+                await Promise.all([
+                    loadGenerationInfo(),
+                    loadExercises()
+                ]);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '🔄 刷新';
+            }
+        }
+
+        // 优化的异步导出功能
+        async function exportExercises(format) {
+            const btn = document.getElementById(`export${format.charAt(0).toUpperCase() + format.slice(1)}Btn`);
+            const originalText = btn.textContent;
+            
+            try {
+                console.log(`📤 开始异步导出: ${format}`);
+                
+                // 创建导出进度显示
+                const progressContainer = createExportProgressUI(format);
+                document.body.appendChild(progressContainer);
+                
+                const config = {
+                    format: format,
+                    include_answers: true,
+                    include_analysis: true,
+                    ...exportConfig
+                };
+
+                // 使用性能优化器的异步导出
+                const result = await window.performanceOptimizer.exportFile(
+                    currentGenerationId, 
+                    format, 
+                    config,
+                    (progress, message) => {
+                        updateExportProgressUI(format, progress, message);
+                        btn.textContent = `${message} (${progress}%)`;
+                    }
+                );
+
+                if (result.success) {
+                    // 创建下载链接
+                    const link = document.createElement('a');
+                    link.href = result.downloadUrl;
+                    link.download = result.fileName;
+                    link.click();
+                    
+                    const cacheInfo = result.fromCache ? ' (使用缓存文件)' : '';
+                    showExportSuccess(`导出完成！文件: ${result.fileName}${cacheInfo}`);
+                    
+                    // 记录性能统计
+                    const metrics = window.performanceOptimizer.getPerformanceMetrics();
+                    console.log('📊 导出后性能统计:', metrics);
+                } else {
+                    throw new Error('导出失败');
+                }
+            } catch (error) {
+                console.error('❌ 异步导出失败:', error);
+                showError('导出失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = originalText;
+                
+                // 延迟移除进度显示
+                setTimeout(() => {
+                    const progressEl = document.getElementById(`export-progress-${format}`);
+                    if (progressEl) {
+                        progressEl.remove();
+                    }
+                }, 3000);
+            }
+        }
+        
+        // 创建导出进度UI
+        function createExportProgressUI(format) {
+            const container = document.createElement('div');
+            container.id = `export-progress-${format}`;
+            container.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: rgba(255, 255, 255, 0.95);
+                backdrop-filter: blur(10px);
+                border-radius: 12px;
+                padding: 16px;
+                box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                min-width: 300px;
+                z-index: 10000;
+                font-family: -apple-system, BlinkMacSystemFont, sans-serif;
+            `;
+            
+            container.innerHTML = `
+                <div style="display: flex; align-items: center; margin-bottom: 12px;">
+                    <div style="font-size: 20px; margin-right: 8px;">📤</div>
+                    <div style="font-weight: 600; color: #333;">导出 ${format.toUpperCase()}</div>
+                </div>
+                <div id="progress-bar-${format}" style="
+                    width: 100%;
+                    height: 6px;
+                    background: #f0f0f0;
+                    border-radius: 3px;
+                    overflow: hidden;
+                    margin-bottom: 8px;
+                ">
+                    <div id="progress-fill-${format}" style="
+                        width: 0%;
+                        height: 100%;
+                        background: linear-gradient(90deg, #4f46e5, #7c3aed);
+                        transition: width 0.3s ease;
+                    "></div>
+                </div>
+                <div id="progress-text-${format}" style="
+                    font-size: 12px;
+                    color: #666;
+                    text-align: center;
+                ">准备导出...</div>
+            `;
+            
+            return container;
+        }
+        
+        // 更新导出进度UI
+        function updateExportProgressUI(format, progress, message) {
+            const progressFill = document.getElementById(`progress-fill-${format}`);
+            const progressText = document.getElementById(`progress-text-${format}`);
+            
+            if (progressFill) {
+                progressFill.style.width = `${Math.max(0, progress)}%`;
+            }
+            
+            if (progressText) {
+                progressText.textContent = message;
+                
+                // 根据进度改变颜色
+                if (progress === 100) {
+                    progressText.style.color = '#10b981';
+                    progressText.style.fontWeight = '600';
+                } else if (progress < 0) {
+                    progressText.style.color = '#ef4444';
+                    progressText.style.fontWeight = '600';
+                } else {
+                    progressText.style.color = '#666';
+                }
+            }
+        }
+        
+        // 显示导出成功消息
+        function showExportSuccess(message) {
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: linear-gradient(135deg, #10b981, #059669);
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 32px rgba(16, 185, 129, 0.3);
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10001;
+                max-width: 400px;
+                text-align: center;
+            `;
+            notification.textContent = message;
+            
+            document.body.appendChild(notification);
+            
+            setTimeout(() => {
+                if (document.body.contains(notification)) {
+                    document.body.removeChild(notification);
+                }
+            }, 3000);
+        }
+
+        // 微信分享
+        async function shareToWechat() {
+            const btn = document.getElementById('shareBtn');
+            btn.disabled = true;
+            btn.textContent = '准备中...';
+
+            try {
+                const config = {
+                    include_answers: false,
+                    include_analysis: false,
+                    max_questions: 5
+                };
+
+                const result = await apiRequest(`/exercise/generation/${currentGenerationId}/share/wechat`, {
+                    method: 'POST',
+                    body: JSON.stringify(config)
+                });
+
+                // 显示分享内容
+                const shareWindow = window.open('', '_blank', 'width=600,height=400');
+                shareWindow.document.write(`
+                    <html>
+                    <head><title>微信分享内容</title></head>
+                    <body style="font-family: sans-serif; padding: 20px;">
+                        <h3>📱 微信分享内容</h3>
+                        <textarea readonly style="width: 100%; height: 300px; font-family: monospace;">${result.content}</textarea>
+                        <p><strong>分享链接:</strong> ${result.share_link || '暂无'}</p>
+                        <p><small>请复制上面的内容到微信分享</small></p>
+                    </body>
+                    </html>
+                `);
+
+            } catch (error) {
+                showError('分享准备失败: ' + error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = '📱 微信分享';
+            }
+        }
+
+        // 生成类似题目
+        function generateSimilar() {
+            const url = `exercise-config.html?similar=${currentGenerationId}`;
+            window.location.href = url;
+        }
+
+        // 打印题目
+        function printExercises() {
+            window.print();
+        }
+
+        // 查看历史
+        function viewHistory() {
+            window.location.href = 'exercise-history.html';
+        }
+
+        // 返回配置页面
+        function goBack() {
+            window.location.href = 'exercise-config.html';
+        }
+
+        // 页面初始化
+        document.addEventListener('DOMContentLoaded', async () => {
+            // 初始化质量优化器
+            qualityOptimizer = new ExerciseQualityOptimizer();
+            
+            // 获取生成ID
+            currentGenerationId = getUrlParameter('id') || sessionStorage.getItem('lastGenerationId');
+            
+            if (!currentGenerationId) {
+                showError('未找到题目生成记录，即将返回配置页面...');
+                setTimeout(() => {
+                    window.location.href = 'exercise-config.html';
+                }, 3000);
+                return;
+            }
+
+            // 加载导出配置
+            try {
+                exportConfig = JSON.parse(sessionStorage.getItem('exportConfig') || '{}');
+            } catch (e) {
+                exportConfig = {};
+            }
+
+            // 加载页面数据
+            try {
+                await Promise.all([
+                    loadGenerationInfo(),
+                    loadExercises()
+                ]);
+                console.log('题目预览页面初始化完成');
+                
+                // 应用质量优化
+                await applyQualityOptimizations();
+            } catch (error) {
+                console.error('页面初始化失败:', error);
+            }
+        });
+
+        // 添加键盘快捷键
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey) {
+                switch (e.key) {
+                    case 'a':
+                        e.preventDefault();
+                        toggleAnswers();
+                        break;
+                    case 's':
+                        e.preventDefault();
+                        toggleAnalysis();
+                        break;
+                    case 'r':
+                        e.preventDefault();
+                        refreshExercises();
+                        break;
+                    case 'q':
+                        e.preventDefault();
+                        showQualityReport();
+                        break;
+                    case 'p':
+                        e.preventDefault();
+                        showPerformanceReport();
+                        break;
+                }
+            }
+        });
+
+        /**
+         * 步骤8.1质量优化功能实现
+         */
+
+        // 应用质量优化
+        async function applyQualityOptimizations() {
+            if (!qualityOptimizer || currentExercises.length === 0) {
+                return;
+            }
+
+            console.log('🔧 开始应用题目质量优化...');
+
+            try {
+                // 1. 题目去重处理
+                const deduplicationResult = qualityOptimizer.removeDuplicates(currentExercises);
+                
+                if (deduplicationResult.removed_count > 0) {
+                    console.log(`✅ 去重完成，移除 ${deduplicationResult.removed_count} 道重复题目`);
+                    currentExercises = deduplicationResult.unique_exercises;
+                    
+                    // 显示去重通知
+                    showOptimizationNotice(`已自动去除 ${deduplicationResult.removed_count} 道重复题目`, 'success');
+                    
+                    // 重新渲染题目列表
+                    renderExercises();
+                    
+                    // 更新统计信息
+                    document.getElementById('totalCount').textContent = currentExercises.length;
+                }
+
+                // 2. 优化数学公式显示
+                setTimeout(() => {
+                    const exercisesList = document.getElementById('exercisesList');
+                    if (exercisesList) {
+                        qualityOptimizer.optimizeMathDisplay(exercisesList);
+                        console.log('✅ 数学公式显示优化完成');
+                    }
+                }, 500);
+
+                // 3. 生成质量报告
+                const qualityReport = qualityOptimizer.generateQualityReport(currentExercises);
+                sessionStorage.setItem('lastQualityReport', JSON.stringify(qualityReport));
+                console.log('✅ 质量报告生成完成:', qualityReport);
+
+                // 4. 更新难度统计
+                updateDifficultyStatistics();
+
+                console.log('🎉 所有质量优化应用完成');
+
+            } catch (error) {
+                console.error('❌ 质量优化应用失败:', error);
+                showOptimizationNotice('质量优化应用失败: ' + error.message, 'error');
+            }
+        }
+
+        // 更新难度统计信息
+        function updateDifficultyStatistics() {
+            if (!qualityOptimizer || currentExercises.length === 0) return;
+
+            const difficulties = currentExercises.map(ex => qualityOptimizer.evaluateDifficulty(ex));
+            const avgDifficulty = difficulties.reduce((sum, d) => sum + d.overall_difficulty, 0) / difficulties.length;
+            const avgTime = difficulties.reduce((sum, d) => sum + d.estimated_time, 0) / difficulties.length;
+
+            // 更新难度等级显示
+            const difficultyLevel = qualityOptimizer.getDifficultyLevel(avgDifficulty);
+            const difficultyEl = document.getElementById('difficultyLevel');
+            if (difficultyEl) {
+                difficultyEl.innerHTML = `
+                    <span style="color: ${difficultyLevel.color}; font-weight: bold;">
+                        ${difficultyLevel.name} (${(avgDifficulty * 100).toFixed(0)}%)
+                    </span>
+                `;
+            }
+
+            // 更新预估时间
+            const completionRateEl = document.getElementById('completionRate');
+            if (completionRateEl) {
+                completionRateEl.textContent = `预计 ${Math.round(avgTime)} 分钟`;
+            }
+        }
+
+        // 显示质量报告
+        function showQualityReport() {
+            const report = sessionStorage.getItem('lastQualityReport');
+            if (!report) {
+                alert('暂无质量报告数据，请先刷新页面重新生成');
+                return;
+            }
+
+            const qualityData = JSON.parse(report);
+            
+            const reportWindow = window.open('', '_blank', 'width=800,height=600');
+            reportWindow.document.write(`
+                <html>
+                <head>
+                    <title>题目质量报告</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; line-height: 1.6; }
+                        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+                        .section { background: #f8f9fa; padding: 15px; border-radius: 8px; margin-bottom: 15px; }
+                        .metric { display: flex; justify-content: space-between; margin-bottom: 8px; }
+                        .metric-label { font-weight: 500; }
+                        .metric-value { font-weight: bold; color: #667eea; }
+                        .recommendations { background: #e8f5e8; border-left: 4px solid #28a745; padding: 15px; }
+                        .recommendation { margin-bottom: 5px; }
+                        .difficulty-chart { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin: 15px 0; }
+                        .difficulty-item { text-align: center; padding: 10px; border-radius: 6px; }
+                        .easy { background: #d4edda; color: #155724; }
+                        .medium { background: #fff3cd; color: #856404; }
+                        .hard { background: #f8d7da; color: #721c24; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>📊 题目质量分析报告</h2>
+                        <p>生成时间: ${new Date(qualityData.timestamp).toLocaleString()}</p>
+                    </div>
+
+                    <div class="section">
+                        <h3>📈 基本统计</h3>
+                        <div class="metric">
+                            <span class="metric-label">题目总数:</span>
+                            <span class="metric-value">${qualityData.total_exercises}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">去重移除:</span>
+                            <span class="metric-value">${qualityData.quality_metrics.duplicates.removed_count}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">数学公式:</span>
+                            <span class="metric-value">${qualityData.quality_metrics.math_formulas}</span>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>📊 难度分布</h3>
+                        <div class="difficulty-chart">
+                            <div class="difficulty-item easy">
+                                <div>简单</div>
+                                <div>${qualityData.quality_metrics.difficulty_analysis.filter(d => d.difficulty_level.level === 'easy').length}</div>
+                            </div>
+                            <div class="difficulty-item medium">
+                                <div>中等</div>
+                                <div>${qualityData.quality_metrics.difficulty_analysis.filter(d => d.difficulty_level.level === 'medium').length}</div>
+                            </div>
+                            <div class="difficulty-item hard">
+                                <div>困难</div>
+                                <div>${qualityData.quality_metrics.difficulty_analysis.filter(d => d.difficulty_level.level === 'hard').length}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="recommendations">
+                        <h3>💡 优化建议</h3>
+                        ${qualityData.recommendations.map(rec => `<div class="recommendation">• ${rec}</div>`).join('')}
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🖨️ 打印报告
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // 显示优化通知
+        function showOptimizationNotice(message, type = 'info') {
+            const notice = document.createElement('div');
+            notice.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                z-index: 10000;
+                max-width: 300px;
+                box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+                animation: slideIn 0.3s ease;
+            `;
+
+            const colors = {
+                success: { bg: '#d4edda', color: '#155724', border: '#c3e6cb' },
+                error: { bg: '#f8d7da', color: '#721c24', border: '#f5c6cb' },
+                info: { bg: '#d1ecf1', color: '#0c5460', border: '#bee5eb' }
+            };
+
+            const color = colors[type] || colors.info;
+            notice.style.background = color.bg;
+            notice.style.color = color.color;
+            notice.style.border = `1px solid ${color.border}`;
+            notice.textContent = message;
+
+            document.body.appendChild(notice);
+
+            setTimeout(() => {
+                notice.style.animation = 'slideOut 0.3s ease';
+                setTimeout(() => {
+                    if (document.body.contains(notice)) {
+                        document.body.removeChild(notice);
+                    }
+                }, 300);
+            }, 4000);
+        }
+
+        // 添加动画样式
+        const animationStyles = document.createElement('style');
+        animationStyles.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); opacity: 0; }
+                to { transform: translateX(0); opacity: 1; }
+            }
+            @keyframes slideOut {
+                from { transform: translateX(0); opacity: 1; }
+                to { transform: translateX(100%); opacity: 0; }
+            }
+            
+            .math-content {
+                font-family: "Times New Roman", serif;
+            }
+            
+            .difficulty-badge {
+                animation: fadeIn 0.5s ease;
+            }
+            
+            @keyframes fadeIn {
+                from { opacity: 0; transform: scale(0.8); }
+                to { opacity: 1; transform: scale(1); }
+            }
+        `;
+        document.head.appendChild(animationStyles);
+
+        /**
+         * 步骤8.2性能优化功能实现
+         */
+
+        // 更新性能监控显示
+        function updatePerformanceMetrics() {
+            if (!window.performanceOptimizer) return;
+
+            try {
+                const metrics = window.performanceOptimizer.getPerformanceMetrics();
+                
+                // 更新UI显示
+                const cacheEfficiencyEl = document.getElementById('cacheEfficiency');
+                const apiRequestsEl = document.getElementById('apiRequests');
+                const exportTasksEl = document.getElementById('exportTasks');
+                const batchedRequestsEl = document.getElementById('batchedRequests');
+
+                if (cacheEfficiencyEl) {
+                    cacheEfficiencyEl.textContent = metrics.cacheEfficiency;
+                    // 根据效率调整颜色
+                    const efficiency = parseFloat(metrics.cacheEfficiency);
+                    if (efficiency >= 70) {
+                        cacheEfficiencyEl.style.color = '#10b981'; // 绿色
+                    } else if (efficiency >= 40) {
+                        cacheEfficiencyEl.style.color = '#f59e0b'; // 橙色
+                    } else {
+                        cacheEfficiencyEl.style.color = '#ef4444'; // 红色
+                    }
+                }
+
+                if (apiRequestsEl) {
+                    apiRequestsEl.textContent = metrics.apiRequests;
+                }
+
+                if (exportTasksEl) {
+                    exportTasksEl.textContent = `${metrics.exportTasks} (${metrics.activeExportTasks} 活跃)`;
+                }
+
+                if (batchedRequestsEl) {
+                    batchedRequestsEl.textContent = metrics.batchedRequests;
+                }
+
+                console.log('📊 性能指标已更新:', metrics);
+            } catch (error) {
+                console.error('更新性能指标失败:', error);
+            }
+        }
+
+        // 显示详细性能报告
+        function showPerformanceReport() {
+            if (!window.performanceOptimizer) {
+                alert('性能优化器未加载');
+                return;
+            }
+
+            const metrics = window.performanceOptimizer.getPerformanceMetrics();
+            
+            const reportWindow = window.open('', '_blank', 'width=800,height=600');
+            reportWindow.document.write(`
+                <html>
+                <head>
+                    <title>性能监控报告</title>
+                    <style>
+                        body { font-family: -apple-system, BlinkMacSystemFont, sans-serif; padding: 20px; line-height: 1.6; background: #f8f9fa; }
+                        .header { background: linear-gradient(135deg, #667eea, #764ba2); color: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; }
+                        .section { background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+                        .metric { display: flex; justify-content: space-between; margin-bottom: 12px; padding: 8px; border-radius: 4px; }
+                        .metric-label { font-weight: 500; }
+                        .metric-value { font-weight: bold; }
+                        .high-performance { background: #d4edda; color: #155724; }
+                        .medium-performance { background: #fff3cd; color: #856404; }
+                        .low-performance { background: #f8d7da; color: #721c24; }
+                        .recommendations { background: #e8f5e8; border-left: 4px solid #28a745; padding: 15px; }
+                        .chart { display: grid; grid-template-columns: repeat(4, 1fr); gap: 15px; margin: 20px 0; }
+                        .chart-item { text-align: center; padding: 15px; border-radius: 8px; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+                        .chart-value { font-size: 2rem; font-weight: bold; margin-bottom: 5px; }
+                        .chart-label { font-size: 0.9rem; color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header">
+                        <h2>⚡ 性能监控报告</h2>
+                        <p>生成时间: ${new Date().toLocaleString()}</p>
+                    </div>
+
+                    <div class="chart">
+                        <div class="chart-item">
+                            <div class="chart-value" style="color: #10b981;">${metrics.cacheEfficiency}</div>
+                            <div class="chart-label">缓存命中率</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-value" style="color: #3b82f6;">${metrics.apiRequests}</div>
+                            <div class="chart-label">API请求总数</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-value" style="color: #8b5cf6;">${metrics.exportTasks}</div>
+                            <div class="chart-label">导出任务</div>
+                        </div>
+                        <div class="chart-item">
+                            <div class="chart-value" style="color: #f59e0b;">${metrics.batchedRequests}</div>
+                            <div class="chart-label">批量请求</div>
+                        </div>
+                    </div>
+
+                    <div class="section">
+                        <h3>📊 详细性能指标</h3>
+                        <div class="metric ${parseFloat(metrics.cacheEfficiency) >= 70 ? 'high-performance' : parseFloat(metrics.cacheEfficiency) >= 40 ? 'medium-performance' : 'low-performance'}">
+                            <span class="metric-label">缓存效率:</span>
+                            <span class="metric-value">${metrics.cacheEfficiency}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">缓存命中次数:</span>
+                            <span class="metric-value">${metrics.cacheHits}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">缓存未命中次数:</span>
+                            <span class="metric-value">${metrics.cacheMisses}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">总缓存操作:</span>
+                            <span class="metric-value">${metrics.totalCacheOperations}</span>
+                        </div>
+                        <div class="metric">
+                            <span class="metric-label">活跃导出任务:</span>
+                            <span class="metric-value">${metrics.activeExportTasks}</span>
+                        </div>
+                    </div>
+
+                    <div class="recommendations">
+                        <h3>💡 性能优化建议</h3>
+                        ${generatePerformanceRecommendations(metrics)}
+                    </div>
+
+                    <div style="text-align: center; margin-top: 30px;">
+                        <button onclick="window.print()" style="padding: 10px 20px; background: #667eea; color: white; border: none; border-radius: 6px; cursor: pointer;">
+                            🖨️ 打印报告
+                        </button>
+                        <button onclick="window.close()" style="padding: 10px 20px; background: #6c757d; color: white; border: none; border-radius: 6px; cursor: pointer; margin-left: 10px;">
+                            关闭窗口
+                        </button>
+                    </div>
+                </body>
+                </html>
+            `);
+        }
+
+        // 生成性能优化建议
+        function generatePerformanceRecommendations(metrics) {
+            const recommendations = [];
+            const cacheEfficiency = parseFloat(metrics.cacheEfficiency);
+
+            if (cacheEfficiency < 30) {
+                recommendations.push('• 缓存命中率较低，建议检查缓存策略和过期时间设置');
+            } else if (cacheEfficiency >= 80) {
+                recommendations.push('• 缓存命中率优秀，系统性能表现良好');
+            }
+
+            if (metrics.apiRequests > 50) {
+                recommendations.push('• API请求较多，建议使用批量请求优化');
+            }
+
+            if (metrics.activeExportTasks > 3) {
+                recommendations.push('• 活跃导出任务过多，建议实施任务队列管理');
+            }
+
+            if (metrics.batchedRequests === 0) {
+                recommendations.push('• 未使用批量请求，建议启用批量API调用以提升性能');
+            }
+
+            if (recommendations.length === 0) {
+                recommendations.push('• 系统性能表现良好，无需特殊优化');
+            }
+
+            return recommendations.map(rec => `<div style="margin-bottom: 5px;">${rec}</div>`).join('');
+        }
+
+        // 清理性能缓存
+        function clearPerformanceCache() {
+            if (!window.performanceOptimizer) {
+                alert('性能优化器未加载');
+                return;
+            }
+
+            if (confirm('确定要清理所有缓存数据吗？这将影响加载速度，但可以释放存储空间。')) {
+                try {
+                    window.performanceOptimizer.clearExpiredCache();
+                    window.performanceOptimizer.clearMetrics();
+                    
+                    // 清理localStorage中的缓存
+                    for (let i = localStorage.length - 1; i >= 0; i--) {
+                        const key = localStorage.key(i);
+                        if (key && key.startsWith('cache_')) {
+                            localStorage.removeItem(key);
+                        }
+                    }
+                    
+                    updatePerformanceMetrics();
+                    showOptimizationNotice('缓存已清理，下次加载可能会较慢', 'info');
+                } catch (error) {
+                    console.error('清理缓存失败:', error);
+                    showOptimizationNotice('清理缓存失败: ' + error.message, 'error');
+                }
+            }
+        }
+
+        // 启动性能监控
+        function startPerformanceMonitoring() {
+            // 立即更新一次
+            updatePerformanceMetrics();
+            
+            // 每30秒自动更新
+            setInterval(updatePerformanceMetrics, 30000);
+            
+            console.log('⚡ 性能监控已启动，每30秒自动更新');
+        }
+
+        // 页面加载完成后启动性能监控
+        window.addEventListener('load', () => {
+            setTimeout(startPerformanceMonitoring, 2000); // 延迟2秒启动，确保其他初始化完成
+        });
+
+    </script>
+</body>
+</html>
