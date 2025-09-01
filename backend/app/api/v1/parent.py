@@ -92,249 +92,320 @@ def get_parent_dashboard(
     - 学习时长数据
     - 最近活动
     """
-    from app.models.parent_child import ParentChild
-    from app.models.homework import Homework
-    from sqlalchemy import func, and_
-    from datetime import datetime, timedelta
-    
-    # 获取关联的孩子
-    parent_child_relations = db.query(ParentChild).filter(
-        ParentChild.parent_id == current_user.id,
-        ParentChild.is_active == True
-    ).all()
-    
-    children = []
-    today = datetime.now().date()
-    total_homework_today = 0
-    total_accuracy = 0
-    
-    for relation in parent_child_relations:
-        child_user = db.query(User).filter(User.id == relation.child_id).first()
-        if not child_user:
-            continue
-            
-        # 获取今日作业统计
-        today_homework = db.query(Homework).filter(
-            Homework.user_id == relation.child_id,
-            func.date(Homework.created_at) == today
-        ).all()
+    try:
+        from app.models.parent_child import ParentChild
+        from app.models.homework import Homework
+        from sqlalchemy import func, and_
+        from datetime import datetime, timedelta
         
-        homework_count = len(today_homework)
-        completed_homework = len([h for h in today_homework if h.status == 'completed'])
-        
-        # 计算今日平均分
-        if today_homework:
-            avg_score = sum([h.accuracy_rate * 100 for h in today_homework if h.accuracy_rate is not None]) / len([h for h in today_homework if h.accuracy_rate is not None]) if any(h.accuracy_rate is not None for h in today_homework) else 0
-        else:
-            avg_score = 0
-            
-        # 确定状态
-        status = "已完成" if completed_homework == homework_count and homework_count > 0 else ("进行中" if homework_count > 0 else "未开始")
-        
-        child_dict = {
-            "id": child_user.id,
-            "name": relation.nickname or child_user.nickname or f"用户{child_user.id}",
-            "grade": child_user.grade or "未设置",
-            "school": relation.school or "未设置学校",
-            "class_name": relation.class_name or "未设置班级",
-            "avatar": child_user.avatar_url if child_user.avatar_url is not None else "student",
-            "todayScore": int(avg_score),
-            "status": status
-        }
-        children.append(child_dict)
-        
-        total_homework_today += homework_count
-        if today_homework:
-            accuracies = [int((h.total_questions - h.wrong_count) * 100 / h.total_questions) if h.total_questions > 0 else 0 for h in today_homework]
-            if accuracies:
-                total_accuracy += sum(accuracies) / len(accuracies)
-    
-    # 今日统计
-    today_stats = {
-        "homeworkCount": total_homework_today,
-        "accuracy": int(total_accuracy / len(children)) if children else 0
-    }
-    
-    # 生成实时通知消息
-    notifications = []
-    for relation in parent_child_relations:
-        child_user = db.query(User).filter(User.id == relation.child_id).first()
-        if not child_user:
-            continue
-            
-        child_name = relation.nickname or child_user.nickname or child_user.username
-        
-        # 最近完成的作业
-        recent_homework = db.query(Homework).filter(
-            Homework.user_id == relation.child_id,
-            Homework.status == 'completed'
-        ).order_by(Homework.updated_at.desc()).first()
-        
-        if recent_homework and recent_homework.updated_at > datetime.now() - timedelta(hours=24):
-            accuracy = int((recent_homework.total_questions - recent_homework.wrong_count) * 100 / recent_homework.total_questions) if recent_homework.total_questions > 0 else 0
-            subject_map = {"math": "数学", "chinese": "语文", "english": "英语", "physics": "物理", "chemistry": "化学"}
-            subject_name = subject_map.get(recent_homework.subject, recent_homework.subject)
-            
-            time_diff = datetime.now() - recent_homework.updated_at
-            if time_diff.seconds < 3600:  # 1小时内
-                time_str = f"{time_diff.seconds // 60}分钟前"
-            else:
-                time_str = f"{time_diff.seconds // 3600}小时前"
-            
-            notifications.append({
-                "icon": "📝",
-                "text": f"{child_name}完成了{subject_name}作业，正确率{accuracy}%",
-                "time": time_str,
-                "unread": True
-            })
-    
-    # 本周报告 - 统计所有孩子的本周数据
-    week_start = datetime.now() - timedelta(days=datetime.now().weekday())
-    week_homework = []
-    study_days_set = set()
-    
-    for relation in parent_child_relations:
-        week_hw = db.query(Homework).filter(
-            Homework.user_id == relation.child_id,
-            Homework.created_at >= week_start
-        ).all()
-        week_homework.extend(week_hw)
-        
-        # 统计学习天数
-        for hw in week_hw:
-            study_days_set.add(hw.created_at.date())
-    
-    total_week_homework = len(week_homework)
-    avg_accuracy = 0
-    if week_homework:
-        accuracies = [int((hw.total_questions - hw.wrong_count) * 100 / hw.total_questions) if hw.total_questions > 0 else 0 for hw in week_homework]
-        avg_accuracy = sum(accuracies) / len(accuracies) if accuracies else 0
-    
-    weekly_report = {
-        "totalHomework": total_week_homework,
-        "avgAccuracy": int(avg_accuracy),
-        "studyDays": len(study_days_set)
-    }
-    
-    # 学习时长数据（一周7天，单位：分钟）- 基于实际作业完成时间
-    study_time_data = []
-    for i in range(7):  # 最近7天
-        day = datetime.now().date() - timedelta(days=6-i)
-        day_homework = []
-        
-        for relation in parent_child_relations:
-            hw = db.query(Homework).filter(
-                Homework.user_id == relation.child_id,
-                func.date(Homework.created_at) == day
+        # 获取关联的孩子 - 添加错误处理
+        parent_child_relations = []
+        try:
+            parent_child_relations = db.query(ParentChild).filter(
+                ParentChild.parent_id == current_user.id,
+                ParentChild.is_active == True
             ).all()
-            day_homework.extend(hw)
+            print(f"DEBUG: 找到家长关联的孩子数量: {len(parent_child_relations)}")
+        except Exception as e:
+            print(f"DEBUG: 查询ParentChild表失败: {e}")
+            # 如果表不存在或查询失败，继续执行但不会有孩子数据
         
-        # 基于作业数量和难度估算学习时长
-        daily_minutes = 0
-        for hw in day_homework:
-            if hw.total_questions:
-                # 估算每题平均2-3分钟
-                daily_minutes += hw.total_questions * 2.5
+        # 初始化基础数据结构
+        children = []
+        today = datetime.now().date()
+        total_homework_today = 0
+        total_accuracy = 0
         
-        study_time_data.append(min(int(daily_minutes), 120))  # 限制最大120分钟
-    
-    # 最近活动 - 基于实际数据生成
-    recent_activities = []
-    
-    # 获取最近的作业活动
-    for relation in parent_child_relations:
-        child_user = db.query(User).filter(User.id == relation.child_id).first()
-        if not child_user:
-            continue
-            
-        child_name = relation.nickname or child_user.nickname or child_user.username
-        
-        recent_homeworks = db.query(Homework).filter(
-            Homework.user_id == relation.child_id
-        ).order_by(Homework.updated_at.desc()).limit(3).all()
-        
-        for hw in recent_homeworks:
-            if hw.updated_at > datetime.now() - timedelta(days=1):
-                subject_map = {"math": "数学", "chinese": "语文", "english": "英语", "physics": "物理", "chemistry": "化学"}
-                subject_name = subject_map.get(hw.subject, hw.subject)
-                
-                time_diff = datetime.now() - hw.updated_at
-                if time_diff.seconds < 3600:
-                    time_str = f"{time_diff.seconds // 60}分钟前"
-                elif time_diff.seconds < 86400:
-                    time_str = f"{time_diff.seconds // 3600}小时前"
-                else:
-                    time_str = "今天"
-                
-                if hw.status == 'completed':
-                    recent_activities.append({
-                        "icon": "✅",
-                        "text": f"{child_name}完成了{subject_name}练习",
-                        "time": time_str
-                    })
-    
-    # 如果没有足够的活动，添加一些通用活动
-    if len(recent_activities) < 3:
-        recent_activities.append({
-            "icon": "📊",
-            "text": "本周学习分析报告已更新",
-            "time": "今天上午"
-        })
-    
-    # 如果请求包含练习状态数据，添加practice_status字段
-    response_data = {
-        "today_stats": today_stats,
-        "children": children,
-        "notifications": notifications,
-        "weekly_report": weekly_report,
-        "study_time_data": study_time_data,
-        "recent_activities": recent_activities
-    }
-    
-    if include_practice_status:
-        # 生成练习状态数据（与practice-status端点相同的逻辑）
-        practice_children = []
-        week_start = datetime.now() - timedelta(days=7)
-        
+        # 处理孩子数据 - 添加错误处理
         for relation in parent_child_relations:
-            child_user = db.query(User).filter(User.id == relation.child_id).first()
-            if not child_user:
-                continue
+            try:
+                child_user = db.query(User).filter(User.id == relation.child_id).first()
+                if not child_user:
+                    continue
+                    
+                # 获取今日作业统计 - 添加错误处理
+                try:
+                    today_homework = db.query(Homework).filter(
+                        Homework.user_id == relation.child_id,
+                        func.date(Homework.created_at) == today
+                    ).all()
+                except Exception as homework_error:
+                    print(f"DEBUG: 查询作业数据失败: {homework_error}")
+                    today_homework = []
                 
-            # 获取最近的练习记录（本周内）
-            recent_practices = db.query(Homework).filter(
-                Homework.user_id == relation.child_id,
-                Homework.created_at >= week_start
-            ).order_by(Homework.created_at.desc()).all()
-            
-            # 转换为前端需要的格式
-            practice_data = []
-            for hw in recent_practices:
-                accuracy = int(hw.accuracy_rate * 100) if hw.accuracy_rate is not None else 0
-                practice_data.append({
-                    'id': hw.id,
-                    'created_at': hw.created_at.isoformat(),
-                    'accuracy': accuracy,
-                    'subject': hw.subject,
-                    'total_questions': hw.total_questions or 0,
-                    'wrong_count': hw.wrong_count or 0,
-                    'status': hw.status
-                })
-            
-            child_info = {
-                'id': child_user.id,
-                'name': relation.nickname or child_user.nickname or f"用户{child_user.id}",
-                'avatar': child_user.avatar_url,
-                'grade': child_user.grade or "未设置",
-                'recent_practices': practice_data
-            }
-            practice_children.append(child_info)
+                homework_count = len(today_homework)
+                completed_homework = len([h for h in today_homework if h.status == 'completed'])
+                
+                # 计算今日平均分
+                if today_homework:
+                    avg_score = sum([h.accuracy_rate * 100 for h in today_homework if h.accuracy_rate is not None]) / len([h for h in today_homework if h.accuracy_rate is not None]) if any(h.accuracy_rate is not None for h in today_homework) else 0
+                else:
+                    avg_score = 0
+                    
+                # 确定状态
+                status = "已完成" if completed_homework == homework_count and homework_count > 0 else ("进行中" if homework_count > 0 else "未开始")
+                
+                child_dict = {
+                    "id": child_user.id,
+                    "name": relation.nickname or child_user.nickname or f"用户{child_user.id}",
+                    "grade": child_user.grade or "未设置",
+                    "school": relation.school or "未设置学校",
+                    "class_name": relation.class_name or "未设置班级",
+                    "avatar": child_user.avatar_url if child_user.avatar_url is not None else "student",
+                    "todayScore": int(avg_score),
+                    "status": status
+                }
+                children.append(child_dict)
+                
+                total_homework_today += homework_count
+                if today_homework:
+                    accuracies = [int((h.total_questions - h.wrong_count) * 100 / h.total_questions) if h.total_questions > 0 else 0 for h in today_homework]
+                    if accuracies:
+                        total_accuracy += sum(accuracies) / len(accuracies)
+            except Exception as child_error:
+                print(f"DEBUG: 处理孩子数据失败: {child_error}")
+                continue
         
-        response_data['practice_status'] = {
-            'children': practice_children,
-            'total_children': len(practice_children),
-            'generated_at': datetime.now().isoformat()
+        # 今日统计
+        today_stats = {
+            "homeworkCount": total_homework_today,
+            "accuracy": int(total_accuracy / len(children)) if children else 0
         }
+        
+        # 生成通知消息 - 添加错误处理  
+        notifications = []
+        try:
+            for relation in parent_child_relations:
+                try:
+                    child_user = db.query(User).filter(User.id == relation.child_id).first()
+                    if not child_user:
+                        continue
+                        
+                    child_name = relation.nickname or child_user.nickname or child_user.username
+                    
+                    # 最近完成的作业
+                    recent_homework = db.query(Homework).filter(
+                        Homework.user_id == relation.child_id,
+                        Homework.status == 'completed'
+                    ).order_by(Homework.updated_at.desc()).first()
+                    
+                    if recent_homework and recent_homework.updated_at > datetime.now() - timedelta(hours=24):
+                        accuracy = int((recent_homework.total_questions - recent_homework.wrong_count) * 100 / recent_homework.total_questions) if recent_homework.total_questions > 0 else 0
+                        subject_map = {"math": "数学", "chinese": "语文", "english": "英语", "physics": "物理", "chemistry": "化学"}
+                        subject_name = subject_map.get(recent_homework.subject, recent_homework.subject)
+                        
+                        time_diff = datetime.now() - recent_homework.updated_at
+                        if time_diff.seconds < 3600:  # 1小时内
+                            time_str = f"{time_diff.seconds // 60}分钟前"
+                        else:
+                            time_str = f"{time_diff.seconds // 3600}小时前"
+                        
+                        notifications.append({
+                            "icon": "📝",
+                            "text": f"{child_name}完成了{subject_name}作业，正确率{accuracy}%",
+                            "time": time_str,
+                            "unread": True
+                        })
+                except Exception as notification_error:
+                    print(f"DEBUG: 生成通知失败: {notification_error}")
+                    continue
+        except Exception as notifications_error:
+            print(f"DEBUG: 处理通知数据失败: {notifications_error}")
+        
+        # 本周报告 - 添加错误处理
+        weekly_report = {"totalHomework": 0, "avgAccuracy": 0, "studyDays": 0}
+        try:
+            week_start = datetime.now() - timedelta(days=datetime.now().weekday())
+            week_homework = []
+            study_days_set = set()
+            
+            for relation in parent_child_relations:
+                try:
+                    week_hw = db.query(Homework).filter(
+                        Homework.user_id == relation.child_id,
+                        Homework.created_at >= week_start
+                    ).all()
+                    week_homework.extend(week_hw)
+                    
+                    # 统计学习天数
+                    for hw in week_hw:
+                        study_days_set.add(hw.created_at.date())
+                except Exception:
+                    continue
+            
+            total_week_homework = len(week_homework)
+            avg_accuracy = 0
+            if week_homework:
+                accuracies = [int((hw.total_questions - hw.wrong_count) * 100 / hw.total_questions) if hw.total_questions > 0 else 0 for hw in week_homework]
+                avg_accuracy = sum(accuracies) / len(accuracies) if accuracies else 0
+            
+            weekly_report = {
+                "totalHomework": total_week_homework,
+                "avgAccuracy": int(avg_accuracy),
+                "studyDays": len(study_days_set)
+            }
+        except Exception as weekly_error:
+            print(f"DEBUG: 处理本周报告失败: {weekly_error}")
+        
+        # 学习时长数据 - 添加错误处理
+        study_time_data = [0, 0, 0, 0, 0, 0, 0]  # 默认7天都是0
+        try:
+            for i in range(7):  # 最近7天
+                day = datetime.now().date() - timedelta(days=6-i)
+                day_homework = []
+                
+                for relation in parent_child_relations:
+                    try:
+                        hw = db.query(Homework).filter(
+                            Homework.user_id == relation.child_id,
+                            func.date(Homework.created_at) == day
+                        ).all()
+                        day_homework.extend(hw)
+                    except Exception:
+                        continue
+                
+                # 基于作业数量和难度估算学习时长
+                daily_minutes = 0
+                for hw in day_homework:
+                    if hw.total_questions:
+                        # 估算每题平均2-3分钟
+                        daily_minutes += hw.total_questions * 2.5
+                
+                study_time_data[i] = min(int(daily_minutes), 120)  # 限制最大120分钟
+        except Exception as study_time_error:
+            print(f"DEBUG: 处理学习时长数据失败: {study_time_error}")
+        
+        # 最近活动 - 添加错误处理
+        recent_activities = []
+        try:
+            # 获取最近的作业活动
+            for relation in parent_child_relations:
+                try:
+                    child_user = db.query(User).filter(User.id == relation.child_id).first()
+                    if not child_user:
+                        continue
+                        
+                    child_name = relation.nickname or child_user.nickname or child_user.username
+                    
+                    recent_homeworks = db.query(Homework).filter(
+                        Homework.user_id == relation.child_id
+                    ).order_by(Homework.updated_at.desc()).limit(3).all()
+                    
+                    for hw in recent_homeworks:
+                        if hw.updated_at > datetime.now() - timedelta(days=1):
+                            subject_map = {"math": "数学", "chinese": "语文", "english": "英语", "physics": "物理", "chemistry": "化学"}
+                            subject_name = subject_map.get(hw.subject, hw.subject)
+                            
+                            time_diff = datetime.now() - hw.updated_at
+                            if time_diff.seconds < 3600:
+                                time_str = f"{time_diff.seconds // 60}分钟前"
+                            elif time_diff.seconds < 86400:
+                                time_str = f"{time_diff.seconds // 3600}小时前"
+                            else:
+                                time_str = "今天"
+                            
+                            if hw.status == 'completed':
+                                recent_activities.append({
+                                    "icon": "✅",
+                                    "text": f"{child_name}完成了{subject_name}练习",
+                                    "time": time_str
+                                })
+                except Exception:
+                    continue
+        except Exception as activities_error:
+            print(f"DEBUG: 处理最近活动失败: {activities_error}")
+        
+        # 如果没有足够的活动，添加一些通用活动
+        if len(recent_activities) < 3:
+            recent_activities.append({
+                "icon": "📊",
+                "text": "本周学习分析报告已更新",
+                "time": "今天上午"
+            })
+        
+        # 构建响应数据
+        response_data = {
+            "today_stats": today_stats,
+            "children": children,
+            "notifications": notifications,
+            "weekly_report": weekly_report,
+            "study_time_data": study_time_data,
+            "recent_activities": recent_activities
+        }
+        
+        # 处理练习状态数据 - 添加错误处理
+        if include_practice_status:
+            try:
+                practice_children = []
+                week_start = datetime.now() - timedelta(days=7)
+                
+                for relation in parent_child_relations:
+                    try:
+                        child_user = db.query(User).filter(User.id == relation.child_id).first()
+                        if not child_user:
+                            continue
+                            
+                        # 获取最近的练习记录（本周内）
+                        recent_practices = db.query(Homework).filter(
+                            Homework.user_id == relation.child_id,
+                            Homework.created_at >= week_start
+                        ).order_by(Homework.created_at.desc()).all()
+                        
+                        # 转换为前端需要的格式
+                        practice_data = []
+                        for hw in recent_practices:
+                            accuracy = int(hw.accuracy_rate * 100) if hw.accuracy_rate is not None else 0
+                            practice_data.append({
+                                'id': hw.id,
+                                'created_at': hw.created_at.isoformat(),
+                                'accuracy': accuracy,
+                                'subject': hw.subject,
+                                'total_questions': hw.total_questions or 0,
+                                'wrong_count': hw.wrong_count or 0,
+                                'status': hw.status
+                            })
+                        
+                        child_info = {
+                            'id': child_user.id,
+                            'name': relation.nickname or child_user.nickname or f"用户{child_user.id}",
+                            'avatar': child_user.avatar_url,
+                            'grade': child_user.grade or "未设置",
+                            'recent_practices': practice_data
+                        }
+                        practice_children.append(child_info)
+                    except Exception:
+                        continue
+                
+                response_data['practice_status'] = {
+                    'children': practice_children,
+                    'total_children': len(practice_children),
+                    'generated_at': datetime.now().isoformat()
+                }
+            except Exception as practice_error:
+                print(f"DEBUG: 处理练习状态数据失败: {practice_error}")
+    
+    except Exception as e:
+        print(f"DEBUG: Parent dashboard API 出现异常: {e}")
+        # 返回默认的空数据，确保API不会完全失败
+        response_data = {
+            "today_stats": {"homeworkCount": 0, "accuracy": 0},
+            "children": [],
+            "notifications": [
+                {"icon": "👋", "text": "欢迎使用家长端，开始您的陪伴之旅！", "time": "刚刚", "unread": True}
+            ],
+            "weekly_report": {"totalHomework": 0, "avgAccuracy": 0, "studyDays": 0},
+            "study_time_data": [0, 0, 0, 0, 0, 0, 0],
+            "recent_activities": [
+                {"icon": "🎯", "text": "系统准备就绪，等待孩子开始学习", "time": "今天"}
+            ]
+        }
+        
+        if include_practice_status:
+            response_data['practice_status'] = {
+                'children': [],
+                'total_children': 0,
+                'generated_at': datetime.now().isoformat()
+            }
     
     return response_data
 

@@ -86,9 +86,12 @@ class MessageResponse(BaseModel):
 class UpdateProfileRequest(BaseModel):
     """更新个人资料请求"""
     nickname: Optional[str] = None
+    name: Optional[str] = None  # 家长用户姓名字段
     grade: Optional[str] = None
     phone: Optional[str] = None
     email: Optional[str] = None
+    class_name: Optional[str] = None
+    school: Optional[str] = None
 
 @router.post("/upload-avatar", response_model=AvatarUploadResponse, summary="上传头像")
 async def upload_avatar(
@@ -291,27 +294,49 @@ def set_default_avatar(
             detail=f"头像设置失败: {str(e)}"
         )
 
-@router.get("/profile", response_model=UserProfile, summary="获取用户资料")
+@router.get("/test-parent", summary="测试家长用户认证")
+def test_parent_auth(
+    current_user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """临时测试端点，用于调试家长用户认证问题"""
+    return {
+        "message": "家长认证成功",
+        "user_id": current_user.id,
+        "user_role": current_user.role,
+        "user_nickname": current_user.nickname
+    }
+
+@router.get("/profile", summary="获取用户资料")
 def get_user_profile(
     current_user: User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
     """
-    获取当前用户的详细资料
+    获取当前用户的详细资料 - 简化版本以修复家长用户错误
     """
+    # 解析用户settings字段以获取class_name和school
+    current_settings = {}
+    if current_user.settings:
+        try:
+            current_settings = json.loads(current_user.settings)
+        except:
+            current_settings = {}
+    
+    # 简化的响应，避免复杂的错误
     return {
         "id": current_user.id,
-        "nickname": getattr(current_user, 'nickname', '测试用户'),
-        "avatar_url": getattr(current_user, 'avatar_url', 'https://example.com/avatar.jpg'),
-        "role": getattr(current_user, 'role', 'student'),
-        "grade": getattr(current_user, 'grade', 'elementary'),
-        "phone": getattr(current_user, 'phone', None),
-        "email": getattr(current_user, 'email', None),
-        "is_vip": getattr(current_user, 'is_vip', False),
-        "vip_expire_time": getattr(current_user, 'vip_expire_time', None),
-        "daily_quota": getattr(current_user, 'daily_quota', 5),
-        "total_used": getattr(current_user, 'total_used', random.randint(20, 100)),
-        "created_at": getattr(current_user, 'created_at', datetime.now()).isoformat() if hasattr(getattr(current_user, 'created_at', None), 'isoformat') else datetime.now().isoformat(),
+        "nickname": current_user.nickname or "测试用户",
+        "avatar_url": current_user.avatar_url or "emoji:👤",
+        "role": current_user.role or "student",
+        "grade": current_user.grade,
+        "phone": current_user.phone,
+        "email": current_user.email,
+        "is_vip": current_user.is_vip or False,
+        "vip_expire_time": current_user.vip_expire_time.isoformat() if current_user.vip_expire_time else None,
+        "daily_quota": current_user.daily_quota or 5,
+        "total_used": current_user.total_used or 0,
+        "created_at": current_user.created_at.isoformat() if current_user.created_at else datetime.now().isoformat(),
         "settings": {
             "notifications": {
                 "homework_reminder": True,
@@ -325,7 +350,9 @@ def get_user_profile(
             "display": {
                 "theme": "light",
                 "language": "zh"
-            }
+            },
+            "class_name": current_settings.get('class_name'),
+            "school": current_settings.get('school')
         }
     }
 
@@ -350,6 +377,11 @@ def update_user_profile(
     
     try:
         # 更新数据库中的用户信息
+        # 处理name字段（家长用户使用name字段作为姓名，映射到nickname）
+        if request.name is not None:
+            current_user.nickname = request.name
+            print(f"更新姓名(name->nickname): {request.name}")
+        
         if request.nickname is not None:
             current_user.nickname = request.nickname
             print(f"更新昵称: {request.nickname}")
@@ -366,13 +398,49 @@ def update_user_profile(
             current_user.email = request.email
             print(f"更新邮箱: {request.email}")
         
+        # 新增：处理班级和学校字段
+        if request.class_name is not None:
+            # 由于User模型中没有class_name字段，我们需要使用settings字段存储
+            import json
+            current_settings = {}
+            if current_user.settings:
+                try:
+                    current_settings = json.loads(current_user.settings)
+                except:
+                    current_settings = {}
+            current_settings['class_name'] = request.class_name
+            current_user.settings = json.dumps(current_settings, ensure_ascii=False)
+            print(f"更新班级: {request.class_name}")
+        
+        if request.school is not None:
+            # 由于User模型中没有school字段，我们需要使用settings字段存储
+            import json
+            current_settings = {}
+            if current_user.settings:
+                try:
+                    current_settings = json.loads(current_user.settings)
+                except:
+                    current_settings = {}
+            current_settings['school'] = request.school
+            current_user.settings = json.dumps(current_settings, ensure_ascii=False)
+            print(f"更新学校: {request.school}")
+        
         # 提交到数据库
         db.add(current_user)
         db.commit()
         db.refresh(current_user)
         
+        # 解析更新后的settings以获取class_name和school
+        current_settings = {}
+        if current_user.settings:
+            try:
+                current_settings = json.loads(current_user.settings)
+            except:
+                current_settings = {}
+        
         print(f"数据库更新完成")
         print(f"更新后用户信息: nickname={current_user.nickname}, grade={current_user.grade}, phone={current_user.phone}, email={current_user.email}")
+        print(f"settings中的额外信息: class_name={current_settings.get('class_name')}, school={current_settings.get('school')}")
         
         return {
             "message": "用户资料更新成功",
@@ -380,7 +448,9 @@ def update_user_profile(
                 "nickname": current_user.nickname,
                 "grade": current_user.grade,
                 "phone": current_user.phone,
-                "email": current_user.email
+                "email": current_user.email,
+                "class_name": current_settings.get('class_name'),
+                "school": current_settings.get('school')
             },
             "updated_at": datetime.now().isoformat()
         }

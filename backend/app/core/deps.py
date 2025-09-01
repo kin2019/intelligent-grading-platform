@@ -18,21 +18,21 @@ def get_current_user(
     token = credentials.credentials
     print(f"DEBUG: Received token: {token}")
     
-    # 临时测试：直接返回ID=1的用户，跳过token验证 
+    # 临时测试：根据token返回不同角色的用户，跳过token验证 
     if token == "test-token-123":
-        print("DEBUG: Using test token bypass")
+        print("DEBUG: Using test token bypass for student user")
         # 从数据库获取真实的用户记录
         user = db.query(User).filter(User.id == 1).first()
         if user:
             print(f"DEBUG: Found real user ID=1: {user.nickname}")
             return user
         else:
-            print("DEBUG: User ID=1 not found, creating new user")
-            # 如果找不到用户，创建一个新的用户记录
+            print("DEBUG: User ID=1 not found, creating new student user")
+            # 如果找不到用户，创建一个新的学生用户记录
             user = User(
                 openid="test_user_1",
                 unionid="test_user_1",
-                nickname="测试用户",
+                nickname="测试学生",
                 role="student",
                 is_active=True,
                 avatar_url=None,
@@ -50,6 +50,56 @@ def get_current_user(
             db.commit()
             db.refresh(user)
             return user
+    
+    # 家长用户的测试token
+    if token == "test-token-parent":
+        print("DEBUG: Using test token bypass for parent user")
+        # 从数据库获取真实的家长用户记录
+        user = db.query(User).filter(User.id == 2).first()
+        if user:
+            print(f"DEBUG: Found real user ID=2: {user.nickname}, role: {user.role}")
+            # 确保该用户的角色是parent
+            if user.role != "parent":
+                print(f"DEBUG: Updating user ID=2 role from {user.role} to parent")
+                user.role = "parent"
+                db.commit()
+                db.refresh(user)
+            return user
+        else:
+            print("DEBUG: User ID=2 not found, creating new parent user")
+            try:
+                # 如果找不到用户，创建一个新的家长用户记录
+                user = User(
+                    openid="test_user_2",
+                    unionid="test_user_2",
+                    nickname="测试家长",
+                    role="parent",
+                    is_active=True,
+                    avatar_url=None,
+                    grade=None,  # 家长不需要年级信息
+                    phone=None,
+                    email=None,
+                    is_vip=False,
+                    vip_expire_time=None,
+                    daily_quota=10,  # 家长可能需要更多额度
+                    daily_used=0,
+                    total_used=0,
+                    settings=None
+                )
+                db.add(user)
+                db.commit()
+                db.refresh(user)
+                print(f"DEBUG: Successfully created new parent user: {user.id}")
+                return user
+            except Exception as e:
+                print(f"ERROR: Failed to create parent user: {e}")
+                import traceback
+                print(f"ERROR: Full traceback: {traceback.format_exc()}")
+                db.rollback()
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create parent user: {str(e)}"
+                )
     
     user_id = verify_token(token)
     
