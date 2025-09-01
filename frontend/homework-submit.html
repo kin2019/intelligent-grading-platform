@@ -456,13 +456,13 @@
                 gap: 8px;
             }
         }
+        
+        /* 使用新的统一学生底部导航组件，无需额外样式定义 */
     </style>
-    <script src="/frontend/js/global-nav.js"></script>
     
-    <!-- 底部导航组件 -->
-    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
-    <script src="/frontend/js/navigation-config.js"></script>
-    <script src="/frontend/js/bottom-navigation.js"></script>
+    <!-- 学生底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/student-bottom-nav.css">
+    <script src="/frontend/js/student-bottom-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -564,6 +564,15 @@
 
         function initPage() {
             console.log('=== initPage 开始 ===');
+            
+            // 确保作业提交页面使用学生角色（简单设置）
+            if (!localStorage.getItem('userRole')) {
+                localStorage.setItem('userRole', 'student');
+                console.log('设置默认用户角色为学生');
+            }
+            
+            // 立即初始化学生底部导航组件
+            initStudentBottomNavigation();
             
             // 检查登录状态 - 临时跳过用于测试
             token = localStorage.getItem('token') || 'test-token-123';
@@ -1647,25 +1656,24 @@
             }
         });
 
-        // 初始化统一底部导航组件
-        function initBottomNavigation() {
-            console.log('初始化homework-submit底部导航组件...');
+        // 初始化学生底部导航组件
+        function initStudentBottomNavigation() {
+            console.log('初始化学生底部导航组件...');
             
-            // 使用新的统一组件初始化导航
-            const success = BottomNavigation.init({
-                currentPage: 'homework-submit',
+            // 使用新的统一学生底部导航组件
+            const success = StudentBottomNav.init({
+                currentPage: 'camera',  // homework-submit.html对应的是camera页面ID
                 debug: false
             });
             
             if (success) {
-                console.log('✅ 底部导航组件初始化成功');
+                console.log('✅ 学生底部导航组件初始化成功');
             } else {
-                console.error('❌ 底部导航组件初始化失败');
+                console.error('❌ 学生底部导航组件初始化失败');
             }
         }
         
-        document.addEventListener('DOMContentLoaded', initBottomNavigation);
-        setTimeout(initBottomNavigation, 500);
+        // 底部导航已在initPage中调用，无需单独监听器
     </script>
 </body>
 </html>

@@ -136,37 +136,50 @@ function getCurrentPageId(url) {
  * @returns {string} 'student' 或 'parent'
  */
 function getCurrentUserRole() {
-    // 首先从localStorage获取
-    let role = localStorage.getItem('role');
-    if (role && (role === 'student' || role === 'parent')) {
-        return role;
-    }
+    // 与auth-utils.js保持一致，使用userRole键
+    let role = localStorage.getItem('userRole');
     
-    // 从token解析角色（兼容现有逻辑）
-    try {
-        const token = localStorage.getItem('token');
-        if (token) {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            const userId = payload.sub;
-            
-            // 根据用户ID判断角色：ID=1是学生，ID=2是家长
-            if (userId === '2') {
-                role = 'parent';
-            } else {
-                role = 'student';
-            }
-            
-            // 更新localStorage
-            localStorage.setItem('role', role);
-            return role;
+    // 兼容性处理：如果没有找到 'userRole'，检查旧的 'role' 键
+    if (!role) {
+        role = localStorage.getItem('role');
+        if (role) {
+            console.log('检测到旧的role格式，正在迁移到新格式');
+            // 迁移到新格式
+            localStorage.setItem('userRole', role);
+            localStorage.removeItem('role');
         }
-    } catch (error) {
-        console.warn('解析Token失败，使用默认学生角色:', error);
     }
     
-    // 默认返回学生角色
-    role = 'student';
-    localStorage.setItem('role', role);
+    // 如果仍然没有角色，尝试从token解析
+    if (!role) {
+        try {
+            const token = localStorage.getItem('token');
+            if (token) {
+                const payload = JSON.parse(atob(token.split('.')[1]));
+                const userId = payload.sub;
+                
+                // 根据用户ID判断角色：ID=1是学生，ID=2是家长
+                if (userId === '2') {
+                    role = 'parent';
+                } else {
+                    role = 'student';
+                }
+                
+                // 更新localStorage
+                localStorage.setItem('userRole', role);
+                return role;
+            }
+        } catch (error) {
+            console.warn('解析Token失败，使用默认学生角色:', error);
+        }
+    }
+    
+    // 如果还是没有角色，默认返回学生角色
+    if (!role) {
+        role = 'student';
+        localStorage.setItem('userRole', role);
+    }
+    
     return role;
 }
 

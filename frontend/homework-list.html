@@ -300,40 +300,7 @@
             cursor: pointer;
         }
         
-        /* 底部导航 */
-        .bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: #ffffff;
-            border-top: 1px solid #eee;
-            display: flex;
-            padding: 8px 0 6px;
-        }
-        
-        .nav-item {
-            flex: 1;
-            text-align: center;
-            padding: 8px;
-            cursor: pointer;
-            transition: color 0.2s ease;
-        }
-        
-        .nav-item.active {
-            color: #007AFF;
-        }
-        
-        .nav-icon {
-            font-size: 20px;
-            margin-bottom: 4px;
-        }
-        
-        .nav-text {
-            font-size: 10px;
-        }
+        /* 使用新的统一学生底部导航组件，无需额外样式定义 */
         
         /* 移动端适配 */
         @media (max-width: 480px) {
@@ -351,12 +318,10 @@
             }
         }
     </style>
-    <script src="/frontend/js/global-nav.js"></script>
     
-    <!-- 底部导航组件 -->
-    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
-    <script src="/frontend/js/navigation-config.js"></script>
-    <script src="/frontend/js/bottom-navigation.js"></script>
+    <!-- 学生底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/student-bottom-nav.css">
+    <script src="/frontend/js/student-bottom-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -630,25 +595,25 @@
             }, duration);
         }
 
-        // 初始化统一底部导航组件
-        function initBottomNavigation() {
-            console.log('初始化homework-list底部导航组件...');
+        // 初始化学生底部导航组件
+        function initStudentBottomNavigation() {
+            console.log('初始化学生底部导航组件...');
             
-            // 使用新的统一组件初始化导航
-            const success = BottomNavigation.init({
-                currentPage: 'profile',
+            // 使用新的统一学生底部导航组件
+            const success = StudentBottomNav.init({
+                currentPage: 'profile',  // homework-list.html属于profile页面ID下
                 debug: false
             });
             
             if (success) {
-                console.log('✅ 底部导航组件初始化成功');
+                console.log('✅ 学生底部导航组件初始化成功');
             } else {
-                console.error('❌ 底部导航组件初始化失败');
+                console.error('❌ 学生底部导航组件初始化失败');
             }
         }
         
-        document.addEventListener('DOMContentLoaded', initBottomNavigation);
-        setTimeout(initBottomNavigation, 500);
+        // 只在DOMContentLoaded时初始化，避免重复调用
+        document.addEventListener('DOMContentLoaded', initStudentBottomNavigation);
     </script>
 </body>
 </html>

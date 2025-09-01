@@ -493,23 +493,7 @@
             color: #333;
         }
         
-        /* 学生底部导航样式 - global-bottom-nav */
-        .global-bottom-nav {
-            position: fixed;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 100%;
-            max-width: 400px;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-top: 1px solid rgba(102, 126, 234, 0.1);
-            display: flex;
-            padding: 8px 0 6px;
-            box-shadow: 0 -8px 32px rgba(102, 126, 234, 0.1);
-            z-index: 1000;
-        }
+        /* 使用新的统一学生底部导航组件，无需额外样式定义 */
         
         .global-nav-item {
             flex: 1;
@@ -531,15 +515,7 @@
             color: #667eea;
         }
         
-        .global-nav-item.active {
-            color: #667eea;
-            background: rgba(102, 126, 234, 0.1);
-        }
-        
-        .global-nav-item.active .global-nav-icon {
-            transform: scale(1.05);
-            filter: drop-shadow(0 2px 4px rgba(102, 126, 234, 0.3));
-        }
+        /* 使用新的统一学生底部导航组件，无需额外样式定义 */
         
         .global-nav-icon {
             font-size: 18px;
@@ -598,10 +574,9 @@
         }
     </style>
     
-    <!-- 底部导航组件 -->
-    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
-    <script src="/frontend/js/navigation-config.js"></script>
-    <script src="/frontend/js/bottom-navigation.js"></script>
+    <!-- 学生底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/student-bottom-nav.css">
+    <script src="/frontend/js/student-bottom-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -832,18 +807,18 @@
         }
 
         function generateRoleBasedNavigation() {
-            console.log('初始化vip-center统一底部导航组件...');
+            console.log('初始化学生底部导航组件...');
             
-            // 使用新的统一组件初始化导航
-            const success = BottomNavigation.init({
-                currentPage: 'vip-center',
+            // 使用新的统一学生底部导航组件
+            const success = StudentBottomNav.init({
+                currentPage: 'profile',  // vip-center.html属于profile页面ID下
                 debug: false
             });
             
             if (success) {
-                console.log('✅ 底部导航组件初始化成功');
+                console.log('✅ 学生底部导航组件初始化成功');
             } else {
-                console.error('❌ 底部导航组件初始化失败');
+                console.error('❌ 学生底部导航组件初始化失败');
             }
         }
 

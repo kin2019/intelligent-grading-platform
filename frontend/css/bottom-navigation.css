@@ -59,12 +59,24 @@
 }
 
 .global-nav-item:hover {
-    color: #4CAF50 !important;
+    color: #ff6b6b !important;
 }
 
 .global-nav-item.active {
-    background: rgba(76, 175, 80, 0.1) !important;
-    color: #4CAF50 !important;
+    background: transparent !important;
+    color: #ff6b6b !important;
+}
+
+/* 确保所有可能的导航项选中状态都是红色 */
+.nav-item.active,
+.global-nav-item.active,
+[data-nav-component="bottom-navigation"] .nav-item.active,
+[data-nav-component="bottom-navigation"] .global-nav-item.active,
+.global-bottom-nav .global-nav-item.active,
+.theme-bottom-nav .theme-nav-item.active {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #ff6b6b !important;
 }
 
 /* 家长端导航项 */

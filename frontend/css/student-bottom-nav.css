@@ -1,0 +1,345 @@
+/**
+ * 学生底部导航通用样式文件
+ * 基于homework-submit.html的底部导航样式制作
+ * 包含：首页、拍照批改、错题本、学习计划、我的 五个按钮
+ * 
+ * @author ZYJC Team
+ * @version 1.0.0
+ */
+
+/* =================================
+   学生底部导航基础样式
+   ================================= */
+
+/* 强制隐藏所有可能存在的其他导航元素 */
+.global-bottom-nav,
+.theme-bottom-nav,
+.bottom-nav:not(.student-bottom-nav),
+[data-nav-component="bottom-navigation"]:not(.student-bottom-nav) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+}
+
+/* 学生底部导航容器 - 使用最高优先级，统一高度为50px */
+.student-bottom-nav,
+body .student-bottom-nav,
+html body .student-bottom-nav {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 100% !important;
+    max-width: 400px !important;
+    height: 50px !important;
+    min-height: 50px !important;
+    max-height: 50px !important;
+    background: #ffffff !important;
+    border-top: 1px solid #eee !important;
+    display: flex !important;
+    padding: 6px 0 4px !important;
+    z-index: 99999 !important;
+    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1) !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    box-sizing: border-box !important;
+}
+
+/* 学生导航项 - 使用最高优先级，调整适应50px容器高度 */
+.student-nav-item,
+body .student-nav-item,
+html body .student-nav-item {
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 4px 2px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: #666 !important;
+    text-decoration: none !important;
+    border-radius: 6px !important;
+    margin: 0 1px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+}
+
+/* 导航项鼠标悬停效果 - 使用最高优先级 */
+.student-nav-item:hover,
+body .student-nav-item:hover,
+html body .student-nav-item:hover {
+    color: #ff6b6b !important;
+    transform: translateY(-1px) !important;
+    background: transparent !important;
+}
+
+/* 导航项选中状态 - 使用最高优先级，确保所有选中项都是红色 */
+.student-nav-item.active,
+body .student-nav-item.active,
+html body .student-nav-item.active,
+.student-nav-item.active *,
+body .student-nav-item.active *,
+html body .student-nav-item.active * {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #ff6b6b !important;
+}
+
+/* 针对所有可能的导航项选择器 */
+.nav-item.active,
+.global-nav-item.active,
+[data-nav-item].active,
+body .nav-item.active,
+body .global-nav-item.active,
+html body .nav-item.active,
+html body .global-nav-item.active {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #ff6b6b !important;
+}
+
+/* 导航项图标 - 使用最高优先级，调整适应50px容器 */
+.student-nav-icon,
+body .student-nav-icon,
+html body .student-nav-icon,
+.nav-icon,
+.global-nav-icon,
+body .nav-icon,
+body .global-nav-icon {
+    font-size: 18px !important;
+    margin-bottom: 1px !important;
+    display: block !important;
+    line-height: 1 !important;
+    color: inherit !important;
+}
+
+/* 导航项文字 - 使用最高优先级，调整适应50px容器 */
+.student-nav-text,
+body .student-nav-text,
+html body .student-nav-text,
+.nav-text,
+.global-nav-text,
+body .nav-text,
+body .global-nav-text {
+    font-size: 9px !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    display: block !important;
+    color: inherit !important;
+    white-space: nowrap !important;
+}
+
+/* =================================
+   点击效果
+   ================================= */
+
+/* 点击时的效果 */
+.student-nav-item:active {
+    transform: translateY(0) !important;
+    opacity: 0.8 !important;
+}
+
+/* 选中项的图标放大效果 */
+.student-nav-item.active .student-nav-icon {
+    transform: scale(1.1) !important;
+    transition: transform 0.2s ease !important;
+}
+
+/* =================================
+   响应式适配
+   ================================= */
+
+@media (max-width: 480px) {
+    .student-bottom-nav,
+    body .student-bottom-nav {
+        max-width: 100% !important;
+        border-radius: 0 !important;
+        height: 50px !important;
+    }
+    
+    .student-nav-item,
+    body .student-nav-item,
+    .student-bottom-nav .nav-item,
+    .student-bottom-nav .global-nav-item {
+        padding: 4px 1px !important;
+        margin: 0 !important;
+        height: 40px !important;
+    }
+    
+    .student-nav-icon,
+    body .student-nav-icon,
+    .student-bottom-nav .nav-icon,
+    .student-bottom-nav .global-nav-icon {
+        font-size: 16px !important;
+        margin-bottom: 1px !important;
+    }
+    
+    .student-nav-text,
+    body .student-nav-text,
+    .student-bottom-nav .nav-text,
+    .student-bottom-nav .global-nav-text {
+        font-size: 8px !important;
+    }
+    
+    /* 确保移动端选中状态也是红色 */
+    .student-nav-item.active,
+    body .student-nav-item.active,
+    .student-bottom-nav .nav-item.active,
+    .student-bottom-nav .global-nav-item.active {
+        color: #ff6b6b !important;
+        background: transparent !important;
+    }
+}
+
+@media (max-width: 360px) {
+    .student-nav-text,
+    body .student-nav-text,
+    .student-bottom-nav .nav-text,
+    .student-bottom-nav .global-nav-text {
+        font-size: 7px !important;
+    }
+    
+    .student-nav-icon,
+    body .student-nav-icon,
+    .student-bottom-nav .nav-icon,
+    .student-bottom-nav .global-nav-icon {
+        font-size: 14px !important;
+    }
+    
+    /* 确保超小屏幕选中状态也是红色 */
+    .student-nav-item.active,
+    body .student-nav-item.active,
+    .student-bottom-nav .nav-item.active,
+    .student-bottom-nav .global-nav-item.active {
+        color: #ff6b6b !important;
+        background: transparent !important;
+    }
+}
+
+/* =================================
+   页面底部间距调整
+   ================================= */
+
+/* 为使用学生底部导航的页面添加底部间距 - 使用最高优先级，适配50px导航 */
+body.has-student-nav,
+html body.has-student-nav {
+    padding-bottom: 60px !important;
+    margin-bottom: 0 !important;
+}
+
+/* 确保所有可能的容器都有正确的底部间距 */
+body.has-student-nav .container,
+body.has-student-nav main,
+body.has-student-nav #app {
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+/* =================================
+   动画效果
+   ================================= */
+
+/* 导航显示动画 */
+.student-bottom-nav {
+    animation: slideUpStudentNav 0.3s ease-out;
+}
+
+@keyframes slideUpStudentNav {
+    from {
+        transform: translateX(-50%) translateY(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(-50%) translateY(0);
+        opacity: 1;
+    }
+}
+
+/* =================================
+   兼容性处理
+   ================================= */
+
+/* 确保与现有组件样式兼容 - 统一50px高度 */
+.student-bottom-nav .global-nav-item,
+.student-bottom-nav .nav-item,
+body .student-bottom-nav .global-nav-item,
+body .student-bottom-nav .nav-item {
+    all: unset !important;
+    flex: 1 !important;
+    text-align: center !important;
+    padding: 4px 2px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+    color: #666 !important;
+    text-decoration: none !important;
+    border-radius: 6px !important;
+    margin: 0 1px !important;
+    height: 40px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: center !important;
+    background: transparent !important;
+    box-sizing: border-box !important;
+}
+
+.student-bottom-nav .global-nav-item:hover,
+.student-bottom-nav .nav-item:hover,
+body .student-bottom-nav .global-nav-item:hover,
+body .student-bottom-nav .nav-item:hover {
+    color: #ff6b6b !important;
+    transform: translateY(-1px) !important;
+    background: transparent !important;
+}
+
+.student-bottom-nav .global-nav-item.active,
+.student-bottom-nav .nav-item.active,
+body .student-bottom-nav .global-nav-item.active,
+body .student-bottom-nav .nav-item.active {
+    background: transparent !important;
+    background-color: transparent !important;
+    color: #ff6b6b !important;
+}
+
+.student-bottom-nav .global-nav-icon,
+.student-bottom-nav .nav-icon,
+body .student-bottom-nav .global-nav-icon,
+body .student-bottom-nav .nav-icon {
+    font-size: 18px !important;
+    margin-bottom: 1px !important;
+    display: block !important;
+    line-height: 1 !important;
+    color: inherit !important;
+}
+
+.student-bottom-nav .global-nav-text,
+.student-bottom-nav .nav-text,
+body .student-bottom-nav .global-nav-text,
+body .student-bottom-nav .nav-text {
+    font-size: 9px !important;
+    line-height: 1 !important;
+    font-weight: 500 !important;
+    display: block !important;
+    color: inherit !important;
+}
+
+/* =================================
+   打印样式
+   ================================= */
+
+@media print {
+    .student-bottom-nav {
+        display: none !important;
+    }
+    
+    body.has-student-nav {
+        padding-bottom: 0 !important;
+    }
+}

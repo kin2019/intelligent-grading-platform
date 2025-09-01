@@ -14,35 +14,16 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            background: #f5f5f5;
             color: #333;
             min-height: 100vh;
-            position: relative;
-            overflow-x: hidden;
-        }
-        
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
-                radial-gradient(circle at 80% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 50%),
-                radial-gradient(circle at 40% 60%, rgba(255, 255, 255, 0.03) 0%, transparent 50%);
-            pointer-events: none;
-            z-index: 0;
         }
         
         .container {
             max-width: 400px;
             margin: 0 auto;
-            background: transparent;
+            background: #f5f5f5;
             min-height: 100vh;
-            position: relative;
-            z-index: 1;
         }
         
         /* 顶部导航栏 */
@@ -90,50 +71,35 @@
         
         /* 页面内容 */
         .page-content {
-            padding: 25px 20px 100px;
-            margin-top: -15px;
-            border-radius: 25px 25px 0 0;
-            background: rgba(248, 249, 255, 0.95);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
+            padding: 20px;
+            margin-top: -10px;
+            border-radius: 20px 20px 0 0;
+            background: #f5f5f5;
             position: relative;
-            z-index: 2;
-            min-height: calc(100vh - 100px);
+            z-index: 1;
+            min-height: calc(100vh - 80px);
+            margin-bottom: 80px;
         }
         
-        .page-content::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(180deg, rgba(255, 255, 255, 0.1) 0%, rgba(255, 255, 255, 0.05) 100%);
-            border-radius: 25px 25px 0 0;
-            pointer-events: none;
+        /* 通用卡片样式 */
+        .card {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
         
         /* 用户信息卡片 */
         .user-card {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 24px;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             display: flex;
             align-items: center;
             justify-content: space-between;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            z-index: 3;
-            transition: all 0.3s ease;
-        }
-        
-        .user-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
         }
         
         .user-info {
@@ -195,10 +161,8 @@
         .function-grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 18px;
-            margin-bottom: 28px;
-            position: relative;
-            z-index: 3;
+            gap: 12px;
+            margin-bottom: 20px;
         }
         
         /* 智能出题功能卡片特殊样式 */
@@ -214,44 +178,17 @@
         }
         
         .function-item {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 28px 20px;
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px 16px;
             text-align: center;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
             cursor: pointer;
-            transition: all 0.4s ease;
-            position: relative;
-            overflow: hidden;
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-        
-        .function-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
-            opacity: 0;
-            transition: opacity 0.3s ease;
-        }
-        
-        .function-item:hover::before {
-            opacity: 1;
+            transition: all 0.2s ease;
         }
         
         .function-item:hover {
-            transform: translateY(-4px) scale(1.02);
-            box-shadow: 0 16px 48px rgba(102, 126, 234, 0.2);
-            border-color: rgba(102, 126, 234, 0.3);
-        }
-        
-        .function-item:active {
-            transform: translateY(-2px) scale(1.01);
+            background: #e9ecef;
         }
         
         .function-icon {
@@ -274,43 +211,18 @@
         
         /* 数据统计 */
         .stats-section {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 28px;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            z-index: 3;
-            transition: all 0.3s ease;
-        }
-        
-        .stats-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
         
         .section-title {
-            font-size: 18px;
-            font-weight: 700;
+            font-size: 16px;
+            font-weight: 600;
             color: #333;
-            margin-bottom: 20px;
-            position: relative;
-            padding-left: 12px;
-        }
-        
-        .section-title::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 4px;
-            height: 18px;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 2px;
+            margin-bottom: 16px;
         }
         
         .stats-grid {
@@ -353,22 +265,11 @@
         
         /* 最近作业 */
         .homework-section {
-            background: rgba(255, 255, 255, 0.9);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 24px;
-            margin-bottom: 28px;
-            box-shadow: 0 8px 32px rgba(102, 126, 234, 0.1);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-            position: relative;
-            z-index: 3;
-            transition: all 0.3s ease;
-        }
-        
-        .homework-section:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 12px 40px rgba(102, 126, 234, 0.15);
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
         }
         
         .homework-list {
@@ -691,13 +592,13 @@
             }
             
         }
+        
+        /* 使用新的统一学生底部导航组件，无需额外样式定义 */
     </style>
-    <script src="/frontend/js/global-nav.js"></script>
     
-    <!-- 底部导航组件 -->
-    <link rel="stylesheet" href="/frontend/css/bottom-navigation.css">
-    <script src="/frontend/js/navigation-config.js"></script>
-    <script src="/frontend/js/bottom-navigation.js"></script>
+    <!-- 学生底部导航组件 -->
+    <link rel="stylesheet" href="/frontend/css/student-bottom-nav.css">
+    <script src="/frontend/js/student-bottom-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -727,35 +628,38 @@
             </div>
             
             <!-- 功能入口 -->
-            <div class="function-grid">
-                <div class="function-item" onclick="goToHomeworkSubmit()">
-                    <div class="function-icon">📷</div>
-                    <div class="function-text">拍照批改</div>
-                </div>
-                
-                <div class="function-item" onclick="goToErrorBook()">
-                    <div class="function-icon">📚</div>
-                    <div class="function-text">错题本</div>
-                </div>
-                
-                <div class="function-item" onclick="goToStudyPlan()">
-                    <div class="function-icon">📋</div>
-                    <div class="function-text">学习计划</div>
-                </div>
-                
-                <div class="function-item ai-exercise" onclick="goToExerciseConfig()">
-                    <div class="function-icon">✨</div>
-                    <div class="function-text">智能出题</div>
-                </div>
-                
-                <div class="function-item" onclick="goToBatchExercise()">
-                    <div class="function-icon">📦</div>
-                    <div class="function-text">批量出题</div>
-                </div>
-                
-                <div class="function-item" onclick="goToRecommendations()">
-                    <div class="function-icon">🎯</div>
-                    <div class="function-text">个性推荐</div>
+            <div class="card">
+                <div class="section-title">学习工具</div>
+                <div class="function-grid">
+                    <div class="function-item" onclick="goToHomeworkSubmit()">
+                        <div class="function-icon">📷</div>
+                        <div class="function-text">拍照批改</div>
+                    </div>
+                    
+                    <div class="function-item" onclick="goToErrorBook()">
+                        <div class="function-icon">📚</div>
+                        <div class="function-text">错题本</div>
+                    </div>
+                    
+                    <div class="function-item" onclick="goToStudyPlan()">
+                        <div class="function-icon">📋</div>
+                        <div class="function-text">学习计划</div>
+                    </div>
+                    
+                    <div class="function-item ai-exercise" onclick="goToExerciseConfig()">
+                        <div class="function-icon">✨</div>
+                        <div class="function-text">智能出题</div>
+                    </div>
+                    
+                    <div class="function-item" onclick="goToBatchExercise()">
+                        <div class="function-icon">📦</div>
+                        <div class="function-text">批量出题</div>
+                    </div>
+                    
+                    <div class="function-item" onclick="goToRecommendations()">
+                        <div class="function-icon">🎯</div>
+                        <div class="function-text">个性推荐</div>
+                    </div>
                 </div>
             </div>
             
@@ -826,6 +730,9 @@
             API_BASE = 'http://localhost:8000/api/v1';
             
             console.log('Token:', token ? 'OK' : 'NONE');
+            
+            // 立即初始化学生底部导航组件
+            initStudentBottomNavigation();
             
             // 立即显示默认内容
             showDefaultContent();
@@ -1303,25 +1210,24 @@
             loadAllDataAsync();
         });
 
-        // 初始化统一底部导航组件
-        function initBottomNavigation() {
-            console.log('初始化student-home底部导航组件...');
+        // 初始化学生底部导航组件
+        function initStudentBottomNavigation() {
+            console.log('初始化学生底部导航组件...');
             
-            // 使用新的统一组件初始化导航
-            const success = BottomNavigation.init({
-                currentPage: 'student-home',
+            // 使用新的统一学生底部导航组件
+            const success = StudentBottomNav.init({
+                currentPage: 'home',  // student-home.html对应的是home页面ID
                 debug: false
             });
             
             if (success) {
-                console.log('✅ 底部导航组件初始化成功');
+                console.log('✅ 学生底部导航组件初始化成功');
             } else {
-                console.error('❌ 底部导航组件初始化失败');
+                console.error('❌ 学生底部导航组件初始化失败');
             }
         }
         
-        document.addEventListener('DOMContentLoaded', initBottomNavigation);
-        setTimeout(initBottomNavigation, 500);
+        // 底部导航已在initPageSync中调用，无需单独监听器
         
         // 页面初始化（已在上面定义，这里不重复）
     </script>
