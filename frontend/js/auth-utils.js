@@ -5,8 +5,8 @@
 
 // 测试token定义
 const TEST_TOKENS = {
-    student: 'test-token-123',  // 后端支持的测试token
-    parent: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIyIiwiZXhwIjoxNzU2OTk3MDM0fQ.qhe1I26Gs9jBA3jOJn42zzUi6EErZGf1Bm3wjvtoqoU',   // 最新的家长token (7天有效)
+    student: 'test-token-123',  // 后端支持的学生测试token
+    parent: 'test-token-parent',   // 后端支持的家长测试token
     teacher: 'test-token-123'   // 使用相同的测试token
 };
 

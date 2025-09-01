@@ -342,6 +342,7 @@ async def get_parent_dashboard(request: Request, db: Session = Depends(get_db)):
     dashboard_data = {
         "parent_id": current_user["id"],
         "children_count": len(students),
+        "children": [],  # 添加完整的children数据供前端使用
         "children_summary": [],
         "overall_stats": {
             "total_homework": 0,
@@ -365,6 +366,23 @@ async def get_parent_dashboard(request: Request, db: Session = Depends(get_db)):
     score_count = 0
     
     for student in students:
+        # 构建完整的学生数据（包含头像等前端需要的信息）
+        student_data = {
+            "id": student.id,
+            "name": student.name,
+            "avatar": student.avatar,  # 包含头像信息
+            "grade": student.grade.value,
+            "school": student.school,
+            "class_name": student.class_name,
+            "total_homework": student.total_homework,
+            "completed_homework": student.completed_homework,
+            "average_score": float(student.average_score) if student.average_score else 0.0,
+            "todayScore": float(student.average_score) if student.average_score else 0,  # 前端需要的今日分数
+            "status": "已完成" if student.completed_homework > 0 else "未开始"  # 前端需要的状态
+        }
+        dashboard_data["children"].append(student_data)
+        
+        # 兼容性：保持原有的children_summary结构
         student_summary = {
             "student_id": student.id,
             "name": student.name,

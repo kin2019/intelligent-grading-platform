@@ -88,6 +88,7 @@ class Student(BaseTable):
     
     # 基本信息
     name: Mapped[str] = mapped_column(String(50), comment="学生姓名")
+    avatar: Mapped[Optional[str]] = mapped_column(String(255), comment="学生头像URL")
     grade: Mapped[GradeLevel] = mapped_column(String(20), comment="年级")
     school: Mapped[Optional[str]] = mapped_column(String(100), comment="学校名称")
     class_name: Mapped[Optional[str]] = mapped_column(String(50), comment="班级")
@@ -178,6 +179,7 @@ class UserResponse(UserBase):
 class StudentBase(BaseSchema):
     """学生基础模型"""
     name: str
+    avatar: Optional[str] = None
     grade: GradeLevel
     school: Optional[str] = None
     class_name: Optional[str] = None
@@ -191,6 +193,7 @@ class StudentCreate(StudentBase):
 class StudentUpdate(BaseSchema):
     """更新学生模型"""
     name: Optional[str] = None
+    avatar: Optional[str] = None
     grade: Optional[GradeLevel] = None
     school: Optional[str] = None
     class_name: Optional[str] = None

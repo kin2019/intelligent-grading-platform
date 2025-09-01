@@ -608,17 +608,6 @@
                 </div>
             </div>
             
-            <!-- 孩子列表 -->
-            <div class="theme-card">
-                <div class="theme-section-title">👶 我的孩子</div>
-                <div class="children-list" id="childrenList">
-                    <div class="theme-loading">
-                        <div class="theme-loading-spinner"></div>
-                        <div>正在加载孩子信息...</div>
-                    </div>
-                </div>
-            </div>
-            
             <!-- 练习管理功能 -->
             <div class="theme-card" style="margin-bottom: var(--space-6);">
                 <div class="theme-section-title">🎯 练习管理</div>
@@ -649,9 +638,8 @@
 
                 <!-- 练习完成状态 -->
                 <div class="theme-card" style="background: var(--bg-secondary); margin-bottom: var(--space-4);">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--space-4);">
+                    <div style="margin-bottom: var(--space-4);">
                         <div style="font-size: 15px; font-weight: 600;">📋 练习完成情况</div>
-                        <button class="theme-btn theme-btn-sm theme-btn-secondary" onclick="refreshPracticeStatus()">刷新</button>
                     </div>
                     <div id="practiceStatusList">
                         <div class="theme-loading">
@@ -819,6 +807,9 @@
             // 加载数据
             await loadParentData();
             await loadParentDashboard(); // 加载真实数据
+            
+            // 初始化提醒检查器
+            initReminderChecker();
         }
 
         async function loadParentData() {
@@ -857,48 +848,73 @@
 
         async function loadParentDashboard() {
             try {
+                console.log('开始加载家长仪表板数据...');
                 const data = await AuthUtils.apiRequest('dashboard', {
                     method: 'GET'
                 });
                 
-                console.log('家长仪表板数据:', data);
+                console.log('✅ 家长仪表板数据加载成功:', data);
                 
                 // 全局存储dashboard数据，供其他函数使用
                 window.dashboardData = data;
                 
-                // 确保即使数据为空也能正常显示
-                updateTodayStats(data?.today_stats);
-                updateChildrenList(data?.children);
-                updateNotificationList(data?.notifications);
-                updateReportSummary(data?.weekly_report);
-                updateStudyChart(data?.study_time_data);
-                updateActivityList(data?.recent_activities);
+                // 更新各个模块的数据显示
+                if (data) {
+                    updateTodayStats(data.today_stats);
+                    // 暂时跳过children列表更新
+                    updateNotificationList(data.notifications);
+                    updateReportSummary(data.weekly_report);
+                    updateStudyChart(data.study_time_data);
+                    updateActivityList(data.recent_activities);
+                    
+                    // 加载练习完成情况数据
+                    refreshPracticeStatus();
+                    loadRemindersList();
+                    
+                    console.log('✅ 所有模块数据更新完成');
+                } else {
+                    console.warn('⚠️ 收到空数据，使用默认显示');
+                    showEmptyState();
+                }
                 
-                // 加载新增的练习管理功能数据
-                refreshPracticeStatus();
-                loadRemindersList();
             } catch (error) {
-                console.error('获取家长仪表板数据失败:', error);
+                console.error('❌ 获取家长仪表板数据失败:', error);
+                console.error('错误详情:', error.message || error);
                 
-                // 使用错误处理系统显示用户友好错误
-                window.errorHandler.showFriendlyError(error, 'parent-dashboard');
+                // 显示用户友好的错误信息
+                showToast('数据加载失败，请检查网络连接或稍后重试');
                 
-                // 显示空数据而不是错误状态，让页面正常可用
-                updateTodayStats(null);
-                updateChildrenList(null);
-                updateNotificationList(null);
-                updateReportSummary(null);
-                updateStudyChart(null);
-                updateActivityList(null);
-                
-                showToast('数据加载失败，显示空白状态');
-                
-                // 设置空数据，以便其他功能可以正常工作
-                window.dashboardData = { children: [] };
-                
-                // 即使主要数据加载失败，也尝试加载练习管理功能数据
+                // 显示空数据状态，让页面基本功能可用
+                showEmptyState();
+            }
+        }
+        
+        function showEmptyState() {
+            console.log('显示空数据状态');
+            
+            // 设置默认的空数据，以便其他功能可以正常工作
+            window.dashboardData = { 
+                children: [],
+                today_stats: { homeworkCount: 0, accuracy: 0 },
+                notifications: [],
+                weekly_report: { totalHomework: 0, avgAccuracy: 0, studyDays: 0 },
+                study_time_data: [0, 0, 0, 0, 0, 0, 0],
+                recent_activities: []
+            };
+            
+            // 更新各模块显示空状态
+            updateTodayStats(null);
+            updateNotificationList([]);
+            updateReportSummary(null);
+            updateStudyChart([0, 0, 0, 0, 0, 0, 0]);
+            updateActivityList([]);
+            
+            // 尝试加载练习管理功能数据（使用独立的API）
+            try {
                 refreshPracticeStatus();
                 loadRemindersList();
+            } catch (e) {
+                console.warn('练习管理数据加载失败:', e);
             }
         }
         
@@ -940,23 +956,81 @@
         function updateNotificationList(notifications) {
             const notificationList = document.getElementById('notificationList');
             
-            if (!notifications || notifications.length === 0) {
-                notificationList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无通知</div>';
+            console.log('🔔 更新消息通知列表:', notifications);
+            
+            // 移除加载状态
+            const loadingElements = notificationList.querySelectorAll('.theme-loading');
+            loadingElements.forEach(el => el.remove());
+            
+            if (!notifications || !Array.isArray(notifications) || notifications.length === 0) {
+                console.log('🔔 暂无通知数据，显示空状态');
+                notificationList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted, #666); padding: 20px; font-size: 14px;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">📭</div>
+                        <div>暂无通知消息</div>
+                    </div>
+                `;
                 return;
             }
             
-            const notificationsHtml = notifications.map(notification => `
-                <div class="notification-item ${notification?.unread ? 'unread' : ''}">
-                    <div class="notification-icon">${notification?.icon || '📝'}</div>
-                    <div class="notification-content">
-                        <div class="notification-text">${notification?.text || '无内容'}</div>
-                        <div class="notification-time">${notification?.time || '未知时间'}</div>
-                    </div>
-                    ${notification?.unread ? '<div class="notification-badge"></div>' : ''}
-                </div>
-            `).join('');
+            console.log(`🔔 处理 ${notifications.length} 条通知`);
             
-            notificationList.innerHTML = notificationsHtml;
+            try {
+                const notificationsHtml = notifications.map((notification, index) => {
+                    // 确保通知对象存在且有必要的属性
+                    if (!notification || typeof notification !== 'object') {
+                        console.warn(`🔔 通知 ${index} 格式不正确:`, notification);
+                        return '';
+                    }
+                    
+                    const icon = notification.icon || '📝';
+                    const text = notification.text || notification.message || '无内容';
+                    const time = notification.time || notification.created_at || '刚刚';
+                    const unread = notification.unread || notification.is_unread || false;
+                    
+                    return `
+                        <div class="notification-item ${unread ? 'unread' : ''}" style="
+                            display: flex; 
+                            align-items: center; 
+                            padding: 12px; 
+                            background: ${unread ? '#e3f2fd' : '#fff3cd'}; 
+                            border-radius: 8px; 
+                            margin-bottom: 8px;
+                            border-left: 4px solid ${unread ? '#2196F3' : '#ffc107'};
+                        ">
+                            <div class="notification-icon" style="margin-right: 12px; font-size: 16px;">${icon}</div>
+                            <div class="notification-content" style="flex: 1;">
+                                <div class="notification-text" style="font-size: 14px; color: #333; margin-bottom: 4px;">${text}</div>
+                                <div class="notification-time" style="font-size: 12px; color: #666;">${time}</div>
+                            </div>
+                            ${unread ? '<div class="notification-badge" style="width: 8px; height: 8px; background: #ff4444; border-radius: 50%; margin-left: 8px;"></div>' : ''}
+                        </div>
+                    `;
+                }).filter(html => html !== '').join('');
+                
+                if (notificationsHtml) {
+                    notificationList.innerHTML = notificationsHtml;
+                    console.log('🔔 消息通知列表更新完成');
+                } else {
+                    console.warn('🔔 所有通知都无效，显示空状态');
+                    notificationList.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted, #666); padding: 20px; font-size: 14px;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">📭</div>
+                            <div>暂无有效通知</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('🔔 更新通知列表时出错:', error);
+                notificationList.innerHTML = `
+                    <div style="text-align: center; color: var(--error, #dc3545); padding: 20px; font-size: 14px;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                        <div>通知加载失败</div>
+                        <button onclick="loadParentDashboard()" style="margin-top: 12px; padding: 6px 12px; background: var(--primary, #007AFF); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">重试</button>
+                    </div>
+                `;
+            }
         }
         
         function updateStudyChart(data) {
@@ -1034,11 +1108,22 @@
                 return avatarUrl.replace('emoji:', '');
             }
             
+            // 如果是base64格式的图片数据，直接使用
+            if (avatarUrl.startsWith('data:image/')) {
+                return `<img src="${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶';">`;
+            }
+            
             // 如果是图片URL，显示img标签
             if (avatarUrl.startsWith('/uploads/') || avatarUrl.startsWith('http')) {
                 const baseUrl = avatarUrl.startsWith('http') ? '' : 'http://localhost:8000';
-                const fullUrl = `${baseUrl}${avatarUrl}`;
+                const timestamp = Date.now(); // 添加时间戳避免缓存问题
+                const fullUrl = `${baseUrl}${avatarUrl}?t=${timestamp}`;
                 return `<img src="${fullUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶';">`;
+            }
+            
+            // 如果是第三方图片链接（微信头像等），直接使用
+            if (avatarUrl.startsWith('https://')) {
+                return `<img src="${avatarUrl}" alt="头像" style="width: 100%; height: 100%; border-radius: 50%; object-fit: cover;" onerror="this.outerHTML='👶';">`;
             }
             
             // 默认返回baby emoji
@@ -1048,59 +1133,158 @@
         function updateReportSummary(report) {
             const reportSummary = document.getElementById('reportSummary');
             
-            if (!report) {
+            console.log('📊 更新本周学习概况:', report);
+            
+            // 移除加载状态
+            const loadingElements = reportSummary.querySelectorAll('.theme-loading');
+            loadingElements.forEach(el => el.remove());
+            
+            try {
+                // 处理不同的数据格式
+                let totalHomework = 0;
+                let avgAccuracy = 0;
+                let studyDays = 0;
+                
+                if (report && typeof report === 'object') {
+                    totalHomework = report.totalHomework || report.total_homework || report.homeworkCount || 0;
+                    avgAccuracy = report.avgAccuracy || report.avg_accuracy || report.average_accuracy || report.accuracy || 0;
+                    studyDays = report.studyDays || report.study_days || report.activeDays || 0;
+                } else if (report === null || report === undefined) {
+                    console.log('📊 无报告数据，使用默认值');
+                } else {
+                    console.warn('📊 报告数据格式不正确:', report);
+                }
+                
+                // 确保数值有效
+                totalHomework = Math.max(0, parseInt(totalHomework) || 0);
+                avgAccuracy = Math.max(0, Math.min(100, parseInt(avgAccuracy) || 0));
+                studyDays = Math.max(0, parseInt(studyDays) || 0);
+                
+                console.log(`📊 处理后的数据: 作业${totalHomework}, 正确率${avgAccuracy}%, 学习天数${studyDays}`);
+                
                 reportSummary.innerHTML = `
-                    <div class="summary-item">
-                        <div class="summary-number">0</div>
-                        <div class="summary-label">本周作业</div>
+                    <div class="summary-item" style="text-align: center; padding: 16px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px;">
+                        <div class="summary-number" style="font-size: 20px; font-weight: bold; color: var(--primary, #ff6b6b); margin-bottom: 4px;">${totalHomework}</div>
+                        <div class="summary-label" style="font-size: 12px; color: var(--text-muted, #666);">本周作业</div>
                     </div>
-                    <div class="summary-item">
-                        <div class="summary-number">0%</div>
-                        <div class="summary-label">平均正确率</div>
+                    <div class="summary-item" style="text-align: center; padding: 16px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px;">
+                        <div class="summary-number" style="font-size: 20px; font-weight: bold; color: var(--primary, #ff6b6b); margin-bottom: 4px;">${avgAccuracy}%</div>
+                        <div class="summary-label" style="font-size: 12px; color: var(--text-muted, #666);">平均正确率</div>
                     </div>
-                    <div class="summary-item">
-                        <div class="summary-number">0</div>
-                        <div class="summary-label">学习天数</div>
+                    <div class="summary-item" style="text-align: center; padding: 16px; background: var(--bg-secondary, #f8f9fa); border-radius: 12px;">
+                        <div class="summary-number" style="font-size: 20px; font-weight: bold; color: var(--primary, #ff6b6b); margin-bottom: 4px;">${studyDays}</div>
+                        <div class="summary-label" style="font-size: 12px; color: var(--text-muted, #666);">学习天数</div>
                     </div>
                 `;
-                return;
+                
+                console.log('📊 本周学习概况更新完成');
+                
+            } catch (error) {
+                console.error('📊 更新本周学习概况时出错:', error);
+                reportSummary.innerHTML = `
+                    <div style="text-align: center; color: var(--error, #dc3545); padding: 20px; font-size: 14px; grid-column: 1 / -1;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                        <div>学习概况加载失败</div>
+                        <button onclick="loadParentDashboard()" style="margin-top: 12px; padding: 6px 12px; background: var(--primary, #007AFF); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">重试</button>
+                    </div>
+                `;
             }
-            
-            reportSummary.innerHTML = `
-                <div class="summary-item">
-                    <div class="summary-number">${report?.totalHomework || 0}</div>
-                    <div class="summary-label">本周作业</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-number">${report?.avgAccuracy || 0}%</div>
-                    <div class="summary-label">平均正确率</div>
-                </div>
-                <div class="summary-item">
-                    <div class="summary-number">${report?.studyDays || 0}</div>
-                    <div class="summary-label">学习天数</div>
-                </div>
-            `;
         }
 
         function updateActivityList(activities) {
             const activityList = document.getElementById('activityList');
             
-            if (!activities || activities.length === 0) {
-                activityList.innerHTML = '<div style="text-align: center; color: #666; padding: 20px;">暂无最新动态</div>';
+            console.log('📈 更新最新动态列表:', activities);
+            
+            // 移除加载状态
+            const loadingElements = activityList.querySelectorAll('.theme-loading');
+            loadingElements.forEach(el => el.remove());
+            
+            if (!activities || !Array.isArray(activities) || activities.length === 0) {
+                console.log('📈 暂无动态数据，显示空状态');
+                activityList.innerHTML = `
+                    <div style="text-align: center; color: var(--text-muted, #666); padding: 40px; font-size: 14px;">
+                        <div style="font-size: 32px; margin-bottom: 12px;">📊</div>
+                        <div style="font-weight: 500; margin-bottom: 8px;">暂无学习动态</div>
+                        <div style="font-size: 12px; opacity: 0.8;">完成作业后这里会显示学习动态</div>
+                    </div>
+                `;
                 return;
             }
             
-            const activitiesHtml = activities.map(activity => `
-                <div class="activity-item">
-                    <div class="activity-icon">${activity?.icon || '📚'}</div>
-                    <div class="activity-content">
-                        <div class="activity-text">${activity?.text || '无内容'}</div>
-                        <div class="activity-time">${activity?.time || '未知时间'}</div>
-                    </div>
-                </div>
-            `).join('');
+            console.log(`📈 处理 ${activities.length} 条动态`);
             
-            activityList.innerHTML = activitiesHtml;
+            try {
+                const activitiesHtml = activities.map((activity, index) => {
+                    // 确保活动对象存在且有必要的属性
+                    if (!activity || typeof activity !== 'object') {
+                        console.warn(`📈 动态 ${index} 格式不正确:`, activity);
+                        return '';
+                    }
+                    
+                    const icon = activity.icon || activity.type_icon || '📚';
+                    const text = activity.text || activity.description || activity.content || activity.message || '无内容';
+                    const time = activity.time || activity.created_at || activity.timestamp || '刚刚';
+                    
+                    return `
+                        <div class="activity-item" style="
+                            display: flex;
+                            align-items: flex-start;
+                            padding: 12px;
+                            border-left: 4px solid var(--primary, #ff6b6b);
+                            background: var(--bg-tertiary, #fff5f5);
+                            border-radius: 0 8px 8px 0;
+                            margin-bottom: 8px;
+                        ">
+                            <div class="activity-icon" style="
+                                font-size: 16px;
+                                margin-right: 12px;
+                                margin-top: 2px;
+                                display: flex;
+                                align-items: center;
+                                justify-content: center;
+                                width: 20px;
+                                height: 20px;
+                            ">${icon}</div>
+                            <div class="activity-content" style="flex: 1;">
+                                <div class="activity-text" style="
+                                    font-size: 14px;
+                                    color: var(--text-primary, #333);
+                                    margin-bottom: 4px;
+                                    line-height: 1.4;
+                                ">${text}</div>
+                                <div class="activity-time" style="
+                                    font-size: 12px;
+                                    color: var(--text-muted, #999);
+                                ">${time}</div>
+                            </div>
+                        </div>
+                    `;
+                }).filter(html => html !== '').join('');
+                
+                if (activitiesHtml) {
+                    activityList.innerHTML = activitiesHtml;
+                    console.log('📈 最新动态列表更新完成');
+                } else {
+                    console.warn('📈 所有动态都无效，显示空状态');
+                    activityList.innerHTML = `
+                        <div style="text-align: center; color: var(--text-muted, #666); padding: 40px; font-size: 14px;">
+                            <div style="font-size: 32px; margin-bottom: 12px;">⚠️</div>
+                            <div>动态数据无效</div>
+                        </div>
+                    `;
+                }
+                
+            } catch (error) {
+                console.error('📈 更新最新动态时出错:', error);
+                activityList.innerHTML = `
+                    <div style="text-align: center; color: var(--error, #dc3545); padding: 20px; font-size: 14px;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                        <div>最新动态加载失败</div>
+                        <button onclick="loadParentDashboard()" style="margin-top: 12px; padding: 6px 12px; background: var(--primary, #007AFF); color: white; border: none; border-radius: 4px; font-size: 12px; cursor: pointer;">重试</button>
+                    </div>
+                `;
+            }
         }
 
         // 导航函数
@@ -1247,7 +1431,7 @@
                         transition: all 0.2s ease;
                     " onmouseover="this.style.borderColor='#667eea'; this.style.background='#f0f4ff'" 
                        onmouseout="this.style.borderColor='#e0e0e0'; this.style.background='white'">
-                        <div style="font-size: 32px; margin-right: 12px;">${getAvatarDisplay(child.avatar)}</div>
+                        <div style="width: 32px; height: 32px; font-size: 32px; margin-right: 12px; display: flex; align-items: center; justify-content: center; overflow: hidden;">${getAvatarDisplay(child.avatar)}</div>
                         <div>
                             <div style="font-weight: 600; margin-bottom: 4px;">${child.name}</div>
                             <div style="font-size: 12px; color: #666;">${child.grade || '年级未设置'}</div>
@@ -1311,11 +1495,18 @@
             `;
             
             try {
-                // 直接从现有的dashboard数据获取practice status，避免额外API调用
-                if (window.dashboardData && window.dashboardData.children) {
+                // 重新获取dashboard数据以确保头像信息是最新的
+                const data = await AuthUtils.apiRequest('dashboard', {
+                    method: 'GET'
+                });
+                
+                // 更新全局dashboard数据
+                window.dashboardData = data;
+                
+                if (data && data.children) {
                     let html = '';
                     
-                    window.dashboardData.children.forEach(child => {
+                    data.children.forEach(child => {
                         // 计算今日完成数（基于todayScore大于0）
                         const completedToday = child.todayScore > 0 ? 1 : 0;
                         
@@ -1325,7 +1516,7 @@
                         html += `
                             <div style="display: flex; justify-content: space-between; align-items: center; padding: 12px; border-radius: 8px; background: var(--bg-tertiary); margin-bottom: 8px;">
                                 <div style="display: flex; align-items: center;">
-                                    <div style="font-size: 24px; margin-right: 8px;">${getAvatarDisplay(child.avatar)}</div>
+                                    <div style="width: 24px; height: 24px; font-size: 24px; margin-right: 8px; display: flex; align-items: center; justify-content: center; overflow: hidden;">${getAvatarDisplay(child.avatar)}</div>
                                     <div>
                                         <div style="font-weight: 600; margin-bottom: 2px;">${child.name}</div>
                                         <div style="font-size: 11px; color: var(--text-muted);">今日完成 ${completedToday} 套</div>
@@ -1467,22 +1658,39 @@
             const frequency = document.getElementById('reminderFrequency').value;
             const enabled = document.getElementById('enableReminder').checked;
             
+            if (!time) {
+                showToast('请设置提醒时间');
+                return;
+            }
+            
             try {
                 // 使用本地存储保存提醒设置
                 const storedReminders = localStorage.getItem('parentReminders');
                 const reminders = storedReminders ? JSON.parse(storedReminders) : [];
                 
-                // 创建新的提醒记录
-                const newReminder = {
-                    id: Date.now(),
-                    time,
-                    frequency,
-                    enabled,
-                    created_at: new Date().toISOString()
-                };
-                
-                // 添加到现有提醒列表
-                reminders.push(newReminder);
+                // 检查是否已存在相同时间和频率的提醒
+                const existingReminder = reminders.find(r => r.time === time && r.frequency === frequency);
+                if (existingReminder) {
+                    if (confirm(`已存在 ${time} ${getFrequencyText(frequency)} 的提醒设置，是否覆盖？`)) {
+                        // 更新现有提醒
+                        existingReminder.enabled = enabled;
+                        existingReminder.updated_at = new Date().toISOString();
+                    } else {
+                        return;
+                    }
+                } else {
+                    // 创建新的提醒记录
+                    const newReminder = {
+                        id: Date.now(),
+                        time,
+                        frequency,
+                        enabled,
+                        created_at: new Date().toISOString()
+                    };
+                    
+                    // 添加到现有提醒列表
+                    reminders.push(newReminder);
+                }
                 
                 // 保存到localStorage
                 localStorage.setItem('parentReminders', JSON.stringify(reminders));
@@ -1508,40 +1716,124 @@
         async function loadRemindersList() {
             const remindersList = document.getElementById('remindersList');
             
+            console.log('⏰ 加载练习提醒列表');
+            
+            // 移除加载状态
+            const loadingElements = remindersList.querySelectorAll('.theme-loading');
+            loadingElements.forEach(el => el.remove());
+            
             try {
                 // 使用本地存储的提醒数据，避免调用不存在的API
                 const storedReminders = localStorage.getItem('parentReminders');
-                const reminders = storedReminders ? JSON.parse(storedReminders) : [];
+                console.log('⏰ 本地存储的提醒数据:', storedReminders);
+                
+                let reminders = [];
+                if (storedReminders) {
+                    try {
+                        reminders = JSON.parse(storedReminders);
+                        if (!Array.isArray(reminders)) {
+                            console.warn('⏰ 提醒数据不是数组格式，重置为空数组');
+                            reminders = [];
+                        }
+                    } catch (parseError) {
+                        console.error('⏰ 解析提醒数据失败:', parseError);
+                        reminders = [];
+                    }
+                }
+                
+                console.log(`⏰ 处理 ${reminders.length} 个提醒设置`);
                 
                 if (reminders && reminders.length > 0) {
                     let html = '';
-                    reminders.forEach(reminder => {
-                        const statusColor = reminder.enabled ? 'var(--success, #4caf50)' : 'var(--text-muted, #999)';
-                        const statusText = reminder.enabled ? '已启用' : '已禁用';
+                    reminders.forEach((reminder, index) => {
+                        // 验证提醒对象的有效性
+                        if (!reminder || typeof reminder !== 'object') {
+                            console.warn(`⏰ 提醒 ${index} 格式不正确:`, reminder);
+                            return;
+                        }
+                        
+                        const time = reminder.time || '未设置';
+                        const frequency = reminder.frequency || 'daily';
+                        const enabled = reminder.enabled !== undefined ? reminder.enabled : true;
+                        const statusColor = enabled ? 'var(--success, #4caf50)' : 'var(--text-muted, #999)';
+                        const statusText = enabled ? '已启用' : '已禁用';
                         
                         html += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--bg-secondary);">
-                                <div>
-                                    <div style="font-size: 14px; margin-bottom: 2px;">⏰ ${reminder.time}</div>
-                                    <div style="font-size: 11px; color: var(--text-muted);">${getFrequencyText(reminder.frequency)}</div>
+                            <div style="
+                                display: flex; 
+                                justify-content: space-between; 
+                                align-items: center; 
+                                padding: 12px; 
+                                border-bottom: 1px solid var(--bg-secondary, #f0f0f0);
+                                background: var(--bg-primary, white);
+                                border-radius: 8px;
+                                margin-bottom: 8px;
+                                box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+                            ">
+                                <div style="flex: 1;">
+                                    <div style="font-size: 14px; margin-bottom: 4px; font-weight: 500;">⏰ ${time}</div>
+                                    <div style="font-size: 11px; color: var(--text-muted, #666);">${getFrequencyText(frequency)}</div>
                                 </div>
-                                <div style="font-size: 11px; color: ${statusColor}; font-weight: 500;">${statusText}</div>
+                                <div style="display: flex; align-items: center; gap: 8px;">
+                                    <div style="
+                                        font-size: 11px; 
+                                        color: ${statusColor}; 
+                                        font-weight: 500;
+                                        padding: 4px 8px;
+                                        border-radius: 12px;
+                                        background: ${enabled ? 'rgba(76, 175, 80, 0.1)' : 'rgba(153, 153, 153, 0.1)'};
+                                    ">${statusText}</div>
+                                    <button onclick="toggleReminder(${reminder.id})" style="
+                                        padding: 4px 8px;
+                                        background: ${enabled ? '#ffa726' : '#4caf50'};
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                    " title="${enabled ? '禁用提醒' : '启用提醒'}">${enabled ? '禁用' : '启用'}</button>
+                                    <button onclick="deleteReminder(${reminder.id})" style="
+                                        padding: 4px 8px;
+                                        background: #f44336;
+                                        color: white;
+                                        border: none;
+                                        border-radius: 4px;
+                                        cursor: pointer;
+                                        font-size: 10px;
+                                    " title="删除提醒">删除</button>
+                                </div>
                             </div>
                         `;
                     });
-                    remindersList.innerHTML = html;
+                    
+                    if (html) {
+                        remindersList.innerHTML = html;
+                        console.log('⏰ 练习提醒列表更新完成');
+                    } else {
+                        remindersList.innerHTML = `
+                            <div style="text-align: center; color: var(--text-muted, #666); padding: 30px; font-size: 12px;">
+                                <div style="font-size: 24px; margin-bottom: 8px;">⏰</div>
+                                <div>提醒数据无效</div>
+                            </div>
+                        `;
+                    }
                 } else {
+                    console.log('⏰ 暂无提醒设置，显示默认状态');
                     remindersList.innerHTML = `
-                        <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px;">
-                            还没有设置任何提醒
+                        <div style="text-align: center; color: var(--text-muted, #666); padding: 30px; font-size: 12px;">
+                            <div style="font-size: 24px; margin-bottom: 8px;">⏰</div>
+                            <div style="margin-bottom: 4px;">还没有设置任何提醒</div>
+                            <div style="font-size: 10px; opacity: 0.8;">点击"设置提醒"按钮创建新的提醒</div>
                         </div>
                     `;
                 }
             } catch (error) {
-                console.error('加载提醒列表失败:', error);
+                console.error('⏰ 加载提醒列表失败:', error);
                 remindersList.innerHTML = `
-                    <div style="text-align: center; color: var(--text-muted); padding: 20px; font-size: 12px;">
-                        还没有设置任何提醒
+                    <div style="text-align: center; color: var(--error, #dc3545); padding: 20px; font-size: 12px;">
+                        <div style="font-size: 24px; margin-bottom: 8px;">⚠️</div>
+                        <div>提醒设置加载失败</div>
+                        <button onclick="loadRemindersList()" style="margin-top: 12px; padding: 6px 12px; background: var(--primary, #007AFF); color: white; border: none; border-radius: 4px; font-size: 11px; cursor: pointer;">重试</button>
                     </div>
                 `;
             }
@@ -1556,6 +1848,251 @@
                 'custom': '自定义'
             };
             return freqMap[frequency] || '未知';
+        }
+
+        // 删除提醒
+        function deleteReminder(reminderId) {
+            if (!confirm('确定要删除这个提醒吗？')) {
+                return;
+            }
+            
+            try {
+                const storedReminders = localStorage.getItem('parentReminders');
+                if (!storedReminders) {
+                    showToast('没有找到提醒数据');
+                    return;
+                }
+                
+                let reminders = JSON.parse(storedReminders);
+                const initialLength = reminders.length;
+                
+                // 过滤掉要删除的提醒
+                reminders = reminders.filter(reminder => reminder.id !== reminderId);
+                
+                if (reminders.length === initialLength) {
+                    showToast('未找到要删除的提醒');
+                    return;
+                }
+                
+                // 保存更新后的提醒列表
+                localStorage.setItem('parentReminders', JSON.stringify(reminders));
+                
+                showToast('提醒已删除');
+                loadRemindersList(); // 刷新列表
+                
+            } catch (error) {
+                console.error('删除提醒失败:', error);
+                showToast('删除失败，请重试');
+            }
+        }
+        
+        // 切换提醒状态（启用/禁用）
+        function toggleReminder(reminderId) {
+            try {
+                const storedReminders = localStorage.getItem('parentReminders');
+                if (!storedReminders) {
+                    showToast('没有找到提醒数据');
+                    return;
+                }
+                
+                let reminders = JSON.parse(storedReminders);
+                let targetReminder = null;
+                
+                // 找到目标提醒并切换状态
+                reminders = reminders.map(reminder => {
+                    if (reminder.id === reminderId) {
+                        reminder.enabled = !reminder.enabled;
+                        targetReminder = reminder;
+                        reminder.updated_at = new Date().toISOString();
+                    }
+                    return reminder;
+                });
+                
+                if (!targetReminder) {
+                    showToast('未找到要修改的提醒');
+                    return;
+                }
+                
+                // 保存更新后的提醒列表
+                localStorage.setItem('parentReminders', JSON.stringify(reminders));
+                
+                const statusText = targetReminder.enabled ? '已启用' : '已禁用';
+                showToast(`提醒${statusText}`);
+                loadRemindersList(); // 刷新列表
+                
+            } catch (error) {
+                console.error('切换提醒状态失败:', error);
+                showToast('操作失败，请重试');
+            }
+        }
+
+        // 提醒检查器
+        let reminderChecker = null;
+        
+        // 初始化提醒检查器
+        function initReminderChecker() {
+            // 请求通知权限
+            if ("Notification" in window && Notification.permission === "default") {
+                Notification.requestPermission().then(permission => {
+                    console.log('通知权限状态:', permission);
+                });
+            }
+            
+            // 清除之前的定时器
+            if (reminderChecker) {
+                clearInterval(reminderChecker);
+            }
+            
+            // 每分钟检查一次提醒
+            reminderChecker = setInterval(checkReminders, 60000);
+            console.log('⏰ 提醒检查器已启动');
+        }
+        
+        // 检查提醒
+        function checkReminders() {
+            try {
+                const storedReminders = localStorage.getItem('parentReminders');
+                if (!storedReminders) return;
+                
+                const reminders = JSON.parse(storedReminders);
+                const now = new Date();
+                const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+                const currentDay = now.getDay(); // 0=周日, 1=周一, ..., 6=周六
+                
+                reminders.forEach(reminder => {
+                    if (!reminder.enabled || reminder.time !== currentTime) return;
+                    
+                    // 检查频率是否匹配
+                    let shouldTrigger = false;
+                    switch (reminder.frequency) {
+                        case 'daily':
+                            shouldTrigger = true;
+                            break;
+                        case 'weekdays':
+                            shouldTrigger = currentDay >= 1 && currentDay <= 5; // 周一到周五
+                            break;
+                        case 'weekends':
+                            shouldTrigger = currentDay === 0 || currentDay === 6; // 周日或周六
+                            break;
+                        case 'custom':
+                            shouldTrigger = true; // 这里可以扩展自定义逻辑
+                            break;
+                    }
+                    
+                    if (shouldTrigger) {
+                        triggerReminder(reminder);
+                    }
+                });
+                
+            } catch (error) {
+                console.error('检查提醒失败:', error);
+            }
+        }
+        
+        // 触发提醒
+        function triggerReminder(reminder) {
+            const message = `📚 练习提醒：该让孩子们开始学习了！`;
+            
+            // 尝试显示浏览器通知
+            if ("Notification" in window && Notification.permission === "granted") {
+                const notification = new Notification("练习提醒", {
+                    body: message,
+                    icon: "/favicon.ico",
+                    tag: `reminder-${reminder.id}`, // 防止重复通知
+                    requireInteraction: true
+                });
+                
+                notification.onclick = () => {
+                    window.focus();
+                    notification.close();
+                };
+                
+                // 10秒后自动关闭
+                setTimeout(() => notification.close(), 10000);
+            }
+            
+            // 显示页面内提醒
+            showReminderModal(message);
+            
+            console.log(`⏰ 触发提醒: ${reminder.time} - ${getFrequencyText(reminder.frequency)}`);
+        }
+        
+        // 显示提醒弹窗
+        function showReminderModal(message) {
+            const modal = document.createElement('div');
+            modal.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.7);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 10000;
+                animation: fadeIn 0.3s ease-in;
+            `;
+            
+            const content = document.createElement('div');
+            content.style.cssText = `
+                background: white;
+                border-radius: 16px;
+                padding: 32px 24px;
+                max-width: 300px;
+                width: 90%;
+                text-align: center;
+                box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            `;
+            
+            content.innerHTML = `
+                <div style="font-size: 48px; margin-bottom: 16px;">⏰</div>
+                <h3 style="margin: 0 0 12px 0; color: #333; font-size: 18px;">练习提醒</h3>
+                <p style="margin: 0 0 24px 0; color: #666; line-height: 1.4; font-size: 14px;">${message}</p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="
+                        padding: 10px 20px;
+                        background: var(--primary, #667eea);
+                        color: white;
+                        border: none;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                        font-weight: 500;
+                    ">知道了</button>
+                    <button onclick="snoozeReminder()" style="
+                        padding: 10px 20px;
+                        background: #f5f5f5;
+                        color: #666;
+                        border: 1px solid #ddd;
+                        border-radius: 8px;
+                        cursor: pointer;
+                        font-size: 14px;
+                    ">稍后提醒</button>
+                </div>
+            `;
+            
+            modal.appendChild(content);
+            document.body.appendChild(modal);
+            
+            // 添加CSS动画
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: scale(0.8); }
+                    to { opacity: 1; transform: scale(1); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        
+        // 稍后提醒（5分钟后）
+        function snoozeReminder() {
+            document.querySelector('[style*="position: fixed"][style*="z-index: 10000"]')?.remove();
+            setTimeout(() => {
+                showReminderModal('📚 练习提醒：现在开始学习吧！');
+            }, 5 * 60 * 1000); // 5分钟
+            showToast('5分钟后再次提醒');
         }
 
         // 批量出题导航函数
