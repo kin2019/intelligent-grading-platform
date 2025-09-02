@@ -574,9 +574,6 @@
         }
     </style>
     
-    <!-- 学生底部导航组件 -->
-    <link rel="stylesheet" href="/frontend/css/student-bottom-nav.css">
-    <script src="/frontend/js/student-bottom-nav.js"></script>
 </head>
 <body>
     <div class="container">
@@ -737,7 +734,33 @@
             </div>
         </div>
         
-        <!-- 底部导航：学生用户使用global-bottom-nav样式，家长用户使用theme-bottom-nav样式（与learning-reports.html一致） -->
+        <!-- 底部导航 -->
+        <div class="theme-bottom-nav">
+            <div class="theme-nav-item" onclick="goToParentHome()">
+                <div class="theme-nav-icon">🏠</div>
+                <div class="theme-nav-text">首页</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToLearningReports()">
+                <div class="theme-nav-icon">📊</div>
+                <div class="theme-nav-text">学习报告</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToErrorAnalysis()">
+                <div class="theme-nav-icon">🔍</div>
+                <div class="theme-nav-text">错题分析</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToLearningProgress()">
+                <div class="theme-nav-icon">📈</div>
+                <div class="theme-nav-text">学习进度</div>
+            </div>
+            <div class="theme-nav-item" onclick="goToChildDetail()">
+                <div class="theme-nav-icon">👶</div>
+                <div class="theme-nav-text">孩子管理</div>
+            </div>
+            <div class="theme-nav-item active" onclick="goToProfile()">
+                <div class="theme-nav-icon">👤</div>
+                <div class="theme-nav-text">我的</div>
+            </div>
+        </div>
     </div>
 
     <!-- VIP中心页面使用自定义导航，不引入global-nav.js避免冲突 -->
@@ -807,19 +830,8 @@
         }
 
         function generateRoleBasedNavigation() {
-            console.log('初始化学生底部导航组件...');
-            
-            // 使用新的统一学生底部导航组件
-            const success = StudentBottomNav.init({
-                currentPage: 'profile',  // vip-center.html属于profile页面ID下
-                debug: false
-            });
-            
-            if (success) {
-                console.log('✅ 学生底部导航组件初始化成功');
-            } else {
-                console.error('❌ 学生底部导航组件初始化失败');
-            }
+            console.log('VIP中心页面使用家长底部导航...');
+            // 家长导航已直接在HTML中定义，无需额外初始化
         }
 
 
@@ -1344,6 +1356,31 @@
                 closePurchaseModal();
             }
         });
+
+        // 统一底部导航函数
+        function goToParentHome() {
+            window.location.href = '/frontend/parent-home.html';
+        }
+        
+        function goToLearningReports() {
+            window.location.href = '/frontend/learning-reports.html';
+        }
+        
+        function goToErrorAnalysis() {
+            window.location.href = '/frontend/error-analysis.html';
+        }
+        
+        function goToLearningProgress() {
+            window.location.href = '/frontend/learning-progress.html';
+        }
+        
+        function goToChildDetail() {
+            window.location.href = '/frontend/manage-children.html';
+        }
+        
+        function goToProfile() {
+            window.location.href = '/frontend/profile.html';
+        }
     </script>
 </body>
 </html>

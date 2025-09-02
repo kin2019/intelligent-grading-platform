@@ -5,11 +5,70 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理孩子 - ZYJC智能批改</title>
     <link rel="stylesheet" href="/frontend/css/modern-theme.css">
+    <!-- 关键样式：防止页面加载时左右晃动 -->
     <style>
+        /* 防止页面抖动的关键样式 */
+        html {
+            overflow-x: hidden;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        html, body {
+            overflow-x: hidden;
+            width: 100%;
+            max-width: 100%;
+            margin: 0;
+            padding: 0;
+        }
+        
+        .theme-container {
+            width: 100%;
+            max-width: 400px;
+            margin: 0 auto;
+            min-height: 100vh;
+            overflow-x: hidden;
+            box-sizing: border-box;
+        }
+        
+        /* 为加载状态设置固定高度，防止内容变化时布局跳跃 */
+        .theme-loading {
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 确保页面内容区域有稳定的最小高度 */
+        .theme-page-content {
+            min-height: calc(100vh - 150px);
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        .children-list {
+            min-height: 200px;
+            width: 100%;
+            box-sizing: border-box;
+        }
+        
+        /* 确保所有容器元素不超出父元素宽度 */
+        * {
+            box-sizing: border-box;
+        }
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+        }
+        
+        /* 防止内容超出宽度 */
+        img, video, canvas, svg {
+            max-width: 100%;
+            height: auto;
         }
         
         body {
@@ -17,6 +76,8 @@
             background: #f5f5f5;
             color: #333;
             min-height: 100vh;
+            overflow-x: hidden; /* 防止横向滚动 */
+            width: 100%;
         }
         
         .container {
@@ -24,6 +85,8 @@
             margin: 0 auto;
             background: #f5f5f5;
             min-height: 100vh;
+            width: 100%;
+            overflow-x: hidden;
         }
         
         /* 顶部导航栏 */
@@ -464,11 +527,16 @@
             box-shadow: 0 0 0 2px rgba(0, 122, 255, 0.2);
         }
         
-        /* 加载状态 */
+        /* 加载状态 - 设置固定高度防止布局跳跃 */
         .loading {
             text-align: center;
             padding: 40px;
             color: #666;
+            min-height: 400px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
         .loading-spinner {
@@ -493,15 +561,18 @@
     <div class="theme-container">
         <!-- 顶部导航栏 -->
         <div class="theme-navbar">
-            <div class="theme-navbar-content" style="display: flex; align-items: center; justify-content: space-between; position: relative;">
-                <div class="theme-navbar-title">管理孩子</div>
-                <button class="theme-btn-nav" onclick="showAddChildModal()">+</button>
+            <div class="theme-navbar-content" style="display: flex; align-items: center; position: relative;">
+                <div style="flex: 1;"></div>
+                <div class="theme-navbar-title" style="flex: 1; text-align: center;">管理孩子</div>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                    <button class="theme-btn-nav" onclick="showAddChildModal()">+</button>
+                </div>
             </div>
         </div>
         
         <!-- 页面内容 -->
         <div class="theme-page-content">
-            <div class="children-list" id="childrenList">
+            <div class="children-list" id="childrenList" style="min-height: 400px;">
                 <div class="theme-loading">
                     <div class="theme-loading-spinner"></div>
                     <div>加载孩子信息中...</div>
@@ -768,9 +839,12 @@
             
             console.log('更新孩子列表:', children);
             
+            // 保持容器的最小高度，防止布局跳跃
+            childrenListEl.style.minHeight = '400px';
+            
             if (children.length === 0) {
                 childrenListEl.innerHTML = `
-                    <div class="empty-state">
+                    <div class="empty-state" style="min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">
                         <div class="empty-icon">👶</div>
                         <div class="empty-title">还没有添加孩子</div>
                         <div class="empty-desc">点击右上角"+"按钮<br>添加您的第一个孩子</div>
@@ -801,6 +875,13 @@
             `).join('');
             
             childrenListEl.innerHTML = childrenHtml;
+            
+            // 内容更新后，根据实际内容调整最小高度
+            setTimeout(() => {
+                if (childrenListEl.scrollHeight > 400) {
+                    childrenListEl.style.minHeight = 'auto';
+                }
+            }, 100);
         }
 
         // 孩子头像编辑相关变量
@@ -1358,8 +1439,10 @@
         }
 
         function showError() {
-            document.getElementById('childrenList').innerHTML = 
-                '<div class="error">加载失败 <button class="retry-btn" onclick="loadChildren()">重试</button></div>';
+            const childrenListEl = document.getElementById('childrenList');
+            childrenListEl.style.minHeight = '400px';
+            childrenListEl.innerHTML = 
+                '<div class="error" style="min-height: 400px; display: flex; flex-direction: column; justify-content: center; align-items: center;">加载失败 <br><button class="retry-btn" onclick="loadChildren()" style="margin-top: 16px; padding: 8px 16px; border: none; border-radius: 6px; background: #007AFF; color: white; cursor: pointer;">重试</button></div>';
         }
 
         function goBack() {

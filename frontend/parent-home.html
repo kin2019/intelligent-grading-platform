@@ -2019,7 +2019,15 @@
         
         // 显示提醒弹窗
         function showReminderModal(message) {
+            // 防止重复显示弹窗
+            const existingModal = document.getElementById('reminderModal');
+            if (existingModal) {
+                console.log('提醒弹窗已存在，跳过重复显示');
+                return;
+            }
+            
             const modal = document.createElement('div');
+            modal.id = 'reminderModal'; // 添加唯一ID
             modal.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -2050,7 +2058,7 @@
                 <h3 style="margin: 0 0 12px 0; color: #333; font-size: 18px;">练习提醒</h3>
                 <p style="margin: 0 0 24px 0; color: #666; line-height: 1.4; font-size: 14px;">${message}</p>
                 <div style="display: flex; gap: 12px; justify-content: center;">
-                    <button onclick="this.closest('[style*=\"position: fixed\"]').remove()" style="
+                    <button onclick="closeReminderModal()" style="
                         padding: 10px 20px;
                         background: var(--primary, #667eea);
                         color: white;
@@ -2075,20 +2083,59 @@
             modal.appendChild(content);
             document.body.appendChild(modal);
             
-            // 添加CSS动画
-            const style = document.createElement('style');
-            style.textContent = `
-                @keyframes fadeIn {
-                    from { opacity: 0; transform: scale(0.8); }
-                    to { opacity: 1; transform: scale(1); }
+            // 点击外部区域关闭弹窗
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) {
+                    closeReminderModal();
                 }
-            `;
-            document.head.appendChild(style);
+            });
+            
+            // 添加ESC键监听器
+            document.addEventListener('keydown', handleReminderModalKeydown);
+            
+            // 添加CSS动画
+            if (!document.getElementById('reminderModalStyle')) {
+                const style = document.createElement('style');
+                style.id = 'reminderModalStyle';
+                style.textContent = `
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: scale(0.8); }
+                        to { opacity: 1; transform: scale(1); }
+                    }
+                `;
+                document.head.appendChild(style);
+            }
+            
+            console.log('✅ 提醒弹窗已显示');
+        }
+        
+        // 关闭提醒弹窗
+        function closeReminderModal() {
+            try {
+                const modal = document.getElementById('reminderModal');
+                if (modal) {
+                    modal.remove();
+                }
+                // 移除ESC键监听器
+                document.removeEventListener('keydown', handleReminderModalKeydown);
+            } catch (error) {
+                console.error('关闭提醒弹窗失败:', error);
+                // 强制移除所有可能存在的弹窗
+                const allModals = document.querySelectorAll('#reminderModal');
+                allModals.forEach(m => m.remove());
+            }
+        }
+        
+        // ESC键关闭弹窗处理
+        function handleReminderModalKeydown(e) {
+            if (e.key === 'Escape' && document.getElementById('reminderModal')) {
+                closeReminderModal();
+            }
         }
         
         // 稍后提醒（5分钟后）
         function snoozeReminder() {
-            document.querySelector('[style*="position: fixed"][style*="z-index: 10000"]')?.remove();
+            closeReminderModal(); // 使用统一的关闭函数
             setTimeout(() => {
                 showReminderModal('📚 练习提醒：现在开始学习吧！');
             }, 5 * 60 * 1000); // 5分钟

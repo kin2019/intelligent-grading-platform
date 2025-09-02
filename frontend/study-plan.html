@@ -37,7 +37,6 @@
         .navbar-content {
             display: flex;
             align-items: center;
-            justify-content: space-between;
             margin-top: 20px;
         }
         
@@ -629,10 +628,11 @@
         <!-- 顶部导航栏 -->
         <div class="navbar">
             <div class="navbar-content">
-                <div class="navbar-left">
-                    <div class="navbar-title">学习计划</div>
+                <div style="flex: 1;"></div>
+                <div class="navbar-title" style="flex: 1; text-align: center;">学习计划</div>
+                <div style="flex: 1; display: flex; justify-content: flex-end;">
+                    <button class="add-btn" onclick="createPlan()">新建</button>
                 </div>
-                <button class="add-btn" onclick="createPlan()">新建</button>
             </div>
         </div>
         

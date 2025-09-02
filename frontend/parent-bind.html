@@ -743,8 +743,8 @@
                 container.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-icon">👨‍👩‍👧‍👦</div>
-                        <div>暂无绑定关系</div>
-                        <div style="font-size: 12px; margin-top: 8px;">使用上方功能添加家庭成员</div>
+                        <div>暂无绑定家长</div>
+                        <div style="font-size: 12px; margin-top: 8px;">使用上方功能添加家长</div>
                     </div>
                 `;
                 return;
@@ -752,24 +752,19 @@
             
             let html = '';
             bindings.forEach(binding => {
-                const isParent = binding.parent_info.id === currentUser?.id;
-                const displayUser = isParent ? binding.child_info : binding.parent_info;
-                const roleText = isParent ? '孩子' : '家长';
+                // 只显示家长信息，不管当前用户是谁
+                const parentUser = binding.parent_info;
                 
                 html += `
                     <div class="status-item">
                         <div class="status-avatar">
-                            ${displayUser.nickname?.charAt(0) || '👤'}
+                            ${parentUser.nickname?.charAt(0) || '👤'}
                         </div>
                         <div class="status-info">
-                            <div class="status-name">${binding.nickname || displayUser.nickname || '未命名'}</div>
+                            <div class="status-name">${binding.nickname || parentUser.nickname || '未命名家长'}</div>
                             <div class="status-role">
-                                ${roleText} · ${new Date(binding.created_at).toLocaleDateString()}
-                                ${displayUser.grade ? ` · ${displayUser.grade}` : ''}
+                                家长 · ${new Date(binding.created_at).toLocaleDateString()}
                             </div>
-                        </div>
-                        <div class="status-actions">
-                            <button class="btn btn-danger btn-small" onclick="quickUnbind(${binding.id})">解绑</button>
                         </div>
                     </div>
                 `;
